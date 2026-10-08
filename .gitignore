@@ -1,0 +1,16 @@
+.venv/
+.local/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+runs/
+audit/
+**/*.private.json
+**/native_receipts/
+**/tokenizer/
+*.safetensors
+*.pt
+*.bin
+*.whl

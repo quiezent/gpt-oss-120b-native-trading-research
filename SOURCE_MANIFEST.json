@@ -1,0 +1,825 @@
+{
+  "excluded": [
+    "actual private reasoning and generated token/logprob/tensor records",
+    "raw broker observations and account identifiers",
+    "credentials and personal absolute paths",
+    "paid market history and news",
+    "vendor SDK source and binaries",
+    "model weights and tokenizer bytes",
+    "campaign financial/provider receipt graph"
+  ],
+  "kind": "PUBLIC_SANITIZED_AUTHORED_CODE_MANIFEST_V1",
+  "manifest_and_scan_and_check_receipts_are_separately_hashed_release_metadata": true,
+  "new_release_support_files": [
+    {
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
+      "export_bytes": 172,
+      "export_relative_path": ".gitignore",
+      "export_sha256": "2eeed106ae49578f4f88c19605b3da2e3c4237346b241902b566c87db3c9526f",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
+      "export_bytes": 5927,
+      "export_relative_path": "CODE_README.md",
+      "export_sha256": "e72b2868b2d179abe42e8c0633888e3a8e6a8c643454ab3b2e93fd47ab5fdf9d",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
+      "export_bytes": 598,
+      "export_relative_path": "config/checkpoint.example.json",
+      "export_sha256": "647bf9d26aabd987c11ce2184723ff03be6ab810d62bea8129bbf477dab9bada",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
+      "export_bytes": 375,
+      "export_relative_path": "config/simulation.example.json",
+      "export_sha256": "a6b425854a6ee38653355d233ff175a3cd475c4845779ae01b6af10ee1a8f8c3",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "examples/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored synthetic accounting or ignored local account-configuration example. No model, provider or broker is invoked.",
+      "export_bytes": 1203,
+      "export_relative_path": "examples/configure_paper.py",
+      "export_sha256": "3b811c2835b5ea6aada85d9c804db332765709ba9a78ced0d8bc5173a26bc7f3",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored synthetic accounting or ignored local account-configuration example. No model, provider or broker is invoked.",
+      "export_bytes": 1012,
+      "export_relative_path": "examples/synthetic_accounting.py",
+      "export_sha256": "259340c9e2cd25e02b5e9d16997e4ab94dd73b337943c0d65b124e34af3c45e3",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
+      "export_bytes": 2201,
+      "export_relative_path": "LICENSE_SCOPE.md",
+      "export_sha256": "19c42232186df017604ae4a1596ef9f46f4a9452d125516d478e943025dc7fe9",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "pa_tws/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
+      "export_bytes": 392,
+      "export_relative_path": "pyproject.toml",
+      "export_sha256": "17dcb45e7c108ce72c652e6dba3c281356a41b7ab01bee406b56a3361ae237e4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
+      "export_bytes": 185,
+      "export_relative_path": "requirements-paper.txt",
+      "export_sha256": "1d9d83c03fb765250548a6bdb533ff7665270951c656f49f35bef6a10ad231af",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
+      "export_bytes": 205,
+      "export_relative_path": "requirements-training.txt",
+      "export_sha256": "a05c1aa04b5d90f5901469c38f1392bbf5b3e5e1b5371547faa28ce10241e8fc",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "trader_runtime/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "trading_desk/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "training/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "training/environment/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "training/framework/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "training/learning/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "New caller-owned one-update wrapper around original trajectory_datums, datum_wire and prospective symmetric evidence_group_advantages. Private campaign orchestration and finite funding ledger are omitted; no claim this exact wrapper executed the campaign.",
+      "export_bytes": 2504,
+      "export_relative_path": "training/learning/outcome_training.py",
+      "export_sha256": "2963e2d62f63653ad50941239f5244c1afc04d40ba1051cfe145db8c55465d71",
+      "provenance_class": "DERIVED_PORTABLE_TRAINING_SUPPORT"
+    },
+    {
+      "description": "Empty package initializer for the portable export.",
+      "export_bytes": 62,
+      "export_relative_path": "training/native_agent/__init__.py",
+      "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    }
+  ],
+  "no_license_grant_invented": true,
+  "not_a_private_campaign_replay": true,
+  "original_source_files": [
+    {
+      "export_bytes": 32704,
+      "export_relative_path": "training/nav_learning.py",
+      "export_sha256": "e82c287620f8ba298760842d9073ce2de7202fcd425761d41e1973ed34069de1",
+      "original_source_sha256": "bc7838787d1fa169d14011a4c008f92177387ad397adb8c4c9dbf1080a98b3f7",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/nav_learning.py",
+      "transformations": [
+        {
+          "excluded_import_modules": [],
+          "kind": "exact_original_AST_top_level_source_spans",
+          "legacy_or_campaign_orchestration_not_exported": true,
+          "retained_names": [
+            "HORIZONS",
+            "PARENT_LORA_TARGETS",
+            "QUALIFICATION",
+            "canonical",
+            "digest",
+            "reference",
+            "write_once",
+            "number",
+            "money",
+            "SimulationConfig",
+            "load_histories",
+            "common_sessions",
+            "prepare_dataset",
+            "PortfolioSimulationHost",
+            "group_advantages",
+            "admissible_group_advantages",
+            "trajectory_datums",
+            "datum_wire",
+            "sdk_response_wire",
+            "create_compatible_training_client",
+            "episode_decision_at",
+            "validation_directory_name",
+            "uniform_episode_selection",
+            "FinitePilotBudget"
+          ]
+        }
+      ]
+    },
+    {
+      "export_bytes": 8097,
+      "export_relative_path": "training/nav_tool_schema.py",
+      "export_sha256": "10fa40e2ad3c815ddbe93a0cc15067c7c7acd5cce40e5b1bb700ab348c484250",
+      "original_source_sha256": "10fa40e2ad3c815ddbe93a0cc15067c7c7acd5cce40e5b1bb700ab348c484250",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/nav_tool_schema.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 10156,
+      "export_relative_path": "training/native_agent/runtime.py",
+      "export_sha256": "b131e2bb700e6d7db905fab988bfb3e6ad7691680b0fee2167049902e3c62f15",
+      "original_source_sha256": "b131e2bb700e6d7db905fab988bfb3e6ad7691680b0fee2167049902e3c62f15",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/runtime.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 7798,
+      "export_relative_path": "training/native_agent/harmony_model.py",
+      "export_sha256": "39d4d4addd0d1735cadcf98840f25c9add896a7a40730fd4464b9e1bb6b186af",
+      "original_source_sha256": "f28e0bbb65cde6111f866255510e771520b9e00076bd41b60d4abadadac40ae1",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/harmony_model.py",
+      "transformations": [
+        {
+          "after": "from training import direct_native_episode as native",
+          "before": "from training.artifacts.autonomous_model_loop_20261007_v1 import direct_native_episode as native",
+          "count": 3,
+          "kind": "literal_replacement"
+        }
+      ]
+    },
+    {
+      "export_bytes": 19633,
+      "export_relative_path": "training/native_agent/cli_host.py",
+      "export_sha256": "a83fa1949f622e35626bd62dec8a89d932f5688ef1fd45b6e1232586150bcc3f",
+      "original_source_sha256": "4f4ec28582d999f04871f5986987eae48615dca1d37b637dbf876c9e688f8a14",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/cli_host.py",
+      "transformations": [
+        {
+          "count": 1,
+          "kind": "paper_account_placeholder",
+          "original_literal_redacted": true,
+          "replacement": "PAPER_ACCOUNT"
+        }
+      ]
+    },
+    {
+      "export_bytes": 2742,
+      "export_relative_path": "training/native_agent/canonical_worker.py",
+      "export_sha256": "10d755c5e90277ba1c5b0dc1e9b0227a5c407ec2bcf5275d050f4654c046af7d",
+      "original_source_sha256": "7c15e4703bd002c95a0385faa0bd5b4fc9885fe59e915f2408e624d063584e96",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/canonical_worker.py",
+      "transformations": [
+        {
+          "count": 1,
+          "kind": "paper_account_placeholder",
+          "original_literal_redacted": true,
+          "replacement": "PAPER_ACCOUNT"
+        }
+      ]
+    },
+    {
+      "export_bytes": 29821,
+      "export_relative_path": "training/native_agent/framework_candidate.py",
+      "export_sha256": "aad402e87e85f5d4708b03bcb2b4df34556ce0cad41de90282c1d9168074f110",
+      "original_source_sha256": "e00f1c0048c3a6ade573401a12e127ab27622ab6f3de4c90d1a7d0ac6a0aac20",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/framework_candidate.py",
+      "transformations": [
+        {
+          "count": 2,
+          "kind": "paper_account_placeholder",
+          "original_literal_redacted": true,
+          "replacement": "PAPER_ACCOUNT"
+        }
+      ]
+    },
+    {
+      "export_bytes": 10159,
+      "export_relative_path": "training/native_agent/clock_host.py",
+      "export_sha256": "b7a4aaf426a1422de3fad1370792960169d98c940c9730b16a2a28eef0a5830c",
+      "original_source_sha256": "b7a4aaf426a1422de3fad1370792960169d98c940c9730b16a2a28eef0a5830c",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/clock_host.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 11919,
+      "export_relative_path": "training/native_agent/compact_presentation.py",
+      "export_sha256": "3b6377625efdc80b306c7f405a28d6dce4089ad2601224c4857203d1ad206d56",
+      "original_source_sha256": "f59ca8a88e4970b5b28a2f320da4607a2f1fc8219601a2f08e0919a8c7c804b9",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/compact_presentation.py",
+      "transformations": [
+        {
+          "after": "from training import direct_native_episode as native",
+          "before": "from training.artifacts.autonomous_model_loop_20261007_v1 import direct_native_episode as native",
+          "count": 1,
+          "kind": "literal_replacement"
+        }
+      ]
+    },
+    {
+      "export_bytes": 4218,
+      "export_relative_path": "training/v7_protocol.py",
+      "export_sha256": "c38e1a8221be2b0430f697d6a9f3bcf823f693bad9592c2740edc024ea81a36d",
+      "original_source_sha256": "d65b2da7d3d66e7be40d8674c3a739cd59dc97978d04a64c1d68d99630320166",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/v7_protocol.py",
+      "transformations": [
+        {
+          "excluded_import_modules": [
+            "training.tinker_adapter"
+          ],
+          "kind": "exact_original_AST_top_level_source_spans",
+          "legacy_or_campaign_orchestration_not_exported": true,
+          "retained_names": [
+            "MAX_SEQUENCE_TOKENS",
+            "MAX_TOTAL_GENERATED_TOKENS",
+            "MAX_TOOL_YIELDS",
+            "REASONING_EFFORT",
+            "PINNED_RENDERER_SHA256",
+            "SUPERVISION_POLICY",
+            "_digest",
+            "protocol_binding",
+            "local_renderer",
+            "_configured_renderer",
+            "_safe_content",
+            "stop_token_ids",
+            "_single_token",
+            "_known_token_ids"
+          ]
+        }
+      ]
+    },
+    {
+      "export_bytes": 7300,
+      "export_relative_path": "training/direct_native_episode.py",
+      "export_sha256": "fa2d68daae2734963c6a3033642ff177cd8b840cd2d5c79ee6c732ecdcff46d2",
+      "original_source_sha256": "7b86a569c38686532914206be3d35e3be598bad6953fdd91c7ac64290ee0e244",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/artifacts/autonomous_model_loop_20261007_v1/direct_native_episode.py",
+      "transformations": [
+        {
+          "excluded_import_modules": [
+            "training.v6_model_client",
+            "training.v7_model_client",
+            "training.dataset",
+            "training.native_model_client"
+          ],
+          "kind": "exact_original_AST_top_level_source_spans",
+          "legacy_or_campaign_orchestration_not_exported": true,
+          "retained_names": [
+            "MAX_OUTPUT",
+            "MAX_TOOL_CALLS",
+            "MAX_EPISODE_SECONDS",
+            "MAX_SEQUENCE",
+            "now",
+            "require",
+            "build_direct_prompt",
+            "parse_direct_segment",
+            "append_direct_tool_result"
+          ]
+        },
+        {
+          "kind": "appended_public_configuration_support",
+          "text_sha256": "215d0694b55a55b09425a90439f03614d29a66f09caf849a9fe441cfadc68926"
+        }
+      ]
+    },
+    {
+      "export_bytes": 2240,
+      "export_relative_path": "training/v6_contract.py",
+      "export_sha256": "318430fcc9c822511edc9bea4aef0a421ca2083d473eec7222ceadb5369505c7",
+      "original_source_sha256": "b27e618ff115cb8bb8fddfbc65330553eac203cdcc589b06aff5291bbf9c66be",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/v6_contract.py",
+      "transformations": [
+        {
+          "excluded_import_modules": [
+            "training.dataset",
+            "training.news_review_contract"
+          ],
+          "kind": "exact_original_AST_top_level_source_spans",
+          "legacy_or_campaign_orchestration_not_exported": true,
+          "retained_names": [
+            "canonical",
+            "_number",
+            "parse_response"
+          ]
+        },
+        {
+          "appended_support_sha256": null,
+          "kind": "refine_original_AST_support_only",
+          "paper_account_placeholder": true,
+          "removed_import_modules": [
+            "training.dataset",
+            "training.environment.prepare_tokenizer",
+            "training"
+          ],
+          "retained_names": [
+            "_number",
+            "canonical",
+            "parse_response"
+          ]
+        }
+      ]
+    },
+    {
+      "export_bytes": 599,
+      "export_relative_path": "training/v7_contract.py",
+      "export_sha256": "f60d9a3d69d2e617631cc10a60575a136008fdc25e96f8a26940d424dd351dc6",
+      "original_source_sha256": "fd556f2518dbb5ae96c14e55200726a4d998b41833a28bf848e1d6f0ce402c7b",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/v7_contract.py",
+      "transformations": [
+        {
+          "excluded_import_modules": [
+            "trading_desk.v7_tools"
+          ],
+          "kind": "exact_original_AST_top_level_source_spans",
+          "legacy_or_campaign_orchestration_not_exported": true,
+          "retained_names": [
+            "parse_response"
+          ]
+        },
+        {
+          "kind": "appended_public_configuration_support",
+          "text_sha256": "32404d8e0f3196bfaded643dab90153e2a22b97ab804174c05ded574824d1e52"
+        }
+      ]
+    },
+    {
+      "export_bytes": 2616,
+      "export_relative_path": "trading_desk/v7_tools.py",
+      "export_sha256": "cd6e99cd93b890c92b61438f56b7679780443ce3cccf76aae025e070fd6d0cb3",
+      "original_source_sha256": "f67330c1fa831edf8948d398c735a004edc919f428d55cb5d5a5e4357d60ab66",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "trading_desk/v7_tools.py",
+      "transformations": [
+        {
+          "excluded_import_modules": [
+            "training.v7_contract"
+          ],
+          "kind": "exact_original_AST_top_level_source_spans",
+          "legacy_or_campaign_orchestration_not_exported": true,
+          "retained_names": [
+            "_CREDENTIAL_KEYS",
+            "_SECRET_TEXT",
+            "_CONTROL_TEXT",
+            "guard_content"
+          ]
+        }
+      ]
+    },
+    {
+      "export_bytes": 1278,
+      "export_relative_path": "training/tinker_adapter.py",
+      "export_sha256": "b2b72002271f2e8da70b3f9232cd6b25b3aca68b732cdec27aecc5608999c568",
+      "original_source_sha256": "12af6988ca679fdb3d0ead2916aa44595bd337e2a0c0d4675372539ef08d6ba6",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/tinker_adapter.py",
+      "transformations": [
+        {
+          "excluded_import_modules": [
+            "training.dataset"
+          ],
+          "kind": "exact_original_AST_top_level_source_spans",
+          "legacy_or_campaign_orchestration_not_exported": true,
+          "retained_names": [
+            "RENDERER_NAME",
+            "MAX_SEQUENCE_TOKENS",
+            "PINS",
+            "verify_versions",
+            "local_renderer"
+          ]
+        },
+        {
+          "kind": "appended_public_configuration_support",
+          "text_sha256": "ee6973b32934091a405a1b259d1e12d5619025fc75c3041d05b799398ba0b6c9"
+        }
+      ]
+    },
+    {
+      "export_bytes": 2094,
+      "export_relative_path": "training/environment/prepare_tokenizer.py",
+      "export_sha256": "f2af4387bf14d5f690e53c3be9cc85da5bdd9d4b439a495e70eec7076a05e070",
+      "original_source_sha256": "fe90ad0b9663ffaf6bd04e3ff731f585c7fefd9a384418c840845e75eed4fe96",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/environment/prepare_tokenizer.py",
+      "transformations": [
+        {
+          "after": "from pathlib import Path\nimport os",
+          "before": "from pathlib import Path",
+          "kind": "literal_configuration_or_import_relocation"
+        },
+        {
+          "after": "DIRECTORY = Path(os.environ.get(\"GPT_OSS_TOKENIZER_DIR\", str(Path(__file__).resolve().parent / \"tokenizer\")))",
+          "before": "DIRECTORY = Path(__file__).resolve().parent / \"tokenizer\"",
+          "kind": "literal_configuration_or_import_relocation"
+        }
+      ]
+    },
+    {
+      "export_bytes": 582,
+      "export_relative_path": "training/environment/tokenizer_manifest.json",
+      "export_sha256": "6edadb7869d68b6bdade48855f8a50f773142a0f9c6b2e4a8fc6cffea7c8490e",
+      "original_source_sha256": "6edadb7869d68b6bdade48855f8a50f773142a0f9c6b2e4a8fc6cffea7c8490e",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/environment/tokenizer_manifest.json",
+      "transformations": []
+    },
+    {
+      "export_bytes": 167625,
+      "export_relative_path": "pa_tws/pa_tws.py",
+      "export_sha256": "ddc0257613347ab99d7a07982a9a31f043321dc790641a3be11b92c89a03995b",
+      "original_source_sha256": "fc47bf0f9d4919751d79182ca44f86aa2ddfd7780a80d29cff8bfa4be3adf528",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "pa_tws/pa_tws.py",
+      "transformations": [
+        {
+          "count": 2,
+          "kind": "paper_account_placeholder",
+          "original_literal_redacted": true,
+          "replacement": "PAPER_ACCOUNT"
+        }
+      ]
+    },
+    {
+      "export_bytes": 12059,
+      "export_relative_path": "pa_tws/paper_trial.py",
+      "export_sha256": "62e29b8acdc00b033b6ca7c40788e2564805f3b5ee787ec5d39949992c77d41e",
+      "original_source_sha256": "62e29b8acdc00b033b6ca7c40788e2564805f3b5ee787ec5d39949992c77d41e",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "pa_tws/paper_trial.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 4902,
+      "export_relative_path": "pa_tws/sdk_compat.py",
+      "export_sha256": "3556d4d9c8ddd48b88f478295e5308e0e319ecf09a926c62a5a96a65a952eb7f",
+      "original_source_sha256": "3556d4d9c8ddd48b88f478295e5308e0e319ecf09a926c62a5a96a65a952eb7f",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "pa_tws/sdk_compat.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 8209,
+      "export_relative_path": "pa_tws/fee_capture.py",
+      "export_sha256": "3f882c1612723f2ff4ed9b2b0995e3aaf659f47cb82f0ef6a09e350b8b6fd587",
+      "original_source_sha256": "3f882c1612723f2ff4ed9b2b0995e3aaf659f47cb82f0ef6a09e350b8b6fd587",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "pa_tws/fee_capture.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 36213,
+      "export_relative_path": "trader_runtime/tws_broker.py",
+      "export_sha256": "2808e02bd48996916e3392536e79b365155b6444ab290dc41edaf917abfdba18",
+      "original_source_sha256": "234c4cd0f25b00d753a11cb82d0bb1f6d381d98f5066917a86652c31c3768b87",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "trader_runtime/tws_broker.py",
+      "transformations": [
+        {
+          "after": "PA_PYTHON = Path(os.environ.get(\"PA_PYTHON\", __import__(\"sys\").executable))",
+          "before": "PA_PYTHON = PA_SCRIPT.parent.parent / \".venv\" / \"Scripts\" / \"python.exe\"",
+          "count": 1,
+          "kind": "literal_replacement"
+        }
+      ]
+    },
+    {
+      "export_bytes": 2031,
+      "export_relative_path": "trader_runtime/validation.py",
+      "export_sha256": "5c2a9d6f1cece1146528390bd311bffdd436c43e768577b20206d43f4bc14a55",
+      "original_source_sha256": "3bd2a66d4d65711c4f3dc3c6fa3d4d8c274b7e632a0eac69b93fe2c003d61e58",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "trader_runtime/validation.py",
+      "transformations": [
+        {
+          "excluded_import_modules": [],
+          "kind": "exact_original_AST_top_level_source_spans",
+          "legacy_or_campaign_orchestration_not_exported": true,
+          "retained_names": [
+            "PAPER_BOUNDARY"
+          ]
+        },
+        {
+          "count": 1,
+          "kind": "paper_account_placeholder",
+          "original_literal_redacted": true,
+          "replacement": "PAPER_ACCOUNT"
+        },
+        {
+          "appended_support_sha256": null,
+          "kind": "refine_original_AST_support_only",
+          "paper_account_placeholder": true,
+          "removed_import_modules": [],
+          "retained_names": [
+            "PAPER_BOUNDARY",
+            "contract_key",
+            "money",
+            "positive_int",
+            "strict_fields",
+            "timestamp"
+          ]
+        }
+      ]
+    },
+    {
+      "export_bytes": 9286,
+      "export_relative_path": "trader_runtime/historical_data.py",
+      "export_sha256": "fb72592926d83000f31fcb6e7f8c5f3ca3fbf20dcbfaa823fd5140f2475a5d9f",
+      "original_source_sha256": "fb72592926d83000f31fcb6e7f8c5f3ca3fbf20dcbfaa823fd5140f2475a5d9f",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "trader_runtime/historical_data.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 4108,
+      "export_relative_path": "trading_desk/v8_tws_control.py",
+      "export_sha256": "82d88acc9c00bad930e31fc3be047b250bfec25b8bcb2fe55ea5a0a586a86154",
+      "original_source_sha256": "2722e708b3bcaa127fb22a4f453aaf8f5966b0cc136db1c7b1f5a7feab4a6ff6",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "trading_desk/v8_tws_control.py",
+      "transformations": [
+        {
+          "count": 1,
+          "kind": "paper_account_placeholder",
+          "original_literal_redacted": true,
+          "replacement": "PAPER_ACCOUNT"
+        },
+        {
+          "appended_support_sha256": null,
+          "kind": "refine_original_AST_support_only",
+          "paper_account_placeholder": true,
+          "removed_import_modules": [],
+          "retained_names": [
+            "_execution_profile",
+            "preview_exact_paper_profile",
+            "submit_exact_paper_profile"
+          ]
+        }
+      ]
+    },
+    {
+      "export_bytes": 25324,
+      "export_relative_path": "training/framework/declared_tools.py",
+      "export_sha256": "49052428d8deb517818ee54fd41c6beb3491e90990d30a79e8a7320ab87c16ab",
+      "original_source_sha256": "e1ab1cab04aa442e836b85412b46403ac1ec3465b22f60adfd28d8ac2e6d039d",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_harmony_successor_preparation_v1/declared_tools_v1.py",
+      "transformations": [
+        {
+          "after": "from training import direct_native_episode as native",
+          "before": "from training.artifacts.autonomous_model_loop_20261007_v1 import direct_native_episode as native",
+          "count": 3,
+          "kind": "literal_replacement"
+        }
+      ]
+    },
+    {
+      "export_bytes": 11448,
+      "export_relative_path": "training/framework/model_mandate.py",
+      "export_sha256": "27a6ff3c05ec2078f3e29b8836cd036f4fe6f9bb1772821da2c414b713da599a",
+      "original_source_sha256": "27a6ff3c05ec2078f3e29b8836cd036f4fe6f9bb1772821da2c414b713da599a",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_harmony_successor_preparation_v1/model_mandate.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 28209,
+      "export_relative_path": "training/framework/simulator.py",
+      "export_sha256": "93509301a0c3f8163a0d021b6b22156e09f03d0816201fa6c1c180647677aaa9",
+      "original_source_sha256": "53a54530c7120c8cb13e5bc20e7499b601d0d5835fb840aa6229697b4a050d5f",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/mixed_native_framework_nav_preparation_v1/framework_simulator.py",
+      "transformations": [
+        {
+          "after": "from training.framework",
+          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.framework_harmony_preparation_v1",
+          "count": 1,
+          "kind": "literal_replacement"
+        }
+      ]
+    },
+    {
+      "export_bytes": 10978,
+      "export_relative_path": "training/learning/interface_adapter.py",
+      "export_sha256": "193d94f34044dfd7a2b0cadd223b70aac7c8e916c3105d3523c8dfe143d99ae6",
+      "original_source_sha256": "03b1d24f12ee86023951c8b58053ca879d2422b046fc87513e21a1677983566a",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_named_learning_preparation_v1/interface_adapter.py",
+      "transformations": [
+        {
+          "after": "from training.framework",
+          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.framework_harmony_successor_preparation_v1",
+          "count": 1,
+          "kind": "literal_replacement"
+        },
+        {
+          "after": "from training.framework.simulator",
+          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.mixed_native_framework_nav_preparation_v1.framework_simulator",
+          "count": 1,
+          "kind": "literal_replacement"
+        },
+        {
+          "after": "declared_tools as declared",
+          "before": "declared_tools_v1 as declared",
+          "count": 1,
+          "kind": "literal_replacement"
+        }
+      ]
+    },
+    {
+      "export_bytes": 8858,
+      "export_relative_path": "training/learning/evidence_eligibility.py",
+      "export_sha256": "ae3a0ac1c182542a4e11e75b297975036ef4f4cf6fadb5a545ad35e824e53a76",
+      "original_source_sha256": "ae3a0ac1c182542a4e11e75b297975036ef4f4cf6fadb5a545ad35e824e53a76",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_named_learning_preparation_v1/evidence_eligibility.py",
+      "transformations": []
+    },
+    {
+      "export_bytes": 2543,
+      "export_relative_path": "training/learning/failure_classification.py",
+      "export_sha256": "70701a043a657484d7635317ec1dda7deee37b64bbd9509c58bc1dcd4e3defcf",
+      "original_source_sha256": "e0f845b47b8a99a519d154b6073aab8d61dce28ffde6bbc56c5ed6b19fda0f16",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_named_learning_preparation_v1/failure_classification.py",
+      "transformations": [
+        {
+          "after": "from training.framework",
+          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.framework_harmony_successor_preparation_v1",
+          "count": 1,
+          "kind": "literal_replacement"
+        },
+        {
+          "after": "declared_tools as declared",
+          "before": "declared_tools_v1 as declared",
+          "count": 1,
+          "kind": "literal_replacement"
+        }
+      ]
+    },
+    {
+      "export_bytes": 13669,
+      "export_relative_path": "training/learning/capture_provenance.py",
+      "export_sha256": "27512c609cc6093823667879f042568d67f67c8d79f2e8690b12938a1653f523",
+      "original_source_sha256": "340ca2d4d7f0bf5dacb44f09fbec168ba17493ff7d42ebff87f86b6aa263d9f5",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_named_learning_preparation_v1/capture_provenance.py",
+      "transformations": [
+        {
+          "after": "from training.learning.evidence_eligibility import",
+          "before": "from evidence_eligibility import",
+          "count": 1,
+          "kind": "literal_replacement"
+        },
+        {
+          "after": "from training.learning.failure_classification import known_pre_dispatch_failure",
+          "before": "from failure_classification import known_pre_dispatch_failure",
+          "kind": "literal_configuration_or_import_relocation"
+        }
+      ]
+    },
+    {
+      "export_bytes": 15671,
+      "export_relative_path": "training/native_agent/test_runtime.py",
+      "export_sha256": "f6cc9c0ae704694a3c1785b5c28cb94ce870b189c30bd3aa30957af3d4b317f7",
+      "original_source_sha256": "04ba5e8588a53390940cdb0fe9c43e90ad55a2147c10883a7e79087d9277bca4",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/test_runtime.py",
+      "transformations": [
+        {
+          "count": 2,
+          "kind": "paper_account_placeholder",
+          "original_literal_redacted": true,
+          "replacement": "PAPER_ACCOUNT"
+        }
+      ]
+    },
+    {
+      "export_bytes": 11389,
+      "export_relative_path": "training/native_agent/test_harmony_model.py",
+      "export_sha256": "e66a143be0bbad692ad1541353b6b7682044c4476ced4d72b0546f9f63c79df3",
+      "original_source_sha256": "d2bfda949d3c96d937f1903cd890ae644838163b8ce6354115f6b47e65c26607",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/native_agent/test_harmony_model.py",
+      "transformations": [
+        {
+          "after": "from training import direct_native_episode as native",
+          "before": "from training.artifacts.autonomous_model_loop_20261007_v1 import direct_native_episode as native",
+          "count": 1,
+          "kind": "literal_replacement"
+        }
+      ]
+    },
+    {
+      "export_bytes": 11587,
+      "export_relative_path": "training/test_nav_learning.py",
+      "export_sha256": "d463b4cf4405121c9c42482cb0081d9ac889f86f199c68c3c8f9ca4d53ae6a16",
+      "original_source_sha256": "afb147a181efc48c7bb45820a3a8e0f8a139ace0b8894d910bda9b688d7b6466",
+      "provenance_class": "AUTHORED_ORIGINAL_SOURCE_WITH_LISTED_TRANSFORMATIONS",
+      "source_repository_relative_path": "training/test_nav_learning.py",
+      "transformations": [
+        {
+          "excluded_methods": [
+            "test_fresh_base_plan_has_no_parent_and_exact_finite_cost_bound",
+            "test_legacy_cap_is_not_increased_by_new_base_scope"
+          ],
+          "kind": "exclude_campaign_funding_methods_only"
+        },
+        {
+          "kind": "remove_unused_campaign_prepare_imports"
+        }
+      ]
+    }
+  ],
+  "repository_relative_original_paths_only": true,
+  "source_transformations_note": "Exact original spans, import relocations, account placeholders and consumer configuration are recorded per file. Authored unit-test token arrays are synthetic fixtures, not private generations."
+}

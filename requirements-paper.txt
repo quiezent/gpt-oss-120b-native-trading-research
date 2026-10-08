@@ -1,0 +1,4 @@
+# Install the official IBKR Python SDK separately under its distribution license.
+# The authored compatibility code was exercised with ibapi 1051.1.
+protobuf==5.29.5
+tzdata>=2025.2

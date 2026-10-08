@@ -1,0 +1,14 @@
+{
+  "initial_cash_usd": "10000",
+  "max_order_notional_usd": "2500",
+  "max_symbol_notional_usd": "5000",
+  "max_gross_notional_usd": "9000",
+  "min_cash_usd": "500",
+  "max_positions": 4,
+  "max_orders_per_session": 4,
+  "commission_per_share_usd": "0.005",
+  "minimum_commission_usd": "1",
+  "spread_bps": "5",
+  "slippage_bps": "5",
+  "history_window": 60
+}

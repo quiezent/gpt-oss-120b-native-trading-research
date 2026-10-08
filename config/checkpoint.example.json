@@ -1,0 +1,15 @@
+{
+  "base_model": "openai/gpt-oss-120b",
+  "sampler_uri": "tinker://ed15d2e7-f3c5-5834-8904-e81695d78c3b:train:0/sampler_weights/mixnav-9f9077d874bd-final-sampler",
+  "checkpoint_version": "NAV_RL_PILOT_6",
+  "public_visibility_verified": true,
+  "no_scheduled_expiry_verified": true,
+  "expires_at": null,
+  "provider_metadata_size_bytes": 1304655391,
+  "visibility_is_not_anonymous_download_or_independent_cross_principal_load_proof": true,
+  "project_id": "YOUR_TINKER_PROJECT",
+  "context_tokens": 32768,
+  "requested_output_tokens": 8192,
+  "temperature": 0,
+  "max_steps": 8
+}

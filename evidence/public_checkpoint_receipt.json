@@ -1,0 +1,22 @@
+{
+  "kind": "SANITIZED_ACTUAL_PUBLIC_CHECKPOINT_RECEIPT",
+  "checkpoint": "NAV_RL_PILOT_6",
+  "base_model": "openai/gpt-oss-120b",
+  "verified_at_utc": "2026-10-08T23:42:40.373995Z",
+  "tinker_path": "tinker://ed15d2e7-f3c5-5834-8904-e81695d78c3b:train:0/sampler_weights/mixnav-9f9077d874bd-final-sampler",
+  "console_url": "https://tinker.thinkingmachines.ai/checkpoints/ed15d2e7-f3c5-5834-8904-e81695d78c3b%3Atrain%3A0/sampler_weights%2Fmixnav-9f9077d874bd-final-sampler",
+  "playground_url": "https://tinker.thinkingmachines.ai/playground?mode=checkpoint&checkpoint=tinker%3A%2F%2Fed15d2e7-f3c5-5834-8904-e81695d78c3b%3Atrain%3A0%2Fsampler_weights%2Fmixnav-9f9077d874bd-final-sampler",
+  "links_derived_by_SDK": true,
+  "checkpoint_type": "sampler",
+  "public": true,
+  "expires_at": null,
+  "size_bytes": 1304655391,
+  "access": "Tinker documents loading published paths by authenticated users.",
+  "access_from_second_account_independently_tested": false,
+  "retention": "No scheduled expiry; deletion, provider/account availability and continuing storage charges apply.",
+  "anonymous_access_or_permanent_availability_guaranteed": false,
+  "sampling_or_training_performed_to_publish": false,
+  "provider_documentation": "https://tinker-docs.thinkingmachines.ai/tinker/howto/checkpoints/",
+  "original_research_handoff_sha256": "9ede461d9a0e20360eb3d8b22a5167ed4d444e0dbdb24e0fd5acb93666aebcff",
+  "actual_publication_receipt_sha256": "495212c1efa4d06d7e6fae75a620fd0b92932f58c9d4fd3cb8a4ae80c1e562c2"
+}
