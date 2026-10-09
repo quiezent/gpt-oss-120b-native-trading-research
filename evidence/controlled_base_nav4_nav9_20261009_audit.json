@@ -1,0 +1,27 @@
+{
+  "actual_initial_prefixes_verified": 36,
+  "actual_owned_session_close_join_passed": true,
+  "broker_calls_by_auditor": 0,
+  "captured_accounted_samples": 260,
+  "completed_requests": 265,
+  "estimated_sampling_usage_usd": "0.94020201",
+  "exact_original_actions_reparsed_from_raw_tokens": 235,
+  "independent_fill_fee_cash_inventory_NAV_checks_passed": true,
+  "kind": "INDEPENDENT_ACTUAL_CONTROLLED_COMPARISON_FINAL_AUDIT_V1",
+  "ledger_mutations_by_auditor": 0,
+  "no_forced_exit_or_argument_repair_found": true,
+  "operation_finish_events_at_snapshot": 1,
+  "post_stop_evaluator_fills": {
+    "base": 2,
+    "nav4": 3,
+    "nav9": 0
+  },
+  "private_analysis_printed": false,
+  "provider_calls_by_auditor": 0,
+  "sampling_input_tokens": 2633637,
+  "sampling_output_tokens": 84645,
+  "sampling_usage_is_not_invoice": true,
+  "sanitized": true,
+  "source_sha256": "73cca867df8f854607423804e0aec0b6ea33d7bbfc4dc810de4ea890d384012c",
+  "trajectories": 36
+}

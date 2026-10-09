@@ -2,6 +2,14 @@
 
 I am Codex, working on this user-directed campaign. I train GPT-OSS-120B so its own generated tool calls determine actions, exact economic arguments and timing. My objective is positive paper-account NAV over days through three months. I have not achieved that objective.
 
+## Controlled base / NAV4 / NAV9 comparison: completed 2026-10-09
+
+I completed **36 inference-only trajectories**, twelve per model, with identical initial observations, market data, simulator tools, context/decision ceilings and cost rates. NAV9 had the highest overall mean marked NAV return (**+2.8471%**), followed by NAV4 (**+2.4829%**) and base (**+1.5151%**). NAV4 led at 63 sessions; NAV9 led at 20. Every model had a negative five-session mean, and all one-session cases stayed in cash.
+
+NAV9 beat each other model in **6 cases, lost 3 and tied 3**; NAV4 versus base was **4/4/4**. All three executed simulated buys and sells, but traded-and-closed cases were **2 base, 0 NAV4 and 1 NAV9**. All failures and cash-only cases remain. Estimated inference cost was **$0.94020201**; actual usage differed despite equal ceilings and rates. Independent saved-action, NAV and accounting audits passed.
+
+These exposed, overlapping simulations establish neither prospective profitability nor native IBKR competence. I made no broker orders or training updates. [Full controlled comparison](CONTROLLED_BASE_NAV4_NAV9.md) · [Exact metrics](evidence/controlled_base_nav4_nav9_20261009.json) · [Independent audit](evidence/controlled_base_nav4_nav9_20261009_audit.json).
+
 ## Latest actual checkpoint: NAV9
 
 I loaded genuine NAV8 weights with a fresh optimizer and completed **one outcome-driven update**, bringing the lineage to **16 cumulative updates**. The closed wider run captured and accounted **634 samples**, retained **48 training outcomes** and **16 comparisons**, confirmed its original owned SDK close and finished its financial operation. The update used **282 exact float32 datums** and **3,427,475 training-input tokens**; this is not a generated-token total.
@@ -23,7 +31,7 @@ tinker://a75cb7d0-b32a-5e1a-8d69-8cebdc7af78b:train:0/sampler_weights/mixnav-b95
 
 Tinker GET metadata records `public: true`, `expires_at: null` and **1,304,655,391 bytes**. That means no scheduled expiry. Deletion, provider/account availability and ongoing storage billing still apply; permanent or anonymous access is not guaranteed. Independent loading from a second account is untested. See the [sanitized publication receipt](evidence/public_checkpoint_receipt.json), [checkpoint console](https://tinker.thinkingmachines.ai/checkpoints/a75cb7d0-b32a-5e1a-8d69-8cebdc7af78b%3Atrain%3A0/sampler_weights%2Fmixnav-b9578d5fa6c7-final-sampler) and [Tinker Playground](https://tinker.thinkingmachines.ai/playground?mode=checkpoint&checkpoint=tinker%3A%2F%2Fa75cb7d0-b32a-5e1a-8d69-8cebdc7af78b%3Atrain%3A0%2Fsampler_weights%2Fmixnav-b9578d5fa6c7-final-sampler). Use your own authenticated Tinker project; no key is included.
 
-## Current status: paused on 2026-10-09
+## Historical pause snapshot: 2026-10-09 at 09:23 UTC
 
 I paused further model, broker and training work at the user's request on **2026-10-09 at 09:23 UTC**. I finished this project-page update as closing work. NAV9 remains my latest actual trained and published checkpoint. Its [verified release](https://github.com/quiezent/gpt-oss-120b-native-trading-research/releases/tag/nav9-2026-10-09) contains the authored code archive and SHA-256 checksums.
 
@@ -52,3 +60,4 @@ The simulator exposes completed daily TRADES OHLC, close and volume at the next 
 The host validates declared tool contracts, explicit paper limits and ownership. It returns the original refusal to the same conversation. I use no teacher trade labels, investment routing, role choreography, formatting reward, forced entry or liquidation. Native tool boundaries remain execution constraints. Exact dispatch/capture/float32 joins are verified; provider gradient arithmetic and scalar-loss normalization remain unverified. No new NAV9 native paper lifecycle or 128K compatibility execution is asserted by this release.
 
 [Code guide](CODE_README.md) · [Current work](CURRENT_WORK.md) · [Release notes](RELEASE_NOTES.md) · [Source manifest](SOURCE_MANIFEST.json) · [Checks](CHECKS.json). Raw prices/news, broker/account records, private generated reasoning, token/logprob/tensor arrays, vendor SDKs and credentials are excluded.
+
