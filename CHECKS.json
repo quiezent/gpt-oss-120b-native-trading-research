@@ -1,57 +1,86 @@
 {
-  "broker_calls": 0,
-  "copied_tests_are_authored_fake_or_synthetic_fixtures": true,
-  "economic_model_evaluation_performed": false,
-  "environment": "Python 3.11; existing pinned training environment; public tokenizer assets used read-only, not exported",
-  "examples": {
-    "configure_paper_help": {
-      "exit_code": 0,
-      "no_workspace_created": true
-    },
-    "synthetic_accounting": {
-      "exit_code": 0,
-      "forced_liquidations": 0,
-      "initial_nav_usd": "10000",
-      "reward": 0.0,
-      "synthetic": true,
-      "terminal_nav_usd": "10000"
-    }
-  },
-  "import_and_ast": {
-    "broker_provider_calls": 0,
-    "exit_code": 0,
-    "interpreter_environment": "existing Python3.11 training venv with pinned Tinker packages; no provider/broker construction",
-    "kind": "SANITIZED_EXPORT_IMPORT_AND_AST_CHECK",
-    "modules": 14,
-    "public_export_root_relative": "code_export",
-    "tokenizer_assets_in_export": false
-  },
-  "kind": "PUBLIC_EXPORT_LOCAL_CHECKS_V1",
-  "model_generations": 0,
-  "new_portable_wrapper_not_provider_executed": true,
-  "original_focused_unit_tests": {
-    "argv_public": [
-      "python",
-      "-B",
-      "-m",
-      "unittest",
-      "-v",
-      "training.test_nav_learning",
-      "training.native_agent.test_runtime",
-      "training.native_agent.test_harmony_model"
-    ],
-    "authored_fixtures_not_economic_evaluation": true,
+  "actual_NAV7_run_evidence_is_separate_from_export_component_checks": true,
+  "additional_optional_recovery_component_checks": {
+    "authored_fixture_is_not_an_actual_model_output": true,
     "broker_calls": 0,
-    "environment": "Existing pinned Python3.11 training environment; original public GPT-OSS tokenizer assets referenced read-only through GPT_OSS_TOKENIZER_DIR, not exported",
-    "exit_code": 0,
-    "kind": "SANITIZED_EXPORT_ORIGINAL_FOCUSED_UNIT_CHECKS",
+    "checks_source_sha256": "cf8566dfef0fa30d7aef5da5bbc9bba14da4e8840b4c048ce11117cadd0e9e14",
+    "economic_model_evaluation_performed": false,
+    "elapsed_seconds": 0.045999999972991645,
+    "errors": 0,
+    "external_network_calls": 0,
+    "failures": 0,
+    "forbidden_call_attempts": [],
+    "historical_forty_tests_not_repeated_or_extended_to_claim_new_module_coverage": true,
+    "imported_module_public_repository_relative_path": "training/framework/numeric_recovery.py",
+    "imported_module_sha256": "598509b1c1b980f4b81a80aba2289d9ca51f9728aae8e9b987a3ac1ec5ea855e",
+    "kind": "PUBLIC_OPTIONAL_RECOVERY_FOCUSED_COMPONENT_CHECKS_V1",
     "model_generations": 0,
     "provider_calls": 0,
-    "wall_seconds": 12.0
+    "result": "PASS",
+    "tests_run": 2
   },
-  "original_source_files_verified_unchanged_by_sha256": 35,
-  "provider_calls": 0,
-  "unittest_cases": 40,
-  "unittest_result": "OK",
-  "unittest_runtime_seconds": 11.094
+  "broker_calls": 0,
+  "historical_NAV6_release_checks": {
+    "broker_calls": 0,
+    "copied_tests_are_authored_fake_or_synthetic_fixtures": true,
+    "economic_model_evaluation_performed": false,
+    "environment": "Python 3.11; existing pinned training environment; public tokenizer assets used read-only, not exported",
+    "examples": {
+      "configure_paper_help": {
+        "exit_code": 0,
+        "no_workspace_created": true
+      },
+      "synthetic_accounting": {
+        "exit_code": 0,
+        "forced_liquidations": 0,
+        "initial_nav_usd": "10000",
+        "reward": 0.0,
+        "synthetic": true,
+        "terminal_nav_usd": "10000"
+      }
+    },
+    "import_and_ast": {
+      "broker_provider_calls": 0,
+      "exit_code": 0,
+      "interpreter_environment": "existing Python3.11 training venv with pinned Tinker packages; no provider/broker construction",
+      "kind": "SANITIZED_EXPORT_IMPORT_AND_AST_CHECK",
+      "modules": 14,
+      "public_export_root_relative": "code_export",
+      "tokenizer_assets_in_export": false
+    },
+    "kind": "PUBLIC_EXPORT_LOCAL_CHECKS_V1",
+    "model_generations": 0,
+    "new_portable_wrapper_not_provider_executed": true,
+    "original_focused_unit_tests": {
+      "argv_public": [
+        "python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "training.test_nav_learning",
+        "training.native_agent.test_runtime",
+        "training.native_agent.test_harmony_model"
+      ],
+      "authored_fixtures_not_economic_evaluation": true,
+      "broker_calls": 0,
+      "environment": "Existing pinned Python3.11 training environment; original public GPT-OSS tokenizer assets referenced read-only through GPT_OSS_TOKENIZER_DIR, not exported",
+      "exit_code": 0,
+      "kind": "SANITIZED_EXPORT_ORIGINAL_FOCUSED_UNIT_CHECKS",
+      "model_generations": 0,
+      "provider_calls": 0,
+      "wall_seconds": 12.0
+    },
+    "original_source_files_verified_unchanged_by_sha256": 35,
+    "provider_calls": 0,
+    "unittest_cases": 40,
+    "unittest_result": "OK",
+    "unittest_runtime_seconds": 11.094
+  },
+  "historical_tests_not_repeated": true,
+  "kind": "PUBLIC_EXPORT_LOCAL_CHECKS_V2",
+  "model_generations": 0,
+  "new_checks_are_not_economic_or_live_paper_evaluation": true,
+  "new_module_not_used_to_train_NAV7": true,
+  "provider_calls": 0
 }

@@ -2,7 +2,7 @@
 
 This is a sanitized, portable subset of my project code. The release manifest maps every adapted file to its repository-relative original and SHA-256, with exact extraction, relocation and configuration changes. The private campaign receipt graph, market history, real broker payloads, model reasoning, token/logprob arrays, vendor code and credentials are excluded.
 
-The actual NAV6 checkpoint came from the recorded mixed native/framework campaign. The named-tool declaration and whole-group failure-classification modules here also include subsequently prepared code; their presence is not evidence that the pending named-framework learner or paper assessment ran. The portable training wrapper is a derivative of the genuine outcome-update path, not a replay of the private campaign.
+The actual NAV7 checkpoint came from the completed named-framework campaign using NAV6 weights. The named-tool declaration, shared simulator and whole-group failure-classification interfaces were genuinely used by that learner. The portable training wrapper remains a derivative of the genuine outcome-update path, not a replay of the private campaign. The optional numeric_recovery module is a separately staged generic repair; it was not used in NAV7 training or established by a paper run.
 
 ## Local setup
 
@@ -36,7 +36,7 @@ This only creates `.local/paper_workspace`; it does not connect, submit or cance
 
 `create_compatible_training_client` retains rank/attention/MLP/unembed flags needed by the published parent. Native sampler identity can differ from checkpoint owner: bind the actual SDK saved URI and actual current sampling session separately. `datum_wire` records the SDK's real float32 representation; exact reconstruction must round before equality. No raw real tensor values are distributed here. The previous backend loss-scalar reconstruction uncertainty remains unresolved; this code does not assert it was explained.
 
-Using the provider is an explicit caller action. `config/checkpoint.example.json` contains the actual NAV6 sampler URI whose Tinker metadata was confirmed public with no scheduled expiry. Select your own Tinker project/authentication. No API key is included. This metadata is distinct from an anonymously downloadable file or independently tested access by a second principal.
+Using the provider is an explicit caller action. `config/checkpoint.example.json` contains the actual NAV7 sampler URI whose Tinker metadata was confirmed public with no scheduled expiry. Select your own Tinker project/authentication. No API key is included. This metadata is distinct from an anonymously downloadable file or independently tested access by a second principal.
 
 ## Focused checks
 
@@ -49,3 +49,5 @@ These use authored synthetic/fake transport fixtures. They check accounting, chr
 Daily bars hide queues, intraday liquidity, partial fills and original publication vintages. Terminal evaluator advance marks remaining inventory; it does not prove a model-chosen exit. Current-universe and previously exposed windows limit the historical evidence. There is no profitability or production claim.
 
 Real future raw completions, private reasoning, native tokens/logprobs, datums, broker payloads and credentials belong in ignored local run directories. Aggregate published digests identify original retained private records; they are not released files or download links.
+
+The additional numeric-recovery check imports the sanitized modules under a no-network/no-provider/broker-constructor fence and exercises an authored invalid-argument fixture. It is a component check only, with no model generation or economic evaluation.

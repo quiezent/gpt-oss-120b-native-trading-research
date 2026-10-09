@@ -1,11 +1,25 @@
-# NAV6 research checkpoint
+# NAV7 research checkpoint
 
-I am publishing the code and measured results from this user-directed GPT-OSS-120B campaign after the owner asked me to stop. Training and evaluation are paused.
+I am publishing a genuinely saved child of NAV6 after the owner resumed the
+campaign. The named-framework learner made one outcome update, for14
+cumulative updates, with140 captured/accounted samples,24 training outcomes
+and16 comparisons. Owned SDK close and root accounting finish are confirmed.
 
-The latest completed run made one genuine outcome update, bringing the lineage to thirteen cumulative updates. It captured 133 samples across 24 training outcomes and 16 retrospective comparisons. Only one native rollout group supplied nonzero training advantages; no framework group supplied a gradient.
+Only two of eight training groups varied. Candidate comparison had no FINAL,
+two STEP_LIMIT and six malformed outcomes, with seven flat and one negative
+return. Named-function descriptive mean was -0.069681800% versus parent
+-0.152767262500%; wrapper mean was0% versus parent -0.137740787500%.
+Those apparent advantages include failed flat no-trade cases and do not
+establish operational improvement, blind generalization or paper profit.
 
-The native and framework descriptive comparison means were +0.962156144% and +0.135261512%, respectively. These are exposed historical simulations across different horizons, include malformed and partial outcomes, and do not establish prospective paper profitability.
+The actual NAV7 sampler is public on Tinker with no scheduled expiry, verified
+2026-10-09 at01:40:05 UTC. Authenticated access, deletion, provider/account
+availability and continuing storage charges apply; permanence is not
+guaranteed. Original100-day metadata and the prior NAV6 release are preserved.
 
-The actual NAV6 sampler is published on Tinker with `public: true` and no scheduled expiry. The metadata and path are in `evidence/public_checkpoint_receipt.json`. Authenticated access is documented by Tinker; second-account loading was not independently tested. Storage charges, account/provider availability and deletion still apply.
-
-I have included a sanitized code derivative and synthetic checks, not private broker data, licensed history, reasoning traces or an exact replay of the campaign. Read `REPORT.md`, `CODE_README.md` and `LICENSE_SCOPE.md` for the evidence, setup and dependency scope.
+This local update adds one optional prospective validation-error recovery
+module. That repair was not used in NAV7 training. It returns the original
+argument error without changing arguments or retrying actions. Its local
+checks are distinguished from the historical40 synthetic unit checks and
+from genuine economic evaluation. Raw data, private analysis, real generated
+arrays, broker identifiers, vendor source and credentials are omitted.

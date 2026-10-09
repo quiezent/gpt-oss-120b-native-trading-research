@@ -8,7 +8,9 @@
     "model weights and tokenizer bytes",
     "campaign financial/provider receipt graph"
   ],
-  "kind": "PUBLIC_SANITIZED_AUTHORED_CODE_MANIFEST_V1",
+  "historical_NAV6_source_manifest_sha256": "7b2bd3b333786cfc0ef1a709fa5fc4fb8e2cdca3a90abba9e481dcb3f0208ee0",
+  "kind": "PUBLIC_SANITIZED_AUTHORED_CODE_MANIFEST_V2",
+  "latest_actual_model": "NAV_RL_PILOT_7",
   "manifest_and_scan_and_check_receipts_are_separately_hashed_release_metadata": true,
   "new_release_support_files": [
     {
@@ -16,20 +18,6 @@
       "export_bytes": 172,
       "export_relative_path": ".gitignore",
       "export_sha256": "2eeed106ae49578f4f88c19605b3da2e3c4237346b241902b566c87db3c9526f",
-      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
-    },
-    {
-      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
-      "export_bytes": 5927,
-      "export_relative_path": "CODE_README.md",
-      "export_sha256": "e72b2868b2d179abe42e8c0633888e3a8e6a8c643454ab3b2e93fd47ab5fdf9d",
-      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
-    },
-    {
-      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
-      "export_bytes": 598,
-      "export_relative_path": "config/checkpoint.example.json",
-      "export_sha256": "647bf9d26aabd987c11ce2184723ff03be6ab810d62bea8129bbf477dab9bada",
       "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
@@ -150,10 +138,25 @@
       "export_relative_path": "training/native_agent/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
       "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Actual NAV7 public identity and execution qualification; prospective recovery remains separately labeled.",
+      "export_bytes": 6258,
+      "export_relative_path": "CODE_README.md",
+      "export_sha256": "7cc067d393c106e2e9d919de06156f1466a20c9a587fdeb066a07737b3ea20fc",
+      "provenance_class": "PUBLIC_NAV7_RELEASE_DOCUMENTATION_OR_CONFIGURATION"
+    },
+    {
+      "description": "Actual NAV7 public identity and execution qualification; prospective recovery remains separately labeled.",
+      "export_bytes": 598,
+      "export_relative_path": "config/checkpoint.example.json",
+      "export_sha256": "761bbcb17cf982fa9b48a4b525b59e03351dd1be29a7e7618427a45b8a12dedd",
+      "provenance_class": "PUBLIC_NAV7_RELEASE_DOCUMENTATION_OR_CONFIGURATION"
     }
   ],
   "no_license_grant_invented": true,
   "not_a_private_campaign_replay": true,
+  "optional_recovery_was_not_used_by_NAV7": true,
   "original_source_files": [
     {
       "export_bytes": 32704,
@@ -818,6 +821,25 @@
           "kind": "remove_unused_campaign_prepare_imports"
         }
       ]
+    },
+    {
+      "actual_NAV7_executed_source": false,
+      "checks": "Two authored component checks passed under network/provider/broker-constructor fences; no model generation or economic evaluation.",
+      "export_bytes": 7513,
+      "export_relative_path": "training/framework/numeric_recovery.py",
+      "export_sha256": "598509b1c1b980f4b81a80aba2289d9ca51f9728aae8e9b987a3ac1ec5ea855e",
+      "no_argument_or_reward_rewrite": true,
+      "original_source_sha256": "f35940d4e7b48faf6f017f92ebc2fdeaf92b0c03416c6d1e68b2331eaa3de421",
+      "provenance_class": "PROSPECTIVE_STAGED_SOURCE_PUBLIC_IMPORT_DERIVATIVE",
+      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/declared_numeric_tool_error_recovery_preparation_v1/numeric_recovery.py",
+      "transformations": [
+        "Remove private campaign root path/sys.path bootstrap.",
+        "Relocate original declared-tools import to existing public training.framework package.",
+        "Relocate direct-native-episode import to existing public training package.",
+        "Add explicit prospective/not-NAV7-executed module qualification.",
+        "Remove obsolete running tense from the prospective qualification; runtime semantics unchanged."
+      ],
+      "vendor_code_or_raw_records_included": false
     }
   ],
   "repository_relative_original_paths_only": true,

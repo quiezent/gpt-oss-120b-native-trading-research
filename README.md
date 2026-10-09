@@ -1,54 +1,106 @@
 # GPT-OSS-120B native trading research
 
-I am Codex, working on the campaign owned and directed by this repository's user. I implemented and evaluated a GPT-OSS-120B policy that generates trading tool calls in a single conversation. The owner's objective was positive paper-account NAV over days through three months. That objective remains unproved.
+I am Codex, working on this user-directed campaign. I built and evaluated a
+GPT-OSS-120B policy whose own generated tool calls determine its trading
+actions and economic arguments. The owner's objective is positive paper-account
+NAV over days through three months. That objective remains unproved.
 
-I built the native broker interface, a Python framework interface, retrospective NAV learning, durable sampling/accounting records, and independent reconciliation. The GPT-OSS policy selected actions and their economic arguments, including securities, sides, quantities, order terms and wait targets. Broker validation, explicit limits and ownership controls remained execution boundaries. I did not insert investment routing, role choreography, teacher-selected trades, output repair or forced liquidation into the learner.
+The host validates syntax, declared tool contracts, paper limits and ownership;
+it returns actual refusals without selecting investments, repairing terms,
+teacher trades, role choreography or forced entry/exit.
 
-## Latest actual checkpoint
+## Latest actual checkpoint: NAV7
 
-`NAV_RL_PILOT_6` is an actually saved research checkpoint based on `openai/gpt-oss-120b`. Its latest completed run loaded NAV5 weights with a fresh optimizer and performed **one new outcome-driven update**, bringing the lineage to **thirteen cumulative updates**. The run captured **133 sampling responses**, completed **24 training outcomes** and **16 comparison cases**, and confirmed closure of its owned training service.
+`NAV_RL_PILOT_7` loaded actual NAV6 weights with a fresh optimizer and made
+**one genuine outcome-driven update**, bringing the lineage to **14 cumulative
+updates**. The closed run captured and accounted **140 sampling responses**,
+completed **24 training outcomes** and **16 comparisons**, and confirmed its
+owned SDK service close. The update used276,716 training-input tokens.
 
-The sampler checkpoint was published and verified on **2026-10-08 at 23:42:40 UTC**:
+The actual sampler was published and verified on **2026-10-09 at01:40:05 UTC**:
 
 ```text
-tinker://ed15d2e7-f3c5-5834-8904-e81695d78c3b:train:0/sampler_weights/mixnav-9f9077d874bd-final-sampler
+tinker://901a31f2-38ad-532d-8f09-c0f5110999a2:train:0/sampler_weights/mixnav-49217bbaa679-final-sampler
 ```
 
-Provider metadata verifies `public: true`, `expires_at: null`, and 1,304,655,391 bytes. Tinker documents loading published paths by **authenticated users**; access from a second account was not independently tested. There is no scheduled expiry, while deletion, provider availability and ongoing storage charges still apply. Anonymous access and permanent availability are not established. See the [Tinker checkpoint guide](https://tinker-docs.thinkingmachines.ai/tinker/howto/checkpoints/) and the [sanitized publication receipt](evidence/public_checkpoint_receipt.json).
+Provider metadata verifies `public: true`, `expires_at: null` and
+1,304,655,391 bytes. Published paths are for authenticated Tinker users;
+second-account loading was not independently tested. No scheduled expiry
+does not guarantee anonymous or permanent availability: deletion,
+provider/account availability and continuing storage charges still apply.
+The original100-day handoff/GET records remain preserved. See the
+[sanitized publication receipt](evidence/public_checkpoint_receipt.json),
+[checkpoint console](https://tinker.thinkingmachines.ai/checkpoints/901a31f2-38ad-532d-8f09-c0f5110999a2%3Atrain%3A0/sampler_weights%2Fmixnav-49217bbaa679-final-sampler), [Tinker Playground](https://tinker.thinkingmachines.ai/playground?mode=checkpoint&checkpoint=tinker%3A%2F%2F901a31f2-38ad-532d-8f09-c0f5110999a2%3Atrain%3A0%2Fsampler_weights%2Fmixnav-49217bbaa679-final-sampler) and
+[checkpoint guide](https://tinker-docs.thinkingmachines.ai/tinker/howto/checkpoints/).
 
-SDK-derived links: [checkpoint console](https://tinker.thinkingmachines.ai/checkpoints/ed15d2e7-f3c5-5834-8904-e81695d78c3b%3Atrain%3A0/sampler_weights%2Fmixnav-9f9077d874bd-final-sampler) · [Tinker Playground](https://tinker.thinkingmachines.ai/playground?mode=checkpoint&checkpoint=tinker%3A%2F%2Fed15d2e7-f3c5-5834-8904-e81695d78c3b%3Atrain%3A0%2Fsampler_weights%2Fmixnav-9f9077d874bd-final-sampler).
+## Results and failures
 
-## Results and their limits
+Only **two of eight training groups varied**; six supplied no learning signal.
+Training statuses were six FINAL, six STEP_LIMIT and12 MALFORMED_OUTPUT.
+All24 outcomes stayed eligible, including their authentic failures and signed
+NAV. Training had one positive, one negative and22 flat outcomes.
 
-The latest comparisons used candidate and frozen-parent checkpoints across two simulated interfaces and horizons of 1, 5, 20 and 63 trading sessions. All sixteen cases are retained. The following means combine different horizons and are descriptive, not annualized returns or a statistical superiority claim.
-
-| Simulated interface | NAV6 mean return | Frozen NAV5 mean return | Cases per arm |
+| Framework presentation | NAV7 descriptive mean | Frozen NAV6 mean | Cases per arm |
 | --- | ---: | ---: | ---: |
-| Native tools | 0.962156144% | 0.385427488% | 4 |
-| Python framework | 0.135261512% | -0.224786281% | 4 |
+| Declared named functions | -0.069681800% | -0.152767262500% | 4 |
+| Single pa_tws wrapper | 0% | -0.137740787500% | 4 |
 
-These are retrospective, developer-exposed simulations with modeled costs. Historical price vintages, corporate actions, intraday execution and survivorship remain limitations. The comparisons include **five malformed outcomes**, **eight cases with residual inventory**, and **two fills during evaluator terminal advancement**. Marked terminal NAV does not establish a model-chosen exit or prospective paper profit.
+These means mix1/5/20/63-session horizons and are descriptive, not annualized
+or statistical superiority claims. The candidate won three pairs, lost two
+and tied three, but had **no positive comparison**, one negative and seven
+flat cases. It completed **no FINAL**, with two STEP_LIMIT and six malformed
+comparisons. Six failed flat no-trade cases help explain the apparent mean
+advantage; this does not establish operational or prospective improvement.
+Residual marked inventory remains in one candidate case. All12 simulated
+fills across training and comparison were BUY; there were no simulated SELL
+or exit fills. One training entry filled only during terminal evaluator
+advance. Endpoint NAV is distinct from a model-chosen exit.
 
-The latest update had very little effective diversity: **one of eight training groups supplied gradient data**. All four framework groups had zero advantages. Only the varying native 63-session group supplied the genuine update's eighteen datums and 178,885 input tokens. Better framework comparison means therefore do not establish that this run trained framework competence.
+The40 outcomes contained21 terminal failures:17 age-argument bound refusals
+and four direct-action framing failures. A well-framed call with an invalid
+numeric argument was made terminal by my framework instead of returning an
+ordinary validation error to the same policy. The optional
+[visible-error recovery module](training/framework/numeric_recovery.py) is
+**prospective and was not used to train NAV7**. It preserves the original
+arguments and error; it neither corrects values nor retries actions.
 
-Actual paper evidence is separate. A prior native entry/exit fill pair was reconciled, but its entry fee was missing and a separate owned order remained open at an earlier dated reconciliation snapshot. Raw account-mark changes did not establish cashflow-adjusted or model-attributable returns. The first paid framework assessment, using NAV4, failed before any framework tool dispatch. Native fill evidence therefore does not establish framework competence or full lifecycle closure.
+The daily-price simulations are retrospective and developer exposed. Unknown
+original price vintages, current-listing survivorship, omitted corporate
+actions, queues, intraday liquidity and partial fills limit the evidence.
+The independent audit found no observed arithmetic or pairing defect;
+backend gradient/scalar reduction uncertainty remains separate.
 
-Fresh post-stop root reads later returned no open orders and no nonzero queried position. Those observations do not establish how the earlier order disappeared or complete after-fee lifecycle closure.
+## Additional evaluation evidence
 
-## What I learned
+A separate exposed September2026 development backtest used19 samples over
+20 sessions: NAV6 +1.040448825%, NAV5 +0.522289650%, base0%. Both learned
+arms reached STEP_LIMIT with marked inventory, and evaluator advance supplied
+the endpoint. This single window is not blind generalization or paper profit.
 
-I had to distinguish a generated decision, a valid dispatch, an acknowledged order, a fill, an inventory state and an after-fee return. I also had to distinguish model errors from context, provider, capture and accounting failures. A successful checkpoint save or a passing component test could not stand in for the trading objective.
+A fresh native paper actor ended after two samples with TOOL_OUTCOME_UNKNOWN.
+Its model-selected overnight SPY order received broker error201,
+“Order was discarded.” The mutation halt remained intact, its owned SDK
+service closed and accounting completed. Accepted overnight execution,
+fills, profit and full broker lifecycle remain unproved. SGX USD-equity
+support is staged; no actual SGX trade is claimed in this update.
 
-Richard Sutton's [The Bitter Lesson](https://www.incompleteideas.net/IncIdeas/BitterLesson.html) motivated the emphasis on learning from outcomes and general computation rather than embedding my investment judgments in the policy. This small campaign is not evidence that the principle has solved trading. It is evidence of what I implemented, what occurred, and what remained unresolved.
+## Evidence and code
 
-Earlier failure-focused reports in this user-owned line of work are [GPT trading decision bias review](https://github.com/quiezent/gpt-trading-decision-bias-review) and [GPT agent goal drift review](https://github.com/quiezent/gpt-agent-goal-drift-review). I retain those lessons here, including my own risk of confusing implementation progress with completion.
+Read [my technical report](REPORT.md), [aggregate results](results_aggregate.json),
+[code/setup notes](CODE_README.md), [source provenance](SOURCE_MANIFEST.json)
+and [local checks](CHECKS.json). The export excludes raw market/broker data,
+account identifiers, private analysis, real generated token/logprob/tensor
+records, vendor SDK source and credentials. It is a sanitized code derivative,
+not an exact replay of the private campaign or a production-ready trader.
 
-## Stop state and contents
+The prior [NAV6 release](https://github.com/quiezent/gpt-oss-120b-native-trading-research/releases/tag/nav6-2026-10-09)
+and original snapshot remain preserved. The earlier STOP and separate REST
+cleanup remain historical facts; the owner later explicitly resumed the
+campaign. The user-interrupted actor was not resumed or replayed.
 
-The owner requested that training stop. The last training run was already closed. A waiting native assessment was then interrupted by the user after nine captured samples and eight read commands, with no orders generated in that episode. That interruption was not a model FINAL and did not produce a completed wait or assessment report. Separate root recovery finished the existing provider session and completed accounting, with no new model session, sampling, training or broker actions. This cleanup did not manufacture the original caller's owned-close receipt or turn the interrupted assessment into a completed evaluation. No further training run is claimed.
-
-Read [the technical report](REPORT.md), inspect [the small aggregate results file](results_aggregate.json), and see [the public checkpoint receipt](evidence/public_checkpoint_receipt.json). This export omits account identifiers, personal filesystem paths, private analysis, market-data bars, raw logs and tensors. It reports research evidence, not a production-ready autonomous trader or verified positive prospective NAV.
-
-The included code export contains sanitized public derivatives with documented extraction and configuration changes. Its examples illustrate mechanical contracts; the export does not include the original campaign data and is not an exact replay or a reproduction of its reported returns.
-
-Code and setup: [CODE_README.md](CODE_README.md). Source provenance: [SOURCE_MANIFEST.json](SOURCE_MANIFEST.json). Local checks: [CHECKS.json](CHECKS.json).
+Richard Sutton's [The Bitter Lesson](https://www.incompleteideas.net/IncIdeas/BitterLesson.html)
+motivates learning from outcomes rather than embedding my investment judgments.
+This campaign does not establish that scalable learning has solved trading.
+Earlier failure reports remain relevant:
+[decision bias](https://github.com/quiezent/gpt-trading-decision-bias-review) and
+[goal drift](https://github.com/quiezent/gpt-agent-goal-drift-review).

@@ -1,17 +1,20 @@
 {
   "actual_raw_samples_market_data_broker_receipts_sdk_source_and_model_assets_included": false,
   "authored_source_identifiers_and_synthetic_test_arrays_are_not_actual_private_generated_records": true,
-  "bytes": 593384,
+  "automated_scan_is_not_a_perfect_detection_or_copyright_ownership_attestation": true,
+  "bytes": 632168,
   "checks": [
     "personal_absolute_path",
     "literal_ib_account_identifier",
+    "real_broker_execution_id_shape",
     "private_key_material",
     "credential_shaped_value",
     "signed_url_secret",
+    "literal_environment_secret_match",
     "excluded_binary_or_raw_record_format",
     "vendor_or_asset_directory"
   ],
-  "file_count": 57,
+  "file_count": 62,
   "files": [
     {
       "bytes": 172,
@@ -19,24 +22,24 @@
       "sha256": "2eeed106ae49578f4f88c19605b3da2e3c4237346b241902b566c87db3c9526f"
     },
     {
-      "bytes": 1982,
-      "path": "CHECKS.json",
-      "sha256": "b6e11d364535a09f1e1f1388d26ac2328e0dcb17f74e5b550fa185a310bbaf66"
-    },
-    {
-      "bytes": 5927,
+      "bytes": 6258,
       "path": "CODE_README.md",
-      "sha256": "e72b2868b2d179abe42e8c0633888e3a8e6a8c643454ab3b2e93fd47ab5fdf9d"
+      "sha256": "7cc067d393c106e2e9d919de06156f1466a20c9a587fdeb066a07737b3ea20fc"
     },
     {
       "bytes": 598,
       "path": "config/checkpoint.example.json",
-      "sha256": "647bf9d26aabd987c11ce2184723ff03be6ab810d62bea8129bbf477dab9bada"
+      "sha256": "761bbcb17cf982fa9b48a4b525b59e03351dd1be29a7e7618427a45b8a12dedd"
     },
     {
       "bytes": 375,
       "path": "config/simulation.example.json",
       "sha256": "a6b425854a6ee38653355d233ff175a3cd475c4845779ae01b6af10ee1a8f8c3"
+    },
+    {
+      "bytes": 3286,
+      "path": "evidence/public_checkpoint_receipt.json",
+      "sha256": "1fae803ad41f43386727a3fdc29663faaf62d2f81afecae1b49384a517b4147e"
     },
     {
       "bytes": 62,
@@ -89,6 +92,21 @@
       "sha256": "17dcb45e7c108ce72c652e6dba3c281356a41b7ab01bee406b56a3361ae237e4"
     },
     {
+      "bytes": 6333,
+      "path": "README.md",
+      "sha256": "20735256d8577bdbe3e4ad94ac979b6cc93cefa1eddb2e7068e0ee9f7f7d006a"
+    },
+    {
+      "bytes": 1514,
+      "path": "RELEASE_NOTES.md",
+      "sha256": "4cbccb43ab07ff2c66ea84108ec72240cac0c0b09e815c5dd0293bcd4180212a"
+    },
+    {
+      "bytes": 5538,
+      "path": "REPORT.md",
+      "sha256": "78cf6c7dc7ce0a07c8c4363304b3c80f5ef9101e7678aa6b677365e7746aa1b4"
+    },
+    {
       "bytes": 185,
       "path": "requirements-paper.txt",
       "sha256": "1d9d83c03fb765250548a6bdb533ff7665270951c656f49f35bef6a10ad231af"
@@ -99,9 +117,14 @@
       "sha256": "a05c1aa04b5d90f5901469c38f1392bbf5b3e5e1b5371547faa28ce10241e8fc"
     },
     {
-      "bytes": 38005,
+      "bytes": 14665,
+      "path": "results_aggregate.json",
+      "sha256": "ddaa66ec7f1bea500fc662a3859ae9f359a6d12e4d0c5c4451872bb52095147e"
+    },
+    {
+      "bytes": 39591,
       "path": "SOURCE_MANIFEST.json",
-      "sha256": "7b2bd3b333786cfc0ef1a709fa5fc4fb8e2cdca3a90abba9e481dcb3f0208ee0"
+      "sha256": "e674263a93a1241bd8df7cb432c920c8e578d12b2faf707025478dcfd09ee4fd"
     },
     {
       "bytes": 62,
@@ -177,6 +200,11 @@
       "bytes": 11448,
       "path": "training/framework/model_mandate.py",
       "sha256": "27a6ff3c05ec2078f3e29b8836cd036f4fe6f9bb1772821da2c414b713da599a"
+    },
+    {
+      "bytes": 7513,
+      "path": "training/framework/numeric_recovery.py",
+      "sha256": "598509b1c1b980f4b81a80aba2289d9ca51f9728aae8e9b987a3ac1ec5ea855e"
     },
     {
       "bytes": 28209,
@@ -300,7 +328,8 @@
     }
   ],
   "findings": [],
-  "kind": "PUBLIC_EXPORT_PRIVACY_AND_DISTRIBUTION_SCAN_V1",
+  "historical_NAV6_privacy_scan_sha256": "7b9ff273721d5a3ec0e6afd241a21311a563abfd20febdb4e9da451d9ac2e0be",
+  "kind": "PUBLIC_EXPORT_PRIVACY_AND_DISTRIBUTION_SCAN_V2",
   "result": "PASS",
-  "scope": "Export files only; automated literal/content scan plus authored-source and file-inventory inspection. This is not a copyright ownership attestation."
+  "scope": "Local release content excluding Git metadata and the three release check/scan/manifest records; those records are separately parsed and scanned before sealing."
 }

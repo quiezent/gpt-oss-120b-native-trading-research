@@ -7,49 +7,19 @@
       "sha256": "2eeed106ae49578f4f88c19605b3da2e3c4237346b241902b566c87db3c9526f"
     },
     {
-      "bytes": 1982,
+      "bytes": 3386,
       "path": "CHECKS.json",
-      "sha256": "b6e11d364535a09f1e1f1388d26ac2328e0dcb17f74e5b550fa185a310bbaf66"
+      "sha256": "75df335da9e1841be57d599a1525fd41fa48d3fdd24860c0b3bfc7ee1a09867f"
     },
     {
-      "bytes": 5927,
+      "bytes": 6258,
       "path": "CODE_README.md",
-      "sha256": "e72b2868b2d179abe42e8c0633888e3a8e6a8c643454ab3b2e93fd47ab5fdf9d"
-    },
-    {
-      "bytes": 2201,
-      "path": "LICENSE_SCOPE.md",
-      "sha256": "19c42232186df017604ae4a1596ef9f46f4a9452d125516d478e943025dc7fe9"
-    },
-    {
-      "bytes": 10407,
-      "path": "PRIVACY_SCAN.json",
-      "sha256": "7b9ff273721d5a3ec0e6afd241a21311a563abfd20febdb4e9da451d9ac2e0be"
-    },
-    {
-      "bytes": 7232,
-      "path": "README.md",
-      "sha256": "8109d70b70ea57101acd793b71e93edf7081f7393af6c1a1cc96e730bbeb4fe3"
-    },
-    {
-      "bytes": 1369,
-      "path": "RELEASE_NOTES.md",
-      "sha256": "ca48fae019d0d6bf462f90f13c3700a30504860fb0c9a511beda9edb243cf993"
-    },
-    {
-      "bytes": 11225,
-      "path": "REPORT.md",
-      "sha256": "7d818928e1b947e07ac4ca9def0083dbcee7df779e7177ca5a67b8f59fdbe7f9"
-    },
-    {
-      "bytes": 38005,
-      "path": "SOURCE_MANIFEST.json",
-      "sha256": "7b2bd3b333786cfc0ef1a709fa5fc4fb8e2cdca3a90abba9e481dcb3f0208ee0"
+      "sha256": "7cc067d393c106e2e9d919de06156f1466a20c9a587fdeb066a07737b3ea20fc"
     },
     {
       "bytes": 598,
       "path": "config/checkpoint.example.json",
-      "sha256": "647bf9d26aabd987c11ce2184723ff03be6ab810d62bea8129bbf477dab9bada"
+      "sha256": "761bbcb17cf982fa9b48a4b525b59e03351dd1be29a7e7618427a45b8a12dedd"
     },
     {
       "bytes": 375,
@@ -57,9 +27,9 @@
       "sha256": "a6b425854a6ee38653355d233ff175a3cd475c4845779ae01b6af10ee1a8f8c3"
     },
     {
-      "bytes": 1509,
+      "bytes": 3286,
       "path": "evidence/public_checkpoint_receipt.json",
-      "sha256": "0dbd96dc3903c315fa71631ff604a844379fcbe6662cb9ab11a558f194b9af37"
+      "sha256": "1fae803ad41f43386727a3fdc29663faaf62d2f81afecae1b49384a517b4147e"
     },
     {
       "bytes": 62,
@@ -75,6 +45,11 @@
       "bytes": 1012,
       "path": "examples/synthetic_accounting.py",
       "sha256": "259340c9e2cd25e02b5e9d16997e4ab94dd73b337943c0d65b124e34af3c45e3"
+    },
+    {
+      "bytes": 2201,
+      "path": "LICENSE_SCOPE.md",
+      "sha256": "19c42232186df017604ae4a1596ef9f46f4a9452d125516d478e943025dc7fe9"
     },
     {
       "bytes": 62,
@@ -102,9 +77,29 @@
       "sha256": "3556d4d9c8ddd48b88f478295e5308e0e319ecf09a926c62a5a96a65a952eb7f"
     },
     {
+      "bytes": 11520,
+      "path": "PRIVACY_SCAN.json",
+      "sha256": "6f5e3f836f3b0418d15ed8bdbb7f48d01e05036f5e1cd8224baf6341ee803d67"
+    },
+    {
       "bytes": 392,
       "path": "pyproject.toml",
       "sha256": "17dcb45e7c108ce72c652e6dba3c281356a41b7ab01bee406b56a3361ae237e4"
+    },
+    {
+      "bytes": 6333,
+      "path": "README.md",
+      "sha256": "20735256d8577bdbe3e4ad94ac979b6cc93cefa1eddb2e7068e0ee9f7f7d006a"
+    },
+    {
+      "bytes": 1514,
+      "path": "RELEASE_NOTES.md",
+      "sha256": "4cbccb43ab07ff2c66ea84108ec72240cac0c0b09e815c5dd0293bcd4180212a"
+    },
+    {
+      "bytes": 5538,
+      "path": "REPORT.md",
+      "sha256": "78cf6c7dc7ce0a07c8c4363304b3c80f5ef9101e7678aa6b677365e7746aa1b4"
     },
     {
       "bytes": 185,
@@ -117,9 +112,14 @@
       "sha256": "a05c1aa04b5d90f5901469c38f1392bbf5b3e5e1b5371547faa28ce10241e8fc"
     },
     {
-      "bytes": 5764,
+      "bytes": 14665,
       "path": "results_aggregate.json",
-      "sha256": "af4065673dc21a03f3e68ec8b8f5ffb95cc76c6778fc1d48531cc2b11039a9dd"
+      "sha256": "ddaa66ec7f1bea500fc662a3859ae9f359a6d12e4d0c5c4451872bb52095147e"
+    },
+    {
+      "bytes": 39591,
+      "path": "SOURCE_MANIFEST.json",
+      "sha256": "e674263a93a1241bd8df7cb432c920c8e578d12b2faf707025478dcfd09ee4fd"
     },
     {
       "bytes": 62,
@@ -195,6 +195,11 @@
       "bytes": 11448,
       "path": "training/framework/model_mandate.py",
       "sha256": "27a6ff3c05ec2078f3e29b8836cd036f4fe6f9bb1772821da2c414b713da599a"
+    },
+    {
+      "bytes": 7513,
+      "path": "training/framework/numeric_recovery.py",
+      "sha256": "598509b1c1b980f4b81a80aba2289d9ca51f9728aae8e9b987a3ac1ec5ea855e"
     },
     {
       "bytes": 28209,
@@ -317,11 +322,12 @@
       "sha256": "c38e1a8221be2b0430f697d6a9f3bcf823f693bad9592c2740edc024ea81a36d"
     }
   ],
-  "kind": "ROOT_PUBLIC_RELEASE_SNAPSHOT_MANIFEST_V1",
+  "historical_NAV6_release_manifest_sha256": "742f432090ac35e3c609d33301c3938b8b3d66cf57dc6cf522373e423377e47b",
+  "kind": "PUBLIC_SANITIZED_NAV7_RELEASE_MANIFEST_V2",
   "manifest_self_digest_recorded_outside_snapshot": true,
-  "model_or_broker_runs_started_for_publication": false,
-  "narrative_integration_change": "README appended code, source-manifest and local-check links; source narrative otherwise byte-preserved.",
-  "prepared_at_utc": "2026-10-08T23:57:37.024934+00:00",
+  "model_or_broker_runs_started_for_publication": 0,
+  "narrative_integration_change": "Actual NAV7 results and public identity, preserved historical NAV6 aggregate, one prospective generic argument-refusal component.",
+  "prepared_at_utc": "2026-10-09T01:52:49.249704+00:00",
   "private_receipts_or_actual_observation_data_included": false,
-  "training_and_evaluation_status": "PAUSED_BY_USER"
+  "training_and_evaluation_status": "NAV7 actual run closed/published; optional recovery prospective and not executed by NAV7"
 }
