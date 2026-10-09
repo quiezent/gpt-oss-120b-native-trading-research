@@ -1,14 +1,4 @@
-# Current authored export: NAV9 expanded compute
-
-I preserve every prior Python byte and append training/learning/expanded_compute. Its source_origins.json gives exact executed origins and four import relocations. full_output_reserve.py and capture_transport.py are byte-exact authored sources; interface_adapter.py has import relocation only. executed_batch_excerpt.py.txt is an exact original runner lines 363–399 excerpt for inspection, not a standalone campaign driver. outcome_training.py is an authored portability wrapper: explicit caller-owned capture proof, on-policy identity, finite admission, raw-return-first once dispatch and unconditional owned close remain prerequisites. It accumulates every group before one importance_sampling backward and one Adam update (.9/.95/1e-8, default learning rate 1e-5). No SDK/session/sampler is created by that wrapper. Actual datums and execution logs must stay private.
-
-Use the expanded interface adapter's FullReserveNamedModel or FullReserveWrapperModel to preserve the full 8192-token output reserve admission; the old adapters remain historical exports. The preserved trajectory_proof defaults to 12 decisions; explicitly pass max_steps=16, max_output_tokens=8192 and max_sequence_tokens=32768 for the executed wider configuration (aggregate generated limit 131072 tokens). Initial-prefix fit is not later-history fit. Unknown capture excludes the whole group and zero variation skips the update. The caller authenticates genuine capture/accounting/data rights; calling a portable function alone creates no such proof.
-
-config/checkpoint.example.json now identifies the genuinely public NAV9 sampler with no scheduled expiry. The native example remains historical caller-owned code, not a replay of a NAV9 paper assessment. SDK 0.31 and its exact source pins must be supplied under their own licenses for authored private-API ACK capture; vendor source is not bundled. The six added source-component checks use synthetic converters and fake Adam types; they do not verify the provider backend. Setup and historical component documentation follow. The original NAV8 guide is also preserved at history/nav8/CODE_README.md.
-
----
-
-# Historical NAV8 authored-code guide
+# Authored code export
 
 This is a sanitized, portable subset of my project code. The release manifest maps every adapted file to its repository-relative original and SHA-256, with exact extraction, relocation and configuration changes. The private campaign receipt graph, market history, real broker payloads, model reasoning, token/logprob arrays, vendor code and credentials are excluded.
 

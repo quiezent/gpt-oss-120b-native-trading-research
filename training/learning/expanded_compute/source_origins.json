@@ -1,0 +1,144 @@
+{
+  "actual_executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+  "baseline_file_count": 74,
+  "baseline_public_commit": "990489117169f91e2714c589b5821f7aef756b58",
+  "existing_public_modules_reused": [
+    {
+      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+      "original_executed_source_hash_matches": true,
+      "original_source_sha256": "f35940d4e7b48faf6f017f92ebc2fdeaf92b0c03416c6d1e68b2331eaa3de421",
+      "public_relative_path": "training/learning/argument_recovery/visible_errors.py",
+      "public_sha256": "4399428e4870df468e1645d6376cce304c3b5fb5d79eff2b1142a8f656ca948f"
+    },
+    {
+      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+      "original_executed_source_hash_matches": true,
+      "original_source_sha256": "ee383ec53aa977cfd524b8ef63cee0d07cd205cea3fb38deb416e329d8f06dcd",
+      "public_relative_path": "training/learning/argument_recovery/failure_classification.py",
+      "public_sha256": "05d9c05e0fc1ae60c4a0849c4899f901368142776cde0800b6033f8fdc16b188"
+    },
+    {
+      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+      "original_executed_source_hash_matches": true,
+      "original_source_sha256": "7dc5b49852b94359aeaa47e4d3d18a00e7e092c11231cb43dcab0aedb8414594",
+      "public_relative_path": "training/learning/argument_recovery/evidence_eligibility.py",
+      "public_sha256": "c60212b930abf97c9e1c4eeccddd905209ad44470ca21717a885b401c4771998"
+    },
+    {
+      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+      "original_executed_source_hash_matches": true,
+      "original_source_sha256": "e0e00d41b7a0040cd0efd9eacb01e9b35d0401b84c73802c5eab28a3a41ad85d",
+      "public_relative_path": "training/learning/argument_recovery/capture_provenance.py",
+      "public_sha256": "6ab02162a2ac930164e1a9b3e5aa0e93b84990984e88d3cbda3a17aecad86c7f"
+    }
+  ],
+  "kind": "PUBLIC_EXPANDED_COMPUTE_AUTHORED_SOURCE_ORIGINS_V1",
+  "private_prices_analysis_account_identifiers_vendor_sdk_bundled": false,
+  "source_derivation_is_result_or_checkpoint_publication": false,
+  "source_derivatives": [
+    {
+      "bundled_vendor_sdk": false,
+      "contains_private_records": false,
+      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+      "export_bytes": 2425,
+      "export_relative_path": "training/learning/expanded_compute/full_output_reserve.py",
+      "export_sha256": "e001dd73b20aea1ea80f17c9c8e16ab2754366e55ba6ec6804c9b9a9bdc73ce5",
+      "original_source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_expanded_compute_context_feasibility_preparation_v1/full_output_reserve.py",
+      "original_source_sha256": "e001dd73b20aea1ea80f17c9c8e16ab2754366e55ba6ec6804c9b9a9bdc73ce5",
+      "transformations": []
+    },
+    {
+      "bundled_vendor_sdk": false,
+      "contains_private_records": false,
+      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+      "export_bytes": 11562,
+      "export_relative_path": "training/learning/expanded_compute/interface_adapter.py",
+      "export_sha256": "286d2c566b4faf8564fad73ed9d085d305ba27a8038b96eb5ea3f7020ccb84ef",
+      "original_source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_expanded_compute_learning_preparation_v1/interface_adapter.py",
+      "original_source_sha256": "d1f2fe7b14d2d62349dc41805865466218780b411367eb4e2ee220f72db12171",
+      "transformations": [
+        {
+          "after": "from training.framework import (\r\n    declared_tools as declared_tools, model_mandate)",
+          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.framework_harmony_successor_preparation_v1 import (\r\n    declared_tools_v1 as declared_tools, model_mandate)",
+          "count": 1,
+          "kind": "exact_literal_portability_relocation"
+        },
+        {
+          "after": "from training.framework.simulator import (",
+          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.mixed_native_framework_nav_preparation_v1.framework_simulator import (",
+          "count": 1,
+          "kind": "exact_literal_portability_relocation"
+        },
+        {
+          "after": "from training.learning.argument_recovery.visible_errors import VisibleDeclaredArgumentModel, VisibleDeclaredArgumentRuntime",
+          "before": "from argument_recovery import VisibleDeclaredArgumentModel, VisibleDeclaredArgumentRuntime",
+          "count": 1,
+          "kind": "exact_literal_portability_relocation"
+        },
+        {
+          "after": "from training.learning.expanded_compute.full_output_reserve import FullOutputReserveMixin",
+          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.framework_expanded_compute_context_feasibility_preparation_v1.full_output_reserve import FullOutputReserveMixin",
+          "count": 1,
+          "kind": "exact_literal_portability_relocation"
+        }
+      ]
+    },
+    {
+      "bundled_vendor_sdk": false,
+      "contains_private_records": false,
+      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+      "export_bytes": 13521,
+      "export_relative_path": "training/learning/expanded_compute/capture_transport.py",
+      "export_sha256": "f7dd1a56feaa80cdca1a873035c3267ec57b45d1f9b30d551cb96bf7bdc39e1b",
+      "original_source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/native_sampling_transport_capture_preparation_v1/capture_transport.py",
+      "original_source_sha256": "f7dd1a56feaa80cdca1a873035c3267ec57b45d1f9b30d551cb96bf7bdc39e1b",
+      "transformations": []
+    },
+    {
+      "bundled_vendor_sdk": false,
+      "contains_private_records": false,
+      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+      "export_bytes": 3050,
+      "export_relative_path": "training/learning/expanded_compute/executed_batch_excerpt.py.txt",
+      "export_sha256": "f9719c44f3f57debbadf8fea0a32ed10182e8fe6c76994c0721345ec1fb3930b",
+      "original_source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_expanded_compute_learning_preparation_v1/runner.py",
+      "original_source_sha256": "03c05506e5ad18a8c109a21869d11b62ba5d04f89b68e0b139d920adc0fad0bc",
+      "transformations": [
+        {
+          "extracted_sha256": "f9719c44f3f57debbadf8fea0a32ed10182e8fe6c76994c0721345ec1fb3930b",
+          "first_line": 363,
+          "kind": "exact_inspection_only_line_excerpt",
+          "last_line": 399
+        }
+      ]
+    },
+    {
+      "bundled_vendor_sdk": false,
+      "contains_private_records": false,
+      "executed_semantic_origins": [
+        {
+          "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
+          "line_spans": [
+            [
+              363,
+              399
+            ]
+          ],
+          "original_source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_expanded_compute_learning_preparation_v1/runner.py",
+          "original_source_sha256": "03c05506e5ad18a8c109a21869d11b62ba5d04f89b68e0b139d920adc0fad0bc"
+        }
+      ],
+      "export_bytes": 4887,
+      "export_relative_path": "training/learning/expanded_compute/outcome_training.py",
+      "export_sha256": "c49f27257779356ef48ab1b66fb4ae47778454d40fb6cfe072cbe3c6f9f21320",
+      "provenance_class": "AUTHORED_PORTABILITY_WRAPPER_NOT_EXECUTED_CAMPAIGN_DRIVER",
+      "transformations": [
+        "Caller supplies already-verified groups instead of collecting private campaign episodes.",
+        "Caller owns the funded local admission and original raw-first sdk_call dispatch callbacks.",
+        "Accumulate all group datums before exactly one importance_sampling backward and one explicit Adam step.",
+        "Explicit capture-record-to-datum binding is rechecked before building varied eligible datums.",
+        "No campaign path, financial constructor, provider client creation, checkpoint save or public mutation."
+      ]
+    }
+  ]
+}

@@ -1,16 +1,15 @@
 {
   "base_model": "openai/gpt-oss-120b",
-  "checkpoint_version": "NAV_RL_PILOT_9",
+  "checkpoint_version": "NAV_RL_PILOT_8",
   "context_tokens": 32768,
   "expires_at": null,
-  "max_steps": 16,
+  "max_steps": 8,
   "no_scheduled_expiry_verified": true,
   "project_id": "YOUR_TINKER_PROJECT",
   "provider_metadata_size_bytes": 1304655391,
   "public_visibility_verified": true,
   "requested_output_tokens": 8192,
-  "sampler_uri": "tinker://a75cb7d0-b32a-5e1a-8d69-8cebdc7af78b:train:0/sampler_weights/mixnav-b9578d5fa6c7-final-sampler",
+  "sampler_uri": "tinker://eb9dc01b-45af-533c-a42f-d682537b3b8d:train:0/sampler_weights/mixnav-077240119992-final-sampler",
   "temperature": 0,
-  "use_full_output_reserve_for_expanded_simulation": true,
   "visibility_is_not_anonymous_download_or_independent_cross_principal_load_proof": true
 }

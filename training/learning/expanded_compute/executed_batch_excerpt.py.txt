@@ -1,0 +1,37 @@
+                    "size_bound_bytes": 10000000000, "ephemeral_helper_used": False},
+                "prior_actual_updates_in_this_client": report["optimizer_steps"], "groups": [], "optimizer_steps": 0}
+            report["batches"].append(batch)
+            datums = []
+            for group_index, descriptor in enumerate(descriptors):
+                outcomes, trajectories, integrities = [], [], []
+                for rollout in range(3):
+                    outcome, steps, _, _, integrity = episode(sampler, identity, descriptor, output / f"batch-{batch_index}/group-{group_index}/rollout-{rollout}",
+                        temperature=plan["temperature"], seed=plan["seed"] + batch_index * 10000 + group_index * 100 + rollout, train=True)
+                    outcomes.append(outcome)
+                    trajectories.append(steps)
+                    integrities.append(integrity)
+                advantages = evidence_group_advantages(outcomes, integrities)
+                for steps, advantage in zip(trajectories, advantages):
+                    if advantage is not None and advantage != 0:
+                        datums.extend(trajectory_datums(steps, advantage))
+                batch["groups"].append({"episode": descriptor, "outcomes": outcomes, "advantages": advantages,
+                    "training_integrity": [{"eligible": proof.eligible, "reason": proof.reason,
+                        "outcome_sha256": proof.outcome_sha256, "captured_records_sha256": proof.captured_records_sha256}
+                        for proof in integrities], "all_descriptive_outcomes_retained": True})
+            if datums:
+                local.train(datums)
+                native = [datum_wire(datum) for datum in datums]
+                write_once(output / f"batch-{batch_index}-actual-native-rl-datums.json", native)
+                tokens = sum(datum.model_input.length for datum in datums)
+                charge = Decimal(tokens) * Decimal(".737") / 1000000
+                backward = sdk_call(f"batch-{batch_index}-outcome-backward", lambda: training.forward_backward(datums, loss_fn=plan["loss_fn"]),
+                    maximum=charge, request={"input_tokens": tokens, "native_datums_hash": digest(native)}, limits={"training_input_tokens": tokens})
+                optimizer = sdk_call(f"batch-{batch_index}-optimizer", lambda: training.optim_step(tinker.AdamParams(learning_rate=plan["learning_rate"], beta1=.9, beta2=.95, eps=1e-8)), kind="optimizer")
+                batch.update(status="ACTUAL_OUTCOME_UPDATE", optimizer_steps=1, backward_metrics=backward.metrics, optimizer_metrics=optimizer.metrics)
+                report["optimizer_steps"] += 1
+            else:
+                batch["status"] = "NO_ADMISSIBLE_WITHIN_GROUP_VARIATION_NO_UPDATE"
+            write_once(output / f"batch-{batch_index}-report.json", batch)
+        if report["optimizer_steps"]:
+            name = "mixnav-" + expected_sha256[:12] + "-final"
+            initial_issued = datetime.now(timezone.utc).isoformat()

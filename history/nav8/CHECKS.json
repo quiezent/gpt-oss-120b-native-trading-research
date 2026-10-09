@@ -1,0 +1,185 @@
+{
+  "actual_NAV7_run_evidence_is_separate_from_export_component_checks": true,
+  "actual_NAV8_run_evidence_is_separate_from_export_component_checks": true,
+  "additional_optional_recovery_component_checks": {
+    "authored_fixture_is_not_an_actual_model_output": true,
+    "broker_calls": 0,
+    "checks_source_sha256": "cf8566dfef0fa30d7aef5da5bbc9bba14da4e8840b4c048ce11117cadd0e9e14",
+    "economic_model_evaluation_performed": false,
+    "elapsed_seconds": 0.045999999972991645,
+    "errors": 0,
+    "external_network_calls": 0,
+    "failures": 0,
+    "forbidden_call_attempts": [],
+    "historical_forty_tests_not_repeated_or_extended_to_claim_new_module_coverage": true,
+    "imported_module_public_repository_relative_path": "training/framework/numeric_recovery.py",
+    "imported_module_sha256": "598509b1c1b980f4b81a80aba2289d9ca51f9728aae8e9b987a3ac1ec5ea855e",
+    "kind": "PUBLIC_OPTIONAL_RECOVERY_FOCUSED_COMPONENT_CHECKS_V1",
+    "model_generations": 0,
+    "provider_calls": 0,
+    "result": "PASS",
+    "tests_run": 2
+  },
+  "broker_calls": 0,
+  "code_unchanged_from_genuinely_checked_provisional_copy": {
+    "exact_files": [
+      {
+        "path": "training/learning/argument_recovery/capture_provenance.py",
+        "sha256": "6ab02162a2ac930164e1a9b3e5aa0e93b84990984e88d3cbda3a17aecad86c7f"
+      },
+      {
+        "path": "training/learning/argument_recovery/evidence_eligibility.py",
+        "sha256": "c60212b930abf97c9e1c4eeccddd905209ad44470ca21717a885b401c4771998"
+      },
+      {
+        "path": "training/learning/argument_recovery/failure_classification.py",
+        "sha256": "05d9c05e0fc1ae60c4a0849c4899f901368142776cde0800b6033f8fdc16b188"
+      },
+      {
+        "path": "training/learning/argument_recovery/interface_adapter.py",
+        "sha256": "217c7c5d657c50b4556b7ec394cdc80b2d51c6bf48b990cfef9bee02143aa631"
+      },
+      {
+        "path": "training/learning/argument_recovery/outcome_training.py",
+        "sha256": "788b43a5343153aa620cbeafdb2bf419d8bdf5956def09b2a55657a081638257"
+      },
+      {
+        "path": "training/learning/argument_recovery/test_visible_errors.py",
+        "sha256": "02a72249d285d3eb1c30bdb38ba4725a5801d20ed5a72c1bb64651927d4bc96a"
+      },
+      {
+        "path": "training/learning/argument_recovery/visible_errors.py",
+        "sha256": "4399428e4870df468e1645d6376cce304c3b5fb5d79eff2b1142a8f656ca948f"
+      },
+      {
+        "path": "training/learning/argument_recovery/__init__.py",
+        "sha256": "526483f3ace6b8296dfb9504cb8b1f8680a76e53c76036301ade83aaaf50db5e"
+      }
+    ],
+    "four_tests_not_repeated_without_code_change": true,
+    "test_results_are_original_actual_fixture_results": true
+  },
+  "corrective_economic_run_status": "ACTUAL_CLOSED_SAVED_PUBLISHED_NAV8",
+  "corrective_package_focused_checks": {
+    "authored_fixture_is_not_actual_model_output": true,
+    "broker_calls": 0,
+    "checks_source_sha256": "00548e0b9e1a5f86537fd14fe186946058e5565fc422a5070b16c6c2194d3dbc",
+    "economic_evaluation_performed": false,
+    "elapsed_seconds": 0.8900000000139698,
+    "errors": 0,
+    "failures": 0,
+    "forbidden_call_attempts": [],
+    "historical_public_python_files_unchanged": 47,
+    "kind": "PUBLIC_GENERIC_ARGUMENT_RECOVERY_FOCUSED_COMPONENT_AND_DERIVATION_CHECKS_V1",
+    "model_generations": 0,
+    "network_calls": 0,
+    "original_tests_not_repeated": true,
+    "prepared_at_utc": "2026-10-09T02:56:31.197393+00:00",
+    "provider_calls": 0,
+    "result": "PASS",
+    "source_literal_checks": [
+      {
+        "path": "training/learning/argument_recovery/visible_errors.py",
+        "result": "PASS",
+        "sha256": "4399428e4870df468e1645d6376cce304c3b5fb5d79eff2b1142a8f656ca948f"
+      },
+      {
+        "path": "training/learning/argument_recovery/interface_adapter.py",
+        "result": "PASS",
+        "sha256": "217c7c5d657c50b4556b7ec394cdc80b2d51c6bf48b990cfef9bee02143aa631"
+      },
+      {
+        "path": "training/learning/argument_recovery/failure_classification.py",
+        "result": "PASS",
+        "sha256": "05d9c05e0fc1ae60c4a0849c4899f901368142776cde0800b6033f8fdc16b188"
+      },
+      {
+        "path": "training/learning/argument_recovery/evidence_eligibility.py",
+        "result": "PASS",
+        "sha256": "c60212b930abf97c9e1c4eeccddd905209ad44470ca21717a885b401c4771998"
+      },
+      {
+        "path": "training/learning/argument_recovery/capture_provenance.py",
+        "result": "PASS",
+        "sha256": "6ab02162a2ac930164e1a9b3e5aa0e93b84990984e88d3cbda3a17aecad86c7f"
+      },
+      {
+        "path": "training/learning/argument_recovery/outcome_training.py",
+        "result": "PASS",
+        "sha256": "788b43a5343153aa620cbeafdb2bf419d8bdf5956def09b2a55657a081638257"
+      }
+    ],
+    "tests_run": 4
+  },
+  "final_static_packaging_checks": {
+    "AST_parsed_python_files": 55,
+    "historical_public_python_files_unchanged": 47,
+    "local_link_failures": [],
+    "local_links_checked": 12,
+    "private_raw_economic_records_exported": false
+  },
+  "historical_NAV6_release_checks": {
+    "broker_calls": 0,
+    "copied_tests_are_authored_fake_or_synthetic_fixtures": true,
+    "economic_model_evaluation_performed": false,
+    "environment": "Python 3.11; existing pinned training environment; public tokenizer assets used read-only, not exported",
+    "examples": {
+      "configure_paper_help": {
+        "exit_code": 0,
+        "no_workspace_created": true
+      },
+      "synthetic_accounting": {
+        "exit_code": 0,
+        "forced_liquidations": 0,
+        "initial_nav_usd": "10000",
+        "reward": 0.0,
+        "synthetic": true,
+        "terminal_nav_usd": "10000"
+      }
+    },
+    "import_and_ast": {
+      "broker_provider_calls": 0,
+      "exit_code": 0,
+      "interpreter_environment": "existing Python3.11 training venv with pinned Tinker packages; no provider/broker construction",
+      "kind": "SANITIZED_EXPORT_IMPORT_AND_AST_CHECK",
+      "modules": 14,
+      "public_export_root_relative": "code_export",
+      "tokenizer_assets_in_export": false
+    },
+    "kind": "PUBLIC_EXPORT_LOCAL_CHECKS_V1",
+    "model_generations": 0,
+    "new_portable_wrapper_not_provider_executed": true,
+    "original_focused_unit_tests": {
+      "argv_public": [
+        "python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "training.test_nav_learning",
+        "training.native_agent.test_runtime",
+        "training.native_agent.test_harmony_model"
+      ],
+      "authored_fixtures_not_economic_evaluation": true,
+      "broker_calls": 0,
+      "environment": "Existing pinned Python3.11 training environment; original public GPT-OSS tokenizer assets referenced read-only through GPT_OSS_TOKENIZER_DIR, not exported",
+      "exit_code": 0,
+      "kind": "SANITIZED_EXPORT_ORIGINAL_FOCUSED_UNIT_CHECKS",
+      "model_generations": 0,
+      "provider_calls": 0,
+      "wall_seconds": 12.0
+    },
+    "original_source_files_verified_unchanged_by_sha256": 35,
+    "provider_calls": 0,
+    "unittest_cases": 40,
+    "unittest_result": "OK",
+    "unittest_runtime_seconds": 11.094
+  },
+  "historical_tests_not_repeated": true,
+  "kind": "PUBLIC_EXPORT_NAV8_SOURCE_AND_FOCUSED_CHECKS_V3",
+  "latest_actual_published_model": "NAV_RL_PILOT_8",
+  "model_generations": 0,
+  "new_checks_are_not_economic_or_live_paper_evaluation": true,
+  "new_module_not_used_to_train_NAV7": true,
+  "provider_calls": 0
+}

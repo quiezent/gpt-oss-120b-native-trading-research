@@ -2,12 +2,8 @@
   "actual_NAV8_closed_report_sha256": "6c236463f3472b6ce1dc4d10be7c5e8558f80f8ebbe4b17844005fb763275031",
   "actual_NAV8_handoff_sha256": "019b291e61f10ccfbcf55a0ad4ed7f395e94012aa11868b6d22f7b3e7c5157cc",
   "actual_NAV8_public_metadata_receipt_sha256": "b40a303c69ddaeaaeed5cec2e1341fa6e3be83af002f88e2cb2bcc18563a4a8b",
-  "actual_NAV9_closed_report_sha256": "e30bc5b6a392046b925064e4980126eb0b09a432913e0af8973b5e884ed87a08",
-  "actual_NAV9_handoff_sha256": "468cc9a379d4aaceff858b613533559b47b7af0d6908ad90447c188394282711",
-  "actual_NAV9_public_metadata_receipt_sha256": "539fe14f08388448e238e444aa58f76bd2ec2eb98232d5e221b3bb6988ee78d1",
-  "actual_NAV9_result_audit_sha256": "206364d8b3269c3fdee1df5689e12240c734df1c8fd8217b7c522f819c48df77",
   "actual_corrective_run_status_at_preparation": "ACTUAL_CLOSED_SAVED_ROOT_ACCOUNTED_AND_PUBLIC_SAMPLER_VERIFIED",
-  "baseline_public_commit": "990489117169f91e2714c589b5821f7aef756b58",
+  "baseline_public_commit": "7281ced2b37eacd036a5fb3c9b8e9cdd67d354a3",
   "corrective_package_execution_status": "GENUINELY_USED_BY_COMPLETED_NAV8_LEARNER",
   "excluded": [
     "actual private reasoning and generated token/logprob/tensor records",
@@ -18,314 +14,171 @@
     "model weights and tokenizer bytes",
     "campaign financial/provider receipt graph"
   ],
-  "expanded_package_execution_status": "CORE_SOURCES_GENUINELY_EXECUTED_PORTABLE_BATCH_WRAPPER_EXPLICITLY_AUTHORED_DERIVATIVE",
   "historical_NAV6_source_manifest_sha256": "7b2bd3b333786cfc0ef1a709fa5fc4fb8e2cdca3a90abba9e481dcb3f0208ee0",
-  "historical_NAV8_python_byte_identity_preserved": true,
-  "historical_NAV8_source_manifest_sha256": "f9416b28ed5a33ab4d8c197f64138dc781810d05640ea2b164e9fd8dfb8aba04",
-  "kind": "PUBLIC_SANITIZED_ACTUAL_NAV9_AUTHORED_CODE_MANIFEST_V1",
-  "latest_actual_model": "NAV_RL_PILOT_9",
+  "kind": "PUBLIC_SANITIZED_ACTUAL_NAV8_AUTHORED_CODE_MANIFEST_V3",
+  "latest_actual_model": "NAV_RL_PILOT_8",
   "manifest_and_scan_and_check_receipts_are_separately_hashed_release_metadata": true,
   "new_release_support_files": [
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
       "export_bytes": 172,
       "export_relative_path": ".gitignore",
       "export_sha256": "2eeed106ae49578f4f88c19605b3da2e3c4237346b241902b566c87db3c9526f",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 10015,
-      "export_relative_path": "CODE_README.md",
-      "export_sha256": "14dff189f0eea5906b4539d25b23be978d33f6ba6dd1fa4496f8d94a494ed4d0",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 643,
-      "export_relative_path": "config/checkpoint.example.json",
-      "export_sha256": "5fb4791d94a45ed3e2fe2a9513f82ca9e9113dd097c64c8fd497cd64cb61bbc5",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
       "export_bytes": 375,
       "export_relative_path": "config/simulation.example.json",
       "export_sha256": "a6b425854a6ee38653355d233ff175a3cd475c4845779ae01b6af10ee1a8f8c3",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 1977,
-      "export_relative_path": "CURRENT_WORK.md",
-      "export_sha256": "0a412f22282fadd7737deec1bce4c24c39e2bc396ad5ac34741133a0afd4d75a",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 72940,
-      "export_relative_path": "evidence/nav9_results.json",
-      "export_sha256": "fc892dee090bebb9c193ff623a1f64ca339c316e57b7a058c0debe878925a13b",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 7117,
-      "export_relative_path": "evidence/public_checkpoint_receipt.json",
-      "export_sha256": "64b0f360eba62b8769e7410fed3947951fa559784b24ce961a15832144659f9f",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "examples/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Authored synthetic accounting or ignored local account-configuration example. No model, provider or broker is invoked.",
       "export_bytes": 1203,
       "export_relative_path": "examples/configure_paper.py",
       "export_sha256": "3b811c2835b5ea6aada85d9c804db332765709ba9a78ced0d8bc5173a26bc7f3",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Authored synthetic accounting or ignored local account-configuration example. No model, provider or broker is invoked.",
       "export_bytes": 1012,
       "export_relative_path": "examples/synthetic_accounting.py",
       "export_sha256": "259340c9e2cd25e02b5e9d16997e4ab94dd73b337943c0d65b124e34af3c45e3",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 7405,
-      "export_relative_path": "history/nav8/CHECKS.json",
-      "export_sha256": "9bb42af558b8c19b88da4dcceca344cbc9612bf0a01ec09f4ac0de1137dade97",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 7815,
-      "export_relative_path": "history/nav8/CODE_README.md",
-      "export_sha256": "cf5ce545a0c01f728fcad6fdfd488a041164e3ed683b613eea0ae61b3c75d2c6",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 583,
-      "export_relative_path": "history/nav8/config/checkpoint.example.json",
-      "export_sha256": "c6e06bee432e2536ff1f81435a237a2474a667c9c9fef04bdb3d6ebc33ddeaa7",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 4404,
-      "export_relative_path": "history/nav8/CURRENT_WORK.md",
-      "export_sha256": "406669d6ac5e7fb20b1630287cd3b2923fef17182c4b5052f936da60ffcc5fe9",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 5350,
-      "export_relative_path": "history/nav8/evidence/public_checkpoint_receipt.json",
-      "export_sha256": "5977e8ea5bc73ae39b191aaa405843a44113b43786aa5c77a0edf7d2c80bad4d",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 12612,
-      "export_relative_path": "history/nav8/PRIVACY_SCAN.json",
-      "export_sha256": "91faea17e26be39ccf9b98c02530eeac4065fd7bb30e04b0066e3783443fd438",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 6393,
-      "export_relative_path": "history/nav8/README.md",
-      "export_sha256": "d1928976051ef9b8bc4f3b76f6272dc471b01c42e73c1889f93aa7673128f3df",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 12794,
-      "export_relative_path": "history/nav8/RELEASE_MANIFEST.json",
-      "export_sha256": "a1549919d5c13fb352aa4a256aa68775f6ddbd783249a6026d24696cf6e76304",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 1829,
-      "export_relative_path": "history/nav8/RELEASE_NOTES.md",
-      "export_sha256": "e15bb5ccee213b34cf9ed235cf6a003ea13209ce4223f698eebea45684859f94",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 46410,
-      "export_relative_path": "history/nav8/SOURCE_MANIFEST.json",
-      "export_sha256": "f9416b28ed5a33ab4d8c197f64138dc781810d05640ea2b164e9fd8dfb8aba04",
-      "provenance_class": "PRESERVED_PUBLIC_NAV8_DOCUMENT_OR_METADATA_BYTES"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
       "export_bytes": 2201,
       "export_relative_path": "LICENSE_SCOPE.md",
       "export_sha256": "19c42232186df017604ae4a1596ef9f46f4a9452d125516d478e943025dc7fe9",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 7155,
-      "export_relative_path": "NAV9_RESEARCH.md",
-      "export_sha256": "d366fe1386b05c5c7455a5d827e36d61eed21953907b913f5bc162ae66a5f57c",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "pa_tws/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
       "export_bytes": 392,
       "export_relative_path": "pyproject.toml",
       "export_sha256": "17dcb45e7c108ce72c652e6dba3c281356a41b7ab01bee406b56a3361ae237e4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 6270,
-      "export_relative_path": "README.md",
-      "export_sha256": "466188b0bdf1b1306fc14e4c2f55d9f2c8830930198a064e35285a259574db50",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 2339,
-      "export_relative_path": "RELEASE_NOTES.md",
-      "export_sha256": "00c45722bce961079ffc1013115caf570444d0d7a0411732a285d8b809dd4437",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 4918,
-      "export_relative_path": "REPORT.md",
-      "export_sha256": "b69f1ceab069cebeb7193cc3aa2cae6c931e2bed99a62168cf32b45389c684cd",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
       "export_bytes": 185,
       "export_relative_path": "requirements-paper.txt",
       "export_sha256": "1d9d83c03fb765250548a6bdb533ff7665270951c656f49f35bef6a10ad231af",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Authored publication packaging, documentation or configuration; not an original executed campaign artifact.",
       "export_bytes": 205,
       "export_relative_path": "requirements-training.txt",
       "export_sha256": "a05c1aa04b5d90f5901469c38f1392bbf5b3e5e1b5371547faa28ce10241e8fc",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 45084,
-      "export_relative_path": "results_aggregate.json",
-      "export_sha256": "b389c4b64d27b5570e0bdd582fbb39736d78aa31550f2a1e555d44be467794b9",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "trader_runtime/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "trading_desk/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "training/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "training/environment/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "training/framework/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "training/learning/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 156,
-      "export_relative_path": "training/learning/argument_recovery/__init__.py",
-      "export_sha256": "526483f3ace6b8296dfb9504cb8b1f8680a76e53c76036301ade83aaaf50db5e",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 7881,
-      "export_relative_path": "training/learning/argument_recovery/test_visible_errors.py",
-      "export_sha256": "02a72249d285d3eb1c30bdb38ba4725a5801d20ed5a72c1bb64651927d4bc96a",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 80,
-      "export_relative_path": "training/learning/expanded_compute/__init__.py",
-      "export_sha256": "f646a1d4b0ab8984459691cde31eaaa515a288cc27aedf517dcb77e10e4d5a25",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 3747,
-      "export_relative_path": "training/learning/expanded_compute/README.md",
-      "export_sha256": "0917c4ee066c2f77d8ac2bde2547fb6685da2a216ba26fd4492c96d5059955b5",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
-      "export_bytes": 8356,
-      "export_relative_path": "training/learning/expanded_compute/source_origins.json",
-      "export_sha256": "41d58655477f65b4fdcc7047c92e489563e38b2378a6182ca2b5e206a4e078c9",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
-    },
-    {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "New caller-owned one-update wrapper around original trajectory_datums, datum_wire and prospective symmetric evidence_group_advantages. Private campaign orchestration and finite funding ledger are omitted; no claim this exact wrapper executed the campaign.",
       "export_bytes": 2504,
       "export_relative_path": "training/learning/outcome_training.py",
       "export_sha256": "2963e2d62f63653ad50941239f5244c1afc04d40ba1051cfe145db8c55465d71",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "DERIVED_PORTABLE_TRAINING_SUPPORT"
     },
     {
-      "description": "Public packaging, configuration, safe evidence summary or preserved historical public bytes; not an executed private campaign artifact.",
+      "description": "Empty package initializer for the portable export.",
       "export_bytes": 62,
       "export_relative_path": "training/native_agent/__init__.py",
       "export_sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4",
-      "provenance_class": "AUTHORED_PUBLIC_RELEASE_SUPPORT_OR_SANITIZED_ACTUAL_RESULT_SUMMARY"
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Actual NAV7 public identity and execution qualification; prospective recovery remains separately labeled.",
+      "export_bytes": 7815,
+      "export_relative_path": "CODE_README.md",
+      "export_sha256": "cf5ce545a0c01f728fcad6fdfd488a041164e3ed683b613eea0ae61b3c75d2c6",
+      "provenance_class": "PUBLIC_NAV7_RELEASE_DOCUMENTATION_OR_CONFIGURATION"
+    },
+    {
+      "description": "Actual NAV7 public identity and execution qualification; prospective recovery remains separately labeled.",
+      "export_bytes": 583,
+      "export_relative_path": "config/checkpoint.example.json",
+      "export_sha256": "c6e06bee432e2536ff1f81435a237a2474a667c9c9fef04bdb3d6ebc33ddeaa7",
+      "provenance_class": "PUBLIC_NAV7_RELEASE_DOCUMENTATION_OR_CONFIGURATION"
+    },
+    {
+      "description": "Empty public package initializer; no runtime/provider/broker setup.",
+      "export_bytes": 156,
+      "export_relative_path": "training/learning/argument_recovery/__init__.py",
+      "export_sha256": "526483f3ace6b8296dfb9504cb8b1f8680a76e53c76036301ade83aaaf50db5e",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Four authored synthetic/fake component checks; not actual model/broker/provider records.",
+      "export_bytes": 7881,
+      "export_relative_path": "training/learning/argument_recovery/test_visible_errors.py",
+      "export_sha256": "02a72249d285d3eb1c30bdb38ba4725a5801d20ed5a72c1bb64651927d4bc96a",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "First-person actual NAV8 and native-paper accounting chronology with limited results.",
+      "export_bytes": 4404,
+      "export_relative_path": "CURRENT_WORK.md",
+      "export_sha256": "406669d6ac5e7fb20b1630287cd3b2923fef17182c4b5052f936da60ffcc5fe9",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     }
   ],
   "no_license_grant_invented": true,
@@ -1110,114 +963,6 @@
       "provenance_class": "HISTORICAL_PORTABLE_PUBLIC_WRAPPER_IMPORT_DERIVATIVE",
       "transformations": [
         "Relocate eligibility import to the exact corrective eligibility module."
-      ]
-    },
-    {
-      "bundled_vendor_sdk": false,
-      "contains_private_records": false,
-      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
-      "export_bytes": 2425,
-      "export_relative_path": "training/learning/expanded_compute/full_output_reserve.py",
-      "export_sha256": "e001dd73b20aea1ea80f17c9c8e16ab2754366e55ba6ec6804c9b9a9bdc73ce5",
-      "original_source_sha256": "e001dd73b20aea1ea80f17c9c8e16ab2754366e55ba6ec6804c9b9a9bdc73ce5",
-      "provenance_class": "EXACT_EXECUTED_AUTHORED_SOURCE_WITH_LISTED_PORTABILITY_TRANSFORMS",
-      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_expanded_compute_context_feasibility_preparation_v1/full_output_reserve.py",
-      "transformations": []
-    },
-    {
-      "bundled_vendor_sdk": false,
-      "contains_private_records": false,
-      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
-      "export_bytes": 11562,
-      "export_relative_path": "training/learning/expanded_compute/interface_adapter.py",
-      "export_sha256": "286d2c566b4faf8564fad73ed9d085d305ba27a8038b96eb5ea3f7020ccb84ef",
-      "original_source_sha256": "d1f2fe7b14d2d62349dc41805865466218780b411367eb4e2ee220f72db12171",
-      "provenance_class": "EXACT_EXECUTED_AUTHORED_SOURCE_WITH_LISTED_PORTABILITY_TRANSFORMS",
-      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_expanded_compute_learning_preparation_v1/interface_adapter.py",
-      "transformations": [
-        {
-          "after": "from training.framework import (\r\n    declared_tools as declared_tools, model_mandate)",
-          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.framework_harmony_successor_preparation_v1 import (\r\n    declared_tools_v1 as declared_tools, model_mandate)",
-          "count": 1,
-          "kind": "exact_literal_portability_relocation"
-        },
-        {
-          "after": "from training.framework.simulator import (",
-          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.mixed_native_framework_nav_preparation_v1.framework_simulator import (",
-          "count": 1,
-          "kind": "exact_literal_portability_relocation"
-        },
-        {
-          "after": "from training.learning.argument_recovery.visible_errors import VisibleDeclaredArgumentModel, VisibleDeclaredArgumentRuntime",
-          "before": "from argument_recovery import VisibleDeclaredArgumentModel, VisibleDeclaredArgumentRuntime",
-          "count": 1,
-          "kind": "exact_literal_portability_relocation"
-        },
-        {
-          "after": "from training.learning.expanded_compute.full_output_reserve import FullOutputReserveMixin",
-          "before": "from training.artifacts.autonomous_gpt_oss_takeover_20261008_v1.framework_expanded_compute_context_feasibility_preparation_v1.full_output_reserve import FullOutputReserveMixin",
-          "count": 1,
-          "kind": "exact_literal_portability_relocation"
-        }
-      ]
-    },
-    {
-      "bundled_vendor_sdk": false,
-      "contains_private_records": false,
-      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
-      "export_bytes": 13521,
-      "export_relative_path": "training/learning/expanded_compute/capture_transport.py",
-      "export_sha256": "f7dd1a56feaa80cdca1a873035c3267ec57b45d1f9b30d551cb96bf7bdc39e1b",
-      "original_source_sha256": "f7dd1a56feaa80cdca1a873035c3267ec57b45d1f9b30d551cb96bf7bdc39e1b",
-      "provenance_class": "EXACT_EXECUTED_AUTHORED_SOURCE_WITH_LISTED_PORTABILITY_TRANSFORMS",
-      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/native_sampling_transport_capture_preparation_v1/capture_transport.py",
-      "transformations": []
-    },
-    {
-      "bundled_vendor_sdk": false,
-      "contains_private_records": false,
-      "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
-      "export_bytes": 3050,
-      "export_relative_path": "training/learning/expanded_compute/executed_batch_excerpt.py.txt",
-      "export_sha256": "f9719c44f3f57debbadf8fea0a32ed10182e8fe6c76994c0721345ec1fb3930b",
-      "original_source_sha256": "03c05506e5ad18a8c109a21869d11b62ba5d04f89b68e0b139d920adc0fad0bc",
-      "provenance_class": "EXACT_EXECUTED_AUTHORED_SOURCE_WITH_LISTED_PORTABILITY_TRANSFORMS",
-      "source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_expanded_compute_learning_preparation_v1/runner.py",
-      "transformations": [
-        {
-          "extracted_sha256": "f9719c44f3f57debbadf8fea0a32ed10182e8fe6c76994c0721345ec1fb3930b",
-          "first_line": 363,
-          "kind": "exact_inspection_only_line_excerpt",
-          "last_line": 399
-        }
-      ]
-    },
-    {
-      "bundled_vendor_sdk": false,
-      "contains_private_records": false,
-      "executed_semantic_origins": [
-        {
-          "executed_plan_sha256": "b9578d5fa6c71fd45f0e71782c4e35a77a474fd927b752fc07bfa9d95d92af64",
-          "line_spans": [
-            [
-              363,
-              399
-            ]
-          ],
-          "original_source_repository_relative_path": "training/artifacts/autonomous_gpt_oss_takeover_20261008_v1/framework_expanded_compute_learning_preparation_v1/runner.py",
-          "original_source_sha256": "03c05506e5ad18a8c109a21869d11b62ba5d04f89b68e0b139d920adc0fad0bc"
-        }
-      ],
-      "export_bytes": 4887,
-      "export_relative_path": "training/learning/expanded_compute/outcome_training.py",
-      "export_sha256": "c49f27257779356ef48ab1b66fb4ae47778454d40fb6cfe072cbe3c6f9f21320",
-      "provenance_class": "AUTHORED_PORTABILITY_WRAPPER_NOT_EXECUTED_CAMPAIGN_DRIVER",
-      "transformations": [
-        "Caller supplies already-verified groups instead of collecting private campaign episodes.",
-        "Caller owns the funded local admission and original raw-first sdk_call dispatch callbacks.",
-        "Accumulate all group datums before exactly one importance_sampling backward and one explicit Adam step.",
-        "Explicit capture-record-to-datum binding is rechecked before building varied eligible datums.",
-        "No campaign path, financial constructor, provider client creation, checkpoint save or public mutation."
       ]
     }
   ],
