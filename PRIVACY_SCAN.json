@@ -1,20 +1,17 @@
 {
   "actual_raw_samples_market_data_broker_receipts_sdk_source_and_model_assets_included": false,
-  "authored_source_identifiers_and_synthetic_test_arrays_are_not_actual_private_generated_records": true,
-  "automated_scan_is_not_a_perfect_detection_or_copyright_ownership_attestation": true,
-  "bytes": 632168,
+  "automated_scan_is_not_perfect_detection_or_rights_attestation": true,
   "checks": [
-    "personal_absolute_path",
-    "literal_ib_account_identifier",
-    "real_broker_execution_id_shape",
-    "private_key_material",
     "credential_shaped_value",
+    "private_key",
+    "real_broker_execution_id_shape",
     "signed_url_secret",
-    "literal_environment_secret_match",
-    "excluded_binary_or_raw_record_format",
-    "vendor_or_asset_directory"
+    "personal_absolute_paths",
+    "literal_private_account",
+    "literal_environment_secret_match_without_printing",
+    "excluded_binary_or_actual_record_format"
   ],
-  "file_count": 62,
+  "file_count": 72,
   "files": [
     {
       "bytes": 172,
@@ -22,14 +19,19 @@
       "sha256": "2eeed106ae49578f4f88c19605b3da2e3c4237346b241902b566c87db3c9526f"
     },
     {
-      "bytes": 6258,
-      "path": "CODE_README.md",
-      "sha256": "7cc067d393c106e2e9d919de06156f1466a20c9a587fdeb066a07737b3ea20fc"
+      "bytes": 7405,
+      "path": "CHECKS.json",
+      "sha256": "9bb42af558b8c19b88da4dcceca344cbc9612bf0a01ec09f4ac0de1137dade97"
     },
     {
-      "bytes": 598,
+      "bytes": 7815,
+      "path": "CODE_README.md",
+      "sha256": "cf5ce545a0c01f728fcad6fdfd488a041164e3ed683b613eea0ae61b3c75d2c6"
+    },
+    {
+      "bytes": 583,
       "path": "config/checkpoint.example.json",
-      "sha256": "761bbcb17cf982fa9b48a4b525b59e03351dd1be29a7e7618427a45b8a12dedd"
+      "sha256": "c6e06bee432e2536ff1f81435a237a2474a667c9c9fef04bdb3d6ebc33ddeaa7"
     },
     {
       "bytes": 375,
@@ -37,9 +39,14 @@
       "sha256": "a6b425854a6ee38653355d233ff175a3cd475c4845779ae01b6af10ee1a8f8c3"
     },
     {
-      "bytes": 3286,
+      "bytes": 4404,
+      "path": "CURRENT_WORK.md",
+      "sha256": "406669d6ac5e7fb20b1630287cd3b2923fef17182c4b5052f936da60ffcc5fe9"
+    },
+    {
+      "bytes": 5350,
       "path": "evidence/public_checkpoint_receipt.json",
-      "sha256": "1fae803ad41f43386727a3fdc29663faaf62d2f81afecae1b49384a517b4147e"
+      "sha256": "5977e8ea5bc73ae39b191aaa405843a44113b43786aa5c77a0edf7d2c80bad4d"
     },
     {
       "bytes": 62,
@@ -92,19 +99,19 @@
       "sha256": "17dcb45e7c108ce72c652e6dba3c281356a41b7ab01bee406b56a3361ae237e4"
     },
     {
-      "bytes": 6333,
+      "bytes": 6393,
       "path": "README.md",
-      "sha256": "20735256d8577bdbe3e4ad94ac979b6cc93cefa1eddb2e7068e0ee9f7f7d006a"
+      "sha256": "d1928976051ef9b8bc4f3b76f6272dc471b01c42e73c1889f93aa7673128f3df"
     },
     {
-      "bytes": 1514,
+      "bytes": 1829,
       "path": "RELEASE_NOTES.md",
-      "sha256": "4cbccb43ab07ff2c66ea84108ec72240cac0c0b09e815c5dd0293bcd4180212a"
+      "sha256": "e15bb5ccee213b34cf9ed235cf6a003ea13209ce4223f698eebea45684859f94"
     },
     {
-      "bytes": 5538,
+      "bytes": 4918,
       "path": "REPORT.md",
-      "sha256": "78cf6c7dc7ce0a07c8c4363304b3c80f5ef9101e7678aa6b677365e7746aa1b4"
+      "sha256": "b69f1ceab069cebeb7193cc3aa2cae6c931e2bed99a62168cf32b45389c684cd"
     },
     {
       "bytes": 185,
@@ -117,14 +124,14 @@
       "sha256": "a05c1aa04b5d90f5901469c38f1392bbf5b3e5e1b5371547faa28ce10241e8fc"
     },
     {
-      "bytes": 14665,
+      "bytes": 45084,
       "path": "results_aggregate.json",
-      "sha256": "ddaa66ec7f1bea500fc662a3859ae9f359a6d12e4d0c5c4451872bb52095147e"
+      "sha256": "b389c4b64d27b5570e0bdd582fbb39736d78aa31550f2a1e555d44be467794b9"
     },
     {
-      "bytes": 39591,
+      "bytes": 46410,
       "path": "SOURCE_MANIFEST.json",
-      "sha256": "e674263a93a1241bd8df7cb432c920c8e578d12b2faf707025478dcfd09ee4fd"
+      "sha256": "f9416b28ed5a33ab4d8c197f64138dc781810d05640ea2b164e9fd8dfb8aba04"
     },
     {
       "bytes": 62,
@@ -215,6 +222,46 @@
       "bytes": 62,
       "path": "training/learning/__init__.py",
       "sha256": "4270416fb77d94d8b1cac6f15df6bba3e218909dcf56131811962f375603a4d4"
+    },
+    {
+      "bytes": 156,
+      "path": "training/learning/argument_recovery/__init__.py",
+      "sha256": "526483f3ace6b8296dfb9504cb8b1f8680a76e53c76036301ade83aaaf50db5e"
+    },
+    {
+      "bytes": 13982,
+      "path": "training/learning/argument_recovery/capture_provenance.py",
+      "sha256": "6ab02162a2ac930164e1a9b3e5aa0e93b84990984e88d3cbda3a17aecad86c7f"
+    },
+    {
+      "bytes": 9354,
+      "path": "training/learning/argument_recovery/evidence_eligibility.py",
+      "sha256": "c60212b930abf97c9e1c4eeccddd905209ad44470ca21717a885b401c4771998"
+    },
+    {
+      "bytes": 5723,
+      "path": "training/learning/argument_recovery/failure_classification.py",
+      "sha256": "05d9c05e0fc1ae60c4a0849c4899f901368142776cde0800b6033f8fdc16b188"
+    },
+    {
+      "bytes": 11084,
+      "path": "training/learning/argument_recovery/interface_adapter.py",
+      "sha256": "217c7c5d657c50b4556b7ec394cdc80b2d51c6bf48b990cfef9bee02143aa631"
+    },
+    {
+      "bytes": 2478,
+      "path": "training/learning/argument_recovery/outcome_training.py",
+      "sha256": "788b43a5343153aa620cbeafdb2bf419d8bdf5956def09b2a55657a081638257"
+    },
+    {
+      "bytes": 7881,
+      "path": "training/learning/argument_recovery/test_visible_errors.py",
+      "sha256": "02a72249d285d3eb1c30bdb38ba4725a5801d20ed5a72c1bb64651927d4bc96a"
+    },
+    {
+      "bytes": 7297,
+      "path": "training/learning/argument_recovery/visible_errors.py",
+      "sha256": "4399428e4870df468e1645d6376cce304c3b5fb5d79eff2b1142a8f656ca948f"
     },
     {
       "bytes": 13669,
@@ -328,8 +375,6 @@
     }
   ],
   "findings": [],
-  "historical_NAV6_privacy_scan_sha256": "7b9ff273721d5a3ec0e6afd241a21311a563abfd20febdb4e9da451d9ac2e0be",
-  "kind": "PUBLIC_EXPORT_PRIVACY_AND_DISTRIBUTION_SCAN_V2",
-  "result": "PASS",
-  "scope": "Local release content excluding Git metadata and the three release check/scan/manifest records; those records are separately parsed and scanned before sealing."
+  "kind": "PUBLIC_NAV8_FULL_LITERAL_AND_FORMAT_PRIVACY_SCAN_V3",
+  "self_and_release_manifest_excluded_to_avoid_digest_cycles": true
 }

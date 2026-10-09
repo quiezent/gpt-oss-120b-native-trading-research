@@ -1,84 +1,76 @@
-# What I learned from NAV7
+# What I learned from the corrective NAV8 run
 
-I resumed this user-directed campaign after the owner asked me to continue
-testing and learning. I kept the same objective: a GPT-OSS-120B policy whose
-own tool calls determine its actions, targeting positive paper-account NAV
-over days through three months. The objective remains unproved.
+I corrected the framework boundary that prevented the policy from observing
+ordinary argument-validation errors. The generic repair returns the original
+refusal with unchanged arguments to the same conversation. Strict framing,
+JSON and recipient/body matching still apply. I did not insert trade routing,
+teacher labels, argument replacement, automatic retries or a schema reward.
 
-I first tested the published NAV6 policy against the paper broker with a
-fresh finite session. The policy selected an overnight SPY limit buy. Its
-first order reference was refused by the native validator; the policy then
-generated a different reference itself. The actual submission received
-broker error201, “Order was discarded.” The actor stopped with an uncertain
-tool outcome after two samples and660 generated tokens, retained its mutation
-halt and closed its owned SDK service. Financial accounting completed. I do
-not turn that SDK close into broker order closure or infer a fill or profit
-from a rejected submission. Overnight acceptance remains unproved.
+The finite learner loaded actual NAV7 weights with a fresh optimizer. It
+completed one genuine outcome update, for 15 cumulative updates, then saved
+its state and sampler. I captured/accounted all 253 sampling responses and
+retained all 24 training outcomes and 16 comparisons. The owned SDK service
+close returned None; root separately finished accounting. The source and exact
+float32 datum review joined 103 ordered datums and 1,027,888 training-input
+tokens to the actual request. Those checks do not verify the provider's private
+gradient or scalar-loss reduction arithmetic; the earlier uncertainty remains.
 
-I also ran a separate inference-only comparison over one exposed20-session
-September2026 historical window. It used19 samples across NAV6, NAV5 and
-base. Costed marked returns were +1.040448825%, +0.522289650% and0%.
-Both learned arms reached the decision limit with residual marked inventory.
-Terminal evaluator advance supplied the endpoint valuation; it did not
-establish a policy-selected exit. The small window, current-listed universe,
-unknown original price vintages and simplified next-open fills prevent a
-generalization or prospective-profit claim.
+Five of eight training groups varied. All 24 were eligible, with four positive,
+one negative and 19 flat outcomes. Training had nine FINAL and 15 STEP_LIMIT,
+seven simulated BUY fills, one simulated SELL fill and four cases retaining
+inventory. There were 26 visible argument refusals, with 24 later same-command
+host admissions. This is recovery of scaffold/policy interaction, not proof
+that the optimizer update improved operational behavior.
 
-The next learner used genuine NAV6 weights with a fresh optimizer and a
-declared framework interface. Its policy could directly call the actual
-named framework functions, rather than encoding their operation names in a
-single wrapper recipient. The costed NAV objective, exact model arguments,
-whole-group eligibility and zero-variation skip remained separate from API
-formatting. I did not add a compliance reward, teacher trade or investment
-router. The run has now closed with one genuine update,14 cumulative updates,
-140 captured/accounted samples,24 training outcomes and16 comparisons.
-Its owned SDK close and root accounting finish are confirmed. Only two of
-eight training groups varied. Candidate comparisons had no FINAL, two
-STEP_LIMIT and six malformed cases, with zero positive, one negative and
-seven flat returns. Named-function descriptive means were -0.069681800%
-versus NAV6 -0.152767262500%; wrapper means were0% versus -0.137740787500%.
-The three wins, two losses and three ties include six failed flat no-trade
-candidate cases. These are exposed mixed-horizon comparisons, not proof of
-operational improvement. All12 simulated fills were BUY with no exit;
-one training entry filled only during terminal evaluator advance.
+One five-session training rollout starting 2025-08-05 generated a SELL, chose
+its wait and reconciled the simulated fill at step eight. The sale occurred
+before the remaining two-session evaluator advance. I therefore report a
+real model-selected **simulation** exit in that pre-update training rollout,
+with modeled fees. I do not call it a native paper exit, prospective profit,
+completed three-month objective or evidence of improved successor weights.
 
-The run exposed a host error I need to describe precisely. Some well-framed
-framework calls failed an argument bound for max_account_age_seconds. The
-running framework classified that refusal as terminal malformed output,
-instead of returning an ordinary tool error to the same policy conversation.
-That prevented the policy from seeing the refusal and choosing its own next
-call. I have staged a generic repair that keeps strict JSON/framing/recipient
-checks, retains the unchanged arguments and returns the original validation
-error visibly. It neither fixes the values nor retries an action. That repair
-was not used by the NAV7 learner, and I do not credit its future behavior
-to the new weights. Rejected exact numeric values remain unknown in the
-receipt-only diagnosis; I have not decoded private model analysis to invent
-them.
+In the eight matched candidate/NAV7 comparisons, all initial observations
+matched. The candidate won two pairs and tied six; both differences were at
+20 sessions. Named-function descriptive means were -0.2695335875% candidate
+and -0.5295837875% parent. The 20-session difference was +1.0402008 percentage
+points, while the other three horizons tied. Both named arms had four
+STEP_LIMIT outcomes, four residual-inventory cases and no SELL fills.
 
-I have also staged support for USD-denominated SGX equities. Staged source
-and a review of an open-market interface are not an actual SGX trade or an
-accepted order. The existing overnight halt remains preserved. I will report
-future broker observations separately rather than claiming the upgrade has
-already improved execution.
+Wrapper descriptive means were 0% candidate and -0.2523818% parent. Each arm
+had three malformed cases and one STEP_LIMIT. The candidate had no fills;
+its +1.0095272-percentage-point difference at 20 sessions avoided the parent's
+two-BUY, residual-inventory loss. The one-, five- and 63-session pairs tied.
+Failed flat no-trade cases stay in the report. These means mix horizons and
+are neither annualized nor statistical superiority claims. The candidate's
+positive 63-session named return still retained marked inventory and STEP_LIMIT.
 
-I published the genuine NAV7 sampler and verified provider metadata at
-01:40:05 UTC on2026-10-09: public=true, expires_at=null and1,304,655,391 bytes.
-The exact URI is recorded in the sanitized publication receipt. The original
-100-day research handoff and GET vintage remain preserved. “No scheduled expiry”
-does not guarantee permanent availability: deletion, account/provider access
-and continuing storage charges remain relevant. The existing NAV6 release
-and checkpoint evidence will stay available as historical versions.
+The windows were reused, exposed development data. Current-listed-universe
+survivorship, unknown original publication/correction vintages, omitted
+dividend/corporate-action cashflows and simplified daily next-open execution
+limit the results. End-of-horizon marking and evaluator advancement can value
+inventory or fill queued orders; they do not establish policy-selected exits.
+The comparison protocol included the same visible-error scaffold for the
+candidate and frozen parent; I do not compare its behavior with the old strict
+NAV7 run as if only the weights changed.
 
-The code release is an authored sanitized derivative. It excludes private
-analysis, generated token/logprob arrays, raw prices and news, broker/account
-identifiers, vendor SDK source and credentials. The optional numeric-error
-recovery module is explicitly prospective; the executed learner source and
-the later repair are distinct. Synthetic component checks do not establish
-economic model performance or exact replay of the private campaign.
+I published the exact NAV8 sampler and verified public/no-scheduled-expiry
+metadata at 03:31:49 UTC on 2026-10-09. The original state/sampler GET records
+requested 100 days and remain preserved separately from the later public
+sampler metadata. Authenticated access, deletion, provider/account availability
+and ongoing storage billing still apply. No scheduled expiry is not a guarantee
+of permanent or anonymous access. NAV7/NAV6 publications remain historical.
 
-I am still distinguishing model-selected decisions, validation, submission,
-broker acknowledgement, fills, inventory, fees and attributable NAV. The
-next checkpoint and a positive retrospective mark are research progress;
-they do not complete the trading objective.
+My native SGX episode and its original-response recovery are described in
+[CURRENT_WORK.md](CURRENT_WORK.md). No SGX acceptance, fill or profit was
+established. Financial completion preserves the original uncertain runtime
+report and full reservation; it does not turn it into a model FINAL. Two-year
+SGX history and chronological descriptors are prepared, while actual fees,
+vintages and SGX simulator mechanics still need qualification before an
+economic backtest can support stronger claims.
 
-The parent [NAV6 release](https://github.com/quiezent/gpt-oss-120b-native-trading-research/releases/tag/nav6-2026-10-09) remains preserved. Current aggregate outcomes and opaque source digests are in [results_aggregate.json](results_aggregate.json); those digests identify retained private records rather than released raw data.
+I continue to distinguish the model's exact choice, validator refusal,
+submission, broker acknowledgement, fill, owned inventory, fees and adjusted
+NAV. The positive prospective trading objective and a complete lifecycle
+through both interfaces remain unproved. [Aggregate results](results_aggregate.json)
+retain all 40 outcomes and earlier NAV7/NAV6 evidence. Opaque digests identify
+private saved records; they are not links to released raw data.

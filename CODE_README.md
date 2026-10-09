@@ -2,7 +2,14 @@
 
 This is a sanitized, portable subset of my project code. The release manifest maps every adapted file to its repository-relative original and SHA-256, with exact extraction, relocation and configuration changes. The private campaign receipt graph, market history, real broker payloads, model reasoning, token/logprob arrays, vendor code and credentials are excluded.
 
-The actual NAV7 checkpoint came from the completed named-framework campaign using NAV6 weights. The named-tool declaration, shared simulator and whole-group failure-classification interfaces were genuinely used by that learner. The portable training wrapper remains a derivative of the genuine outcome-update path, not a replay of the private campaign. The optional numeric_recovery module is a separately staged generic repair; it was not used in NAV7 training or established by a paper run.
+The actual NAV8 checkpoint came from the completed corrective named-framework campaign using NAV7 weights. The earlier NAV7 campaign used NAV6 weights. The named-tool declaration, shared simulator and whole-group failure-classification interfaces were genuinely used by that learner. The portable training wrapper remains a derivative of the genuine outcome-update path, not a replay of the private campaign. The optional numeric_recovery module is a separately staged generic repair; it was not used in NAV7 training or established by a paper run.
+
+The separate `training/learning/argument_recovery` package is an import-relocated
+export of authored components frozen for the actually completed corrective learner.
+Its generic visible error path differs from NAV7's terminal argument refusal.
+The completed run and separately verified sampler publication establish actual
+NAV8; `CURRENT_WORK.md` and the report record its limited results. The exact
+private financial controller and receipt graph remain excluded. The prior numeric_recovery module is preserved.
 
 ## Local setup
 
@@ -30,13 +37,22 @@ This only creates `.local/paper_workspace`; it does not connect, submit or cance
 
 - `training/nav_learning.py`: chronological daily-bar simulation, next-open limit-order execution, modeled spread/slippage/commission, cash-flow-adjusted marked NAV, native-token datums and zero observation-gradient mask.
 - `training/native_agent`: one-conversation runtime, raw-byte-before-parse persistence, strict Harmony output, exact CLI arguments, durable once identities, visible refusals, clock/wait support and framework callbacks.
-- `training/framework`: exact model-supplied mandate and the original wrapper ABI, plus prospectively declared nine-function ABI. A recipient/body/schema mismatch is refused, never aliased or repaired.
+- `training/framework`: exact model-supplied mandate, the original wrapper ABI
+  and the declared nine-function ABI used by the named learners. A recipient/body
+  mismatch is refused, never aliased or repaired. The separate corrective
+  package returns exact declared argument-schema errors visibly to the model.
 - `training/learning`: shared simulator interface, source-known failure classification, capture/accounting proof and symmetric whole-group centering. A known late malformed output retains its actual signed terminal NAV; an unknown member excludes the whole group. Zero variation produces no learning signal.
 - `training/learning/outcome_training.py`: `train_verified_group` uses the genuine `trajectory_datums`/SDK importance-sampling update path. Supply fresh same-start/horizon/interface on-policy episodes, their unmodified outcomes and `TrajectoryIntegrity` proofs from `capture_provenance`. The caller owns the SDK session/sampler, explicit finite dispatch budget, data rights and unconditional owned close. The wrapper makes at most one optimizer update and skips a zero-signal group. It does not choose trades, fabricate proofs, score schema compliance or manufacture a checkpoint.
+- `training/learning/argument_recovery`: the actual corrective model/runtime,
+  interface, failure-classification, capture and eligibility bodies with listed
+  import relocations. Use this package's `interface_adapter`, `capture_provenance`
+  and `evidence_eligibility` together. Its `outcome_training` entry uses the same
+  public one-update wrapper with the corrective eligibility import. This is a
+  portable derivative; the private financial/run controller is excluded.
 
 `create_compatible_training_client` retains rank/attention/MLP/unembed flags needed by the published parent. Native sampler identity can differ from checkpoint owner: bind the actual SDK saved URI and actual current sampling session separately. `datum_wire` records the SDK's real float32 representation; exact reconstruction must round before equality. No raw real tensor values are distributed here. The previous backend loss-scalar reconstruction uncertainty remains unresolved; this code does not assert it was explained.
 
-Using the provider is an explicit caller action. `config/checkpoint.example.json` contains the actual NAV7 sampler URI whose Tinker metadata was confirmed public with no scheduled expiry. Select your own Tinker project/authentication. No API key is included. This metadata is distinct from an anonymously downloadable file or independently tested access by a second principal.
+Using the provider is an explicit caller action. `config/checkpoint.example.json` contains the actual NAV8 sampler URI whose Tinker metadata was confirmed public with no scheduled expiry. Select your own Tinker project/authentication. No API key is included. This metadata is distinct from an anonymously downloadable file or independently tested access by a second principal.
 
 ## Focused checks
 
@@ -51,3 +67,14 @@ Daily bars hide queues, intraday liquidity, partial fills and original publicati
 Real future raw completions, private reasoning, native tokens/logprobs, datums, broker payloads and credentials belong in ignored local run directories. Aggregate published digests identify original retained private records; they are not released files or download links.
 
 The additional numeric-recovery check imports the sanitized modules under a no-network/no-provider/broker-constructor fence and exercises an authored invalid-argument fixture. It is a component check only, with no model generation or economic evaluation.
+
+The corrective package adds focused fixtures for a nonnumeric refusal followed
+by a new model-selected valid call, fatal recipient/body mismatch, changed
+refusal provenance, signed-NAV retention and whole-group unknown exclusion:
+
+```sh
+python -m unittest -v training.learning.argument_recovery.test_visible_errors
+```
+
+These fixtures use fake outputs and a fake host. They are not actual model
+generations, provider/broker calls or economic evaluations.

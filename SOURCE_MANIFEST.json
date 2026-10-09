@@ -1,4 +1,10 @@
 {
+  "actual_NAV8_closed_report_sha256": "6c236463f3472b6ce1dc4d10be7c5e8558f80f8ebbe4b17844005fb763275031",
+  "actual_NAV8_handoff_sha256": "019b291e61f10ccfbcf55a0ad4ed7f395e94012aa11868b6d22f7b3e7c5157cc",
+  "actual_NAV8_public_metadata_receipt_sha256": "b40a303c69ddaeaaeed5cec2e1341fa6e3be83af002f88e2cb2bcc18563a4a8b",
+  "actual_corrective_run_status_at_preparation": "ACTUAL_CLOSED_SAVED_ROOT_ACCOUNTED_AND_PUBLIC_SAMPLER_VERIFIED",
+  "baseline_public_commit": "7281ced2b37eacd036a5fb3c9b8e9cdd67d354a3",
+  "corrective_package_execution_status": "GENUINELY_USED_BY_COMPLETED_NAV8_LEARNER",
   "excluded": [
     "actual private reasoning and generated token/logprob/tensor records",
     "raw broker observations and account identifiers",
@@ -9,8 +15,8 @@
     "campaign financial/provider receipt graph"
   ],
   "historical_NAV6_source_manifest_sha256": "7b2bd3b333786cfc0ef1a709fa5fc4fb8e2cdca3a90abba9e481dcb3f0208ee0",
-  "kind": "PUBLIC_SANITIZED_AUTHORED_CODE_MANIFEST_V2",
-  "latest_actual_model": "NAV_RL_PILOT_7",
+  "kind": "PUBLIC_SANITIZED_ACTUAL_NAV8_AUTHORED_CODE_MANIFEST_V3",
+  "latest_actual_model": "NAV_RL_PILOT_8",
   "manifest_and_scan_and_check_receipts_are_separately_hashed_release_metadata": true,
   "new_release_support_files": [
     {
@@ -141,17 +147,38 @@
     },
     {
       "description": "Actual NAV7 public identity and execution qualification; prospective recovery remains separately labeled.",
-      "export_bytes": 6258,
+      "export_bytes": 7815,
       "export_relative_path": "CODE_README.md",
-      "export_sha256": "7cc067d393c106e2e9d919de06156f1466a20c9a587fdeb066a07737b3ea20fc",
+      "export_sha256": "cf5ce545a0c01f728fcad6fdfd488a041164e3ed683b613eea0ae61b3c75d2c6",
       "provenance_class": "PUBLIC_NAV7_RELEASE_DOCUMENTATION_OR_CONFIGURATION"
     },
     {
       "description": "Actual NAV7 public identity and execution qualification; prospective recovery remains separately labeled.",
-      "export_bytes": 598,
+      "export_bytes": 583,
       "export_relative_path": "config/checkpoint.example.json",
-      "export_sha256": "761bbcb17cf982fa9b48a4b525b59e03351dd1be29a7e7618427a45b8a12dedd",
+      "export_sha256": "c6e06bee432e2536ff1f81435a237a2474a667c9c9fef04bdb3d6ebc33ddeaa7",
       "provenance_class": "PUBLIC_NAV7_RELEASE_DOCUMENTATION_OR_CONFIGURATION"
+    },
+    {
+      "description": "Empty public package initializer; no runtime/provider/broker setup.",
+      "export_bytes": 156,
+      "export_relative_path": "training/learning/argument_recovery/__init__.py",
+      "export_sha256": "526483f3ace6b8296dfb9504cb8b1f8680a76e53c76036301ade83aaaf50db5e",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "Four authored synthetic/fake component checks; not actual model/broker/provider records.",
+      "export_bytes": 7881,
+      "export_relative_path": "training/learning/argument_recovery/test_visible_errors.py",
+      "export_sha256": "02a72249d285d3eb1c30bdb38ba4725a5801d20ed5a72c1bb64651927d4bc96a",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
+    },
+    {
+      "description": "First-person actual NAV8 and native-paper accounting chronology with limited results.",
+      "export_bytes": 4404,
+      "export_relative_path": "CURRENT_WORK.md",
+      "export_sha256": "406669d6ac5e7fb20b1630287cd3b2923fef17182c4b5052f936da60ffcc5fe9",
+      "provenance_class": "NEW_PUBLIC_RELEASE_SUPPORT"
     }
   ],
   "no_license_grant_invented": true,
@@ -840,6 +867,103 @@
         "Remove obsolete running tense from the prospective qualification; runtime semantics unchanged."
       ],
       "vendor_code_or_raw_records_included": false
+    },
+    {
+      "actual_run_plan_sha256": "0772401199921146c89d3c4849f8a2a090554d4a5022ef2f8ecbc188e0765fed",
+      "exact_private_derivation_retained": true,
+      "executed_code_does_not_establish_completed_update": true,
+      "export_bytes": 7297,
+      "export_relative_path": "training/learning/argument_recovery/visible_errors.py",
+      "export_sha256": "4399428e4870df468e1645d6376cce304c3b5fb5d79eff2b1142a8f656ca948f",
+      "original_snapshot_role": "0012-argument_recovery.py",
+      "original_source_sha256": "f35940d4e7b48faf6f017f92ebc2fdeaf92b0c03416c6d1e68b2331eaa3de421",
+      "provenance_class": "ACTUAL_FUNDED_LEARNER_AUTHORED_SOURCE_PUBLIC_IMPORT_DERIVATIVE",
+      "transformations": [
+        "Normalize CRLF to LF where present.",
+        "Relocate imports from private campaign packages to the public authored package; remove private sys.path bootstrap where present.",
+        "Preserve all function and class bodies apart from the listed import relocations."
+      ],
+      "vendor_code_or_raw_records_included": false
+    },
+    {
+      "actual_run_plan_sha256": "0772401199921146c89d3c4849f8a2a090554d4a5022ef2f8ecbc188e0765fed",
+      "exact_private_derivation_retained": true,
+      "executed_code_does_not_establish_completed_update": true,
+      "export_bytes": 11084,
+      "export_relative_path": "training/learning/argument_recovery/interface_adapter.py",
+      "export_sha256": "217c7c5d657c50b4556b7ec394cdc80b2d51c6bf48b990cfef9bee02143aa631",
+      "original_snapshot_role": "0003-interface_adapter.py",
+      "original_source_sha256": "f7220f7a3b638b9d529f40b0adbb010573c9b28d0ffc77924bdd8f2a8d709f2b",
+      "provenance_class": "ACTUAL_FUNDED_LEARNER_AUTHORED_SOURCE_PUBLIC_IMPORT_DERIVATIVE",
+      "transformations": [
+        "Normalize CRLF to LF where present.",
+        "Relocate imports from private campaign packages to the public authored package; remove private sys.path bootstrap where present.",
+        "Preserve all function and class bodies apart from the listed import relocations."
+      ],
+      "vendor_code_or_raw_records_included": false
+    },
+    {
+      "actual_run_plan_sha256": "0772401199921146c89d3c4849f8a2a090554d4a5022ef2f8ecbc188e0765fed",
+      "exact_private_derivation_retained": true,
+      "executed_code_does_not_establish_completed_update": true,
+      "export_bytes": 5723,
+      "export_relative_path": "training/learning/argument_recovery/failure_classification.py",
+      "export_sha256": "05d9c05e0fc1ae60c4a0849c4899f901368142776cde0800b6033f8fdc16b188",
+      "original_snapshot_role": "0005-failure_classification.py",
+      "original_source_sha256": "ee383ec53aa977cfd524b8ef63cee0d07cd205cea3fb38deb416e329d8f06dcd",
+      "provenance_class": "ACTUAL_FUNDED_LEARNER_AUTHORED_SOURCE_PUBLIC_IMPORT_DERIVATIVE",
+      "transformations": [
+        "Normalize CRLF to LF where present.",
+        "Relocate imports from private campaign packages to the public authored package; remove private sys.path bootstrap where present.",
+        "Preserve all function and class bodies apart from the listed import relocations."
+      ],
+      "vendor_code_or_raw_records_included": false
+    },
+    {
+      "actual_run_plan_sha256": "0772401199921146c89d3c4849f8a2a090554d4a5022ef2f8ecbc188e0765fed",
+      "exact_private_derivation_retained": true,
+      "executed_code_does_not_establish_completed_update": true,
+      "export_bytes": 9354,
+      "export_relative_path": "training/learning/argument_recovery/evidence_eligibility.py",
+      "export_sha256": "c60212b930abf97c9e1c4eeccddd905209ad44470ca21717a885b401c4771998",
+      "original_snapshot_role": "0006-evidence_eligibility.py",
+      "original_source_sha256": "7dc5b49852b94359aeaa47e4d3d18a00e7e092c11231cb43dcab0aedb8414594",
+      "provenance_class": "ACTUAL_FUNDED_LEARNER_AUTHORED_SOURCE_PUBLIC_IMPORT_DERIVATIVE",
+      "transformations": [
+        "Normalize CRLF to LF where present.",
+        "Relocate imports from private campaign packages to the public authored package; remove private sys.path bootstrap where present.",
+        "Preserve all function and class bodies apart from the listed import relocations."
+      ],
+      "vendor_code_or_raw_records_included": false
+    },
+    {
+      "actual_run_plan_sha256": "0772401199921146c89d3c4849f8a2a090554d4a5022ef2f8ecbc188e0765fed",
+      "exact_private_derivation_retained": true,
+      "executed_code_does_not_establish_completed_update": true,
+      "export_bytes": 13982,
+      "export_relative_path": "training/learning/argument_recovery/capture_provenance.py",
+      "export_sha256": "6ab02162a2ac930164e1a9b3e5aa0e93b84990984e88d3cbda3a17aecad86c7f",
+      "original_snapshot_role": "0007-capture_provenance.py",
+      "original_source_sha256": "e0e00d41b7a0040cd0efd9eacb01e9b35d0401b84c73802c5eab28a3a41ad85d",
+      "provenance_class": "ACTUAL_FUNDED_LEARNER_AUTHORED_SOURCE_PUBLIC_IMPORT_DERIVATIVE",
+      "transformations": [
+        "Normalize CRLF to LF where present.",
+        "Relocate imports from private campaign packages to the public authored package; remove private sys.path bootstrap where present.",
+        "Preserve all function and class bodies apart from the listed import relocations."
+      ],
+      "vendor_code_or_raw_records_included": false
+    },
+    {
+      "export_bytes": 2478,
+      "export_relative_path": "training/learning/argument_recovery/outcome_training.py",
+      "export_sha256": "788b43a5343153aa620cbeafdb2bf419d8bdf5956def09b2a55657a081638257",
+      "historical_public_source_relative_path": "training/learning/outcome_training.py",
+      "original_source_sha256": "2963e2d62f63653ad50941239f5244c1afc04d40ba1051cfe145db8c55465d71",
+      "portable_wrapper_is_not_the_private_campaign_runner": true,
+      "provenance_class": "HISTORICAL_PORTABLE_PUBLIC_WRAPPER_IMPORT_DERIVATIVE",
+      "transformations": [
+        "Relocate eligibility import to the exact corrective eligibility module."
+      ]
     }
   ],
   "repository_relative_original_paths_only": true,

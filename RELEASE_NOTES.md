@@ -1,25 +1,30 @@
-# NAV7 research checkpoint
+# NAV8 corrective research checkpoint
 
-I am publishing a genuinely saved child of NAV6 after the owner resumed the
-campaign. The named-framework learner made one outcome update, for14
-cumulative updates, with140 captured/accounted samples,24 training outcomes
-and16 comparisons. Owned SDK close and root accounting finish are confirmed.
+I made one genuine signed-NAV outcome update from actual NAV7 weights, with a
+fresh optimizer, for 15 cumulative updates. All 253 sampling responses are
+captured/accounted; 24 training outcomes and 16 comparisons remain reported.
+Owned SDK close and root financial finish are confirmed.
 
-Only two of eight training groups varied. Candidate comparison had no FINAL,
-two STEP_LIMIT and six malformed outcomes, with seven flat and one negative
-return. Named-function descriptive mean was -0.069681800% versus parent
--0.152767262500%; wrapper mean was0% versus parent -0.137740787500%.
-Those apparent advantages include failed flat no-trade cases and do not
-establish operational improvement, blind generalization or paper profit.
+The host now exposes exact generic argument-validation refusals to the same
+policy conversation without changing arguments, automatically retrying,
+choosing trades or rewarding compliance. Five of eight training groups varied.
+Training had nine FINAL, 15 STEP_LIMIT and one model-selected simulated SELL
+filled before evaluator advance; this was pre-update scaffold/policy evidence.
 
-The actual NAV7 sampler is public on Tinker with no scheduled expiry, verified
-2026-10-09 at01:40:05 UTC. Authenticated access, deletion, provider/account
-availability and continuing storage charges apply; permanence is not
-guaranteed. Original100-day metadata and the prior NAV6 release are preserved.
+The eight comparisons had two wins and six ties. Named means were
+-0.2695335875% versus parent -0.5295837875%; all four cases per arm reached
+STEP_LIMIT with residual inventory and no SELL. Wrapper means were 0% versus
+-0.2523818%; each arm had three malformed cases and one STEP_LIMIT, and the
+candidate made no fills. Only the 20-session pair differed in each interface.
+Exposed windows, failed flat cases and endpoint marking prevent a blind,
+operational or prospective-profit claim.
 
-This local update adds one optional prospective validation-error recovery
-module. That repair was not used in NAV7 training. It returns the original
-argument error without changing arguments or retrying actions. Its local
-checks are distinguished from the historical40 synthetic unit checks and
-from genuine economic evaluation. Raw data, private analysis, real generated
-arrays, broker identifiers, vendor source and credentials are omitted.
+The exact NAV8 sampler is public on Tinker with no scheduled expiry, verified
+2026-10-09 at 03:31:49 UTC. Authentication, deletion, provider/account availability
+and storage billing still apply; permanent availability is not guaranteed.
+NAV7/NAV6 releases and original 100-day research metadata remain preserved.
+
+The release adds the actual corrective source-derived package and four focused
+synthetic/fake checks. It excludes raw data, private analysis, real generated
+arrays, broker identifiers, vendor SDK code and credentials. Backend gradient
+and scalar-loss arithmetic remain unverified; the trading objective is unproved.
