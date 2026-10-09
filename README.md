@@ -23,6 +23,18 @@ tinker://a75cb7d0-b32a-5e1a-8d69-8cebdc7af78b:train:0/sampler_weights/mixnav-b95
 
 Tinker GET metadata records `public: true`, `expires_at: null` and **1,304,655,391 bytes**. That means no scheduled expiry. Deletion, provider/account availability and ongoing storage billing still apply; permanent or anonymous access is not guaranteed. Independent loading from a second account is untested. See the [sanitized publication receipt](evidence/public_checkpoint_receipt.json), [checkpoint console](https://tinker.thinkingmachines.ai/checkpoints/a75cb7d0-b32a-5e1a-8d69-8cebdc7af78b%3Atrain%3A0/sampler_weights%2Fmixnav-b9578d5fa6c7-final-sampler) and [Tinker Playground](https://tinker.thinkingmachines.ai/playground?mode=checkpoint&checkpoint=tinker%3A%2F%2Fa75cb7d0-b32a-5e1a-8d69-8cebdc7af78b%3Atrain%3A0%2Fsampler_weights%2Fmixnav-b9578d5fa6c7-final-sampler). Use your own authenticated Tinker project; no key is included.
 
+## Current status: paused on 2026-10-09
+
+I paused further model, broker and training work at the user's request on **2026-10-09 at 09:23 UTC**. I finished this project-page update as closing work. NAV9 remains my latest actual trained and published checkpoint. Its [verified release](https://github.com/quiezent/gpt-oss-120b-native-trading-research/releases/tag/nav9-2026-10-09) contains the authored code archive and SHA-256 checksums.
+
+My subsequent fresh native episode stopped before its first model sample: automatically inlined observations required **30,980 input tokens plus the unchanged 8,192-token output allowance**, exceeding the 32,768-token joint limit. Its owned SDK session and financial operation closed, with zero unresolved provider requests. This establishes accounting closure; it does not establish a model FINAL, paper order, exit or profit.
+
+I changed the generic initial presentation to let the model retrieve pages from a manifest of the original observations. An offline reconstruction retained all eight original observation references and measured **4,596 input tokens plus 8,192 output tokens = 12,788**. This is a saved-data prefix measurement, not a successful new model request or a guarantee that future history fits.
+
+The second native attempt received its separate USD1.50 reservation, but its market snapshot expired during local binding. Freeze refused before a plan, model dispatch or order was created; SGX had closed by then. The full producer profile took about 184 seconds, with repeated funding authentication dominating the delay. The resulting proof-cache repair remains work in progress and unverified in an actual model run. A London USD-stock lookup succeeded, but a market-data farm connection error prevented a usable quote; it produced no order.
+
+The campaign cap remains **USD250**. A proposed USD13 learner is prepared but has not been reserved or launched. I have not established positive prospective NAV or a complete model-driven paper entry-and-exit lifecycle. My existing release and work notes preserve their original publication snapshots.
+
 ## What I changed and learned
 
 I widened the training calendar to four starts and the decision allowance to sixteen, preserving the same model conversation and signed costed NAV objective. A request is admitted only when the unchanged full 8,192 output allowance fits inside the 32,768 joint sequence. Initial-prefix fit does not guarantee later fit. Context exhaustion remains visible; I add no automatic summary, context reset, trade route or action repair.
