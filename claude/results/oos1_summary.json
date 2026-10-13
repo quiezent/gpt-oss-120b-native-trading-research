@@ -1,0 +1,121 @@
+{
+ "tag": "oos1",
+ "cases": 38,
+ "episodes": 228,
+ "arms": {
+  "base": {
+   "episodes": 76,
+   "mean_marked_pct": 0.9222198322368421,
+   "mean_liquidated_pct": 0.8848668125,
+   "mean_realized_usd": -1.4101337171052635,
+   "closed_flat": 13,
+   "holding_at_end": 54,
+   "no_trade": 9,
+   "status": {
+    "FINAL": 43,
+    "STEP_LIMIT": 33
+   },
+   "cost_usd_upper": 2.38820199,
+   "evaluator_sessions": 1109
+  },
+  "nav4": {
+   "episodes": 76,
+   "mean_marked_pct": 0.609994450986842,
+   "mean_liquidated_pct": 0.5677168345394739,
+   "mean_realized_usd": -2.7509335526315786,
+   "closed_flat": 6,
+   "holding_at_end": 58,
+   "no_trade": 12,
+   "status": {
+    "STEP_LIMIT": 34,
+    "FINAL": 42
+   },
+   "cost_usd_upper": 2.38842876,
+   "evaluator_sessions": 1156
+  },
+  "nav9": {
+   "episodes": 76,
+   "mean_marked_pct": 0.8903955914473684,
+   "mean_liquidated_pct": 0.8546220414473682,
+   "mean_realized_usd": 5.143946743421052,
+   "closed_flat": 15,
+   "holding_at_end": 49,
+   "no_trade": 12,
+   "status": {
+    "STEP_LIMIT": 31,
+    "FINAL": 43,
+    "MALFORMED": 2
+   },
+   "cost_usd_upper": 2.514743070000001,
+   "evaluator_sessions": 1204
+  }
+ },
+ "pairs": {
+  "base - passive basket": {
+   "mean_pp": -0.34102383750000015,
+   "wins": 19,
+   "losses": 18,
+   "sign_p": 1.0,
+   "perm_p": 0.5165741712914355,
+   "ci95": [
+    -1.4759501064102565,
+    0.6866903541666668
+   ]
+  },
+  "nav4 - passive basket": {
+   "mean_pp": -0.6532492187500002,
+   "wins": 14,
+   "losses": 24,
+   "sign_p": 0.14330665429588407,
+   "perm_p": 0.17649117544122794,
+   "ci95": [
+    -1.761609715972222,
+    0.3902204871710526
+   ]
+  },
+  "nav9 - passive basket": {
+   "mean_pp": -0.3728480782894737,
+   "wins": 19,
+   "losses": 19,
+   "sign_p": 1.0,
+   "perm_p": 0.4074796260186991,
+   "ci95": [
+    -1.3936964115131585,
+    0.5814231226973685
+   ]
+  },
+  "nav4 - base": {
+   "mean_pp": -0.3122253812500001,
+   "wins": 17,
+   "losses": 19,
+   "sign_p": 0.8679394004284404,
+   "perm_p": 0.4512774361281936,
+   "ci95": [
+    -1.2656437465277777,
+    0.6159393708333334
+   ]
+  },
+  "nav9 - base": {
+   "mean_pp": -0.0318242407894737,
+   "wins": 17,
+   "losses": 20,
+   "sign_p": 0.7428293587290682,
+   "perm_p": 0.9322033898305084,
+   "ci95": [
+    -0.756300239423077,
+    0.6865567347972975
+   ]
+  },
+  "nav9 - nav4": {
+   "mean_pp": 0.2804011404605264,
+   "wins": 19,
+   "losses": 18,
+   "sign_p": 1.0,
+   "perm_p": 0.503324833758312,
+   "ci95": [
+    -0.5637159416666667,
+    1.1284870375
+   ]
+  }
+ }
+}

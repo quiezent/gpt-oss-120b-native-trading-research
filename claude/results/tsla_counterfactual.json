@@ -1,0 +1,633 @@
+[
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 0.0,
+  "seed": 2408,
+  "sample_tokens": 537,
+  "action": {
+   "command": "contract",
+   "symbol": "NVDA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 101,
+  "sample_tokens": 307,
+  "action": {
+   "command": "contract",
+   "symbol": "MSFT",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 102,
+  "sample_tokens": 417,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 103,
+  "sample_tokens": 138,
+  "action": {
+   "command": "news-providers"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 104,
+  "sample_tokens": 569,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 105,
+  "sample_tokens": 250,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 106,
+  "sample_tokens": 404,
+  "action": {
+   "command": "quote",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 107,
+  "sample_tokens": 769,
+  "action": {
+   "command": "contract",
+   "symbol": "MSFT",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 108,
+  "sample_tokens": 1035,
+  "action": {
+   "command": "contract",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 109,
+  "sample_tokens": 723,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 110,
+  "sample_tokens": 352,
+  "action": {
+   "command": "contract",
+   "symbol": "MSFT",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 0.0,
+  "seed": 2408,
+  "sample_tokens": 369,
+  "action": {
+   "command": "quote",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 101,
+  "sample_tokens": 257,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 102,
+  "sample_tokens": 617,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "conid": 76792991,
+   "market_data_type": 1
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 103,
+  "sample_tokens": 734,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.5,
+   "order_ref": "pa:tsla_buy3",
+   "reference_price": 374.5
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 104,
+  "sample_tokens": 496,
+  "action": {
+   "command": "contract",
+   "symbol": "NVDA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 105,
+  "sample_tokens": 682,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 1
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 106,
+  "sample_tokens": 335,
+  "action": {
+   "command": "quote",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 1
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 107,
+  "sample_tokens": 365,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 1
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 108,
+  "sample_tokens": 814,
+  "action": {
+   "command": "quote",
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 109,
+  "sample_tokens": 868,
+  "action": {
+   "command": "quote",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 1,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 110,
+  "sample_tokens": 720,
+  "action": {
+   "command": "quote",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ"
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 0.0,
+  "seed": 2408,
+  "sample_tokens": 191,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.5,
+   "reference_price": 374.5,
+   "order_ref": "pa:tsla_buy3"
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 101,
+  "sample_tokens": 85,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 102,
+  "sample_tokens": 170,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 103,
+  "sample_tokens": 173,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 104,
+  "sample_tokens": 209,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.5,
+   "order_ref": "pa:tsla_buy3",
+   "reference_price": 374.5
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 105,
+  "sample_tokens": 201,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.5,
+   "reference_price": 374.5,
+   "order_ref": "pa:tsla_buy3"
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 106,
+  "sample_tokens": 128,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 107,
+  "sample_tokens": 188,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 108,
+  "sample_tokens": 121,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 109,
+  "sample_tokens": 276,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 375.0,
+   "reference_price": 375.0,
+   "order_ref": "pa:tsla_buy_main"
+  }
+ },
+ {
+  "step": 3,
+  "arm": "base",
+  "temperature": 1.0,
+  "seed": 110,
+  "sample_tokens": 228,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.5,
+   "reference_price": 374.5,
+   "order_ref": "pa:tsla_buy3"
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 0.0,
+  "seed": 2408,
+  "sample_tokens": 123,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 101,
+  "sample_tokens": 84,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 102,
+  "sample_tokens": 196,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.0,
+   "reference_price": 374.3,
+   "order_ref": "pa:tsla_long1"
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 103,
+  "sample_tokens": 221,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.3,
+   "reference_price": 374.3,
+   "order_ref": "pa:tsla_buy3"
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 104,
+  "sample_tokens": 251,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.45,
+   "reference_price": 374.45,
+   "order_ref": "pa:tsla_long1"
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 105,
+  "sample_tokens": 230,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.5,
+   "order_ref": "pa:tsla_buy3",
+   "reference_price": 374.5
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 106,
+  "sample_tokens": 220,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.5,
+   "order_ref": "pa:tsla_buy3",
+   "reference_price": 374.5
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 107,
+  "sample_tokens": 171,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 108,
+  "sample_tokens": 65,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 109,
+  "sample_tokens": 152,
+  "action": {
+   "command": "quote",
+   "symbol": "AAPL",
+   "primary_exchange": "NASDAQ",
+   "market_data_type": 3
+  }
+ },
+ {
+  "step": 3,
+  "arm": "nav4",
+  "temperature": 1.0,
+  "seed": 110,
+  "sample_tokens": 232,
+  "action": {
+   "command": "submit-stock-limit",
+   "conid": 76792991,
+   "symbol": "TSLA",
+   "primary_exchange": "NASDAQ",
+   "side": "BUY",
+   "quantity": 3,
+   "tif": "DAY",
+   "limit": 374.5,
+   "reference_price": 374.5,
+   "order_ref": "pa:tsla_buy3"
+  }
+ }
+]
