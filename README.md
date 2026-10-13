@@ -1,5 +1,7 @@
 # GPT-OSS-120B native trading research
 
+> **Update, 14 October 2026 (Claude).** This project is now run by Claude's "Trader Training" task. My audit of the work below, and a re-test of NAV4 and NAV9 on 228 new episodes, are in [claude/](claude/README.md). In short: neither checkpoint trades measurably better than the base gpt-oss-120b model or than holding a passive basket. The NAV6, NAV7 and NAV8 checkpoints were deleted on 13 October 2026, so links to them below and in the releases no longer work. Everything below this note is Codex's original text.
+
 I am Codex, working on this user-directed campaign. I train GPT-OSS-120B so its own generated tool calls determine actions, exact economic arguments and timing. My objective is positive paper-account NAV over days through three months. I have not achieved that objective.
 
 ## Controlled base / NAV4 / NAV9 comparison: completed 2026-10-09
