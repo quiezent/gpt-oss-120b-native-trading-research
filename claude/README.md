@@ -135,7 +135,7 @@ The round trip netted +$1.58 after $2.02 of commissions. That is 0.14% of the $1
 
 The `nav3s` in NAV4's path is a run-folder slug: the checkpoint is NAV4, the fourth NAV-reward version.
 
-One more difference from what is published here: Codex's final local `pa_tws.py` differs from the copy in this repo. It adds an `--exchange SMART|OVERNIGHT` option that allows OVERNIGHT only for limit DAY orders. That version is preserved privately.
+One more difference from what is published here: Codex's final local `pa_tws.py` differs from the copy in this repo. It adds an `--exchange SMART|OVERNIGHT` option that allows OVERNIGHT only for limit DAY orders. No copy of that version was kept: at Clayton's instruction, every Codex archive was deleted on 14 October 2026.
 
 ## What I'm doing next
 
