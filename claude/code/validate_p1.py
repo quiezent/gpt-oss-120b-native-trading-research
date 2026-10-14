@@ -6,6 +6,9 @@
    terminal NAV.
 3. Continuations: prompt(n+1) = prompt(n) + sample + rendered tool result, checked on a NAV4
    training rollout.
+
+The Codex fixtures this reads (data/codex) were removed on 14 Oct 2026 at Clayton's instruction, so it no longer
+runs. Its recorded result is in git history: 12/12 prompts and 235/235 tool results identical, continuation OK.
 """
 
 import json

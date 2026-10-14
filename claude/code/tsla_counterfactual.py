@@ -5,6 +5,9 @@ Step 1 is the opening prompt; step 3 is the prompt on which NAV4 placed BUY 3 TS
 num_samples=5 and a single seed returned five identical samples.
 
     python tsla_counterfactual.py
+
+NAV4's saved live prompts (data/codex) were removed on 14 Oct 2026 at Clayton's instruction, so this no longer
+runs; its results are in runs/tsla_counterfactual/.
 """
 
 import json
