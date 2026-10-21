@@ -37,9 +37,9 @@ def read(path):
 
 
 def et_date(ib_time):
-    """IBKR execution time -> US Eastern trading date (YYYYMMDD). The Gateway reports its local time (MYT,
+    """IBKR execution time -> US Eastern trading date (YYYYMMDD). The Gateway reports its local time (UTC+8,
     e.g. "20261014  22:01:05"); a time with an explicit zone (e.g. "... US/Eastern") is used as is."""
-    from datetime import datetime
+    from datetime import datetime, timedelta, timezone
     from zoneinfo import ZoneInfo
     s = " ".join(str(ib_time).split())
     parts = s.split(" ")
@@ -47,7 +47,7 @@ def et_date(ib_time):
         if len(parts) >= 3:
             dt = datetime.strptime(parts[0] + " " + parts[1], "%Y%m%d %H:%M:%S").replace(tzinfo=ZoneInfo(parts[2]))
         else:
-            dt = datetime.strptime(s, "%Y%m%d %H:%M:%S").replace(tzinfo=ZoneInfo("Asia/Kuala_Lumpur"))
+            dt = datetime.strptime(s, "%Y%m%d %H:%M:%S").replace(tzinfo=timezone(timedelta(hours=8)))
         return dt.astimezone(ZoneInfo("America/New_York")).strftime("%Y%m%d")
     except (ValueError, KeyError):
         return s[:8]

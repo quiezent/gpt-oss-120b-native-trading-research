@@ -6,7 +6,7 @@
     python live.py --job refresh|record|macro
 
 Schedule (US Eastern, so DST is automatic): 07:30 refresh daily bars (it takes about 40 minutes); a fill sync 3 minutes
-before the Gateway's day ends (midnight Kuala Lumpur: 12:00 ET, 11:00 ET in winter); looks at 09:00 (before the
+before the Gateway's day ends (midnight UTC+8, its login time zone: 12:00 ET, 11:00 ET in winter); looks at 09:00 (before the
 open) and every 30 minutes until 15:30; 16:15 record fills and each sleeve's day. At each look a model sees its
 sleeve and the market table (with delayed last prices during the session), may research with the
 tools in tools.py, then submits orders, which are placed exactly as written. gpt-oss models run on
@@ -30,7 +30,7 @@ import sys
 import threading
 import time
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from datetime import time as dtime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -49,7 +49,7 @@ LIVE = ROOT / "runs" / "live"
 STOP = LIVE / "STOP"
 HOLD = LIVE / "HOLD"   # while it exists, looks wait (not marked done) and place nothing; refresh/record run
 ET = ZoneInfo("America/New_York")
-MYT = ZoneInfo("Asia/Kuala_Lumpur")   # the Gateway's login time zone: its day ends at midnight here
+GW_TZ = timezone(timedelta(hours=8))   # the Gateway's login time zone (UTC+8, no DST): its day ends at midnight here
 PROJECT_ID = "51e502c3-a670-40ad-b14a-c9eb569d4363"
 BASE = "openai/gpt-oss-120b"
 HOLIDAYS = {"2026-11-26", "2026-12-25", "2027-01-01", "2027-01-18", "2027-02-15", "2027-03-26", "2027-05-31",
@@ -69,10 +69,10 @@ def log(msg):
 
 
 def gateway_cutoff(d):
-    """When the Gateway's day ends: midnight in its login time zone (Kuala Lumpur), 12:00 ET in US daylight time and
+    """When the Gateway's day ends: midnight in its login time zone (UTC+8), 12:00 ET in US daylight time and
     11:00 ET otherwise. Executions and completed orders from before it are no longer served (19 Oct: the 11:30 look's
     fills were lost that way), so the "sync" job records fills 3 minutes before it."""
-    t = datetime.combine(d + timedelta(days=1), dtime(0, 0), MYT).astimezone(ET) - timedelta(minutes=3)
+    t = datetime.combine(d + timedelta(days=1), dtime(0, 0), GW_TZ).astimezone(ET) - timedelta(minutes=3)
     return t.hour, t.minute
 
 
@@ -80,7 +80,7 @@ def sync():
     with gateway() as gw:
         n = paper.sync_fills(gw)
         reconcile(gw)
-    log(f"fills synced before the gateway's midnight (Kuala Lumpur): {n} new")
+    log(f"fills synced before the gateway's midnight (UTC+8): {n} new")
 
 
 def reconcile(gw):

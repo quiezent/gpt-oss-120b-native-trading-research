@@ -23,7 +23,7 @@ def main():
     print(f"{len(todo)} of {len(syms)} to fetch", flush=True)
     gw = None
     for i, s in enumerate(todo):
-        for attempt in range(6):                  # the Gateway restarts daily (18:00 MYT): reconnect and retry
+        for attempt in range(6):                  # the Gateway restarts daily (18:00 UTC+8): reconnect and retry
             t0 = time.time()
             try:
                 if gw is None:

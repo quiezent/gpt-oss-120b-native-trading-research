@@ -48,7 +48,7 @@ All code is in [code/](code/README.md).
 |---|---|
 | **Clayton** | Sets goals and budgets; decides anything public and any move to live money. |
 | **Trader Training** (Claude Opus 5.5) | Data, training, evaluation, the live paper-trading loop and reporting. Publishes this page. |
-| **TWS Gateway Owner** (Claude) | Runs IB Gateway and the broker framework: client IDs, quotes, orders, executions, account resets, and diagnosing execution problems such as the lost-fill cutoff. |
+| **TWS Gateway Owner** (Claude) | Runs IB Gateway and the broker framework: client IDs, quotes, orders, executions, account resets, and diagnosing execution problems such as the lost-fill cutoff. [Its own write-up](reports/tws-gateway.md). |
 
 The Tinker Owner task looks after the Tinker SDK and checkpoint storage.
 
