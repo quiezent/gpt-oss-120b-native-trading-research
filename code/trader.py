@@ -39,7 +39,7 @@ SYSTEM_LIVE = """You manage a ${size:,} sleeve of an Interactive Brokers paper a
 
 You get a look every 30 minutes, from 09:00 ET (before the 09:30 open) to 15:30 ET. Each look shows your sleeve and a market table built from daily bars through the previous close; during the session the table also has delayed (about 15 minutes) last prices. Before deciding you may research with the tools you are given (quotes, price history and, where available, news and market scanners), then you call submit exactly once. Orders work from the moment you submit them (from the open, if you submit before it). DAY orders expire at the close; GTC orders work until they fill or you cancel them. To do nothing, submit empty lists.
 
-Your goal: grow the sleeve {goal_pct}% this week, from ${size:,} to ${target:,} by the close on {deadline}{goal_pace}. The sleeve's value counts after commissions ($0.005 a share, minimum $1 an order) and slippage, and it is compared with holding cash and with holding SPY over the same time. Missing an opportunity is as much an error as a bad trade.
+Your goal: grow the sleeve {goal_pct}% this week, from ${size:,} to ${target:,} by the close on {deadline}: the pace of +200% a year. The sleeve's value counts after commissions ($0.005 a share, minimum $1 an order) and slippage, and it is compared with holding cash and with holding SPY over the same time. Missing an opportunity is as much an error as a bad trade.
 
 Order types: MKT (market), MOO (opening auction; only before the open), LMT (needs limit), STP (stop; needs stop), STP LMT (needs stop and limit), TRAIL (trailing stop; needs trail_percent), MOC and LOC (at the close; LOC needs limit). Short selling is allowed. Gross exposure may not exceed 2x the sleeve.
 
@@ -52,8 +52,7 @@ How to decide: research first, then act.
 4. Check every candidate with news and quote; use stats for its volatility (to size the trade) and, before a short, whether shares can be borrowed; bars if the trend matters. Do not trade a symbol you have not checked in this look.
 5. Call submit once. Each look starts fresh: only your sleeve, your open orders and the notes you write in submit carry over to the next look, so write down your thesis, plan and exit levels there."""
 
-_GOAL = json.loads((ROOT / "goal.json").read_text(encoding="utf-8"))   # the weekly goal (Clayton's); kept out of the public code
-GOAL_PCT, GOAL_PACE = _GOAL["weekly_pct"], _GOAL["pace"]
+GOAL_PCT = 2.14   # Clayton, 17 Oct 2026: +200% a year (CAGR), so 3 ** (1/52) - 1 = 2.14% a week; each week runs Monday to Friday
 
 
 def goal_date(today):
@@ -79,7 +78,7 @@ def live_system(size, today, ml=False, news=True):
     if not news:
         text = text.replace(S1_NEWS, S1_NONE).replace(S4_NEWS, S4_NONE)
     return (text.replace("${size:,}", f"${size:,.0f}").replace("${target:,}", f"${size * (1 + GOAL_PCT / 100):,.0f}")
-            .replace("{goal_pct}", f"{GOAL_PCT:g}").replace("{goal_pace}", GOAL_PACE).replace("{deadline}", f"{g:%A} {g.day} {g:%B} {g.year}"))
+            .replace("{goal_pct}", f"{GOAL_PCT:g}").replace("{deadline}", f"{g:%A} {g.day} {g:%B} {g.year}"))
 
 
 def goal_line(size, value, sessions_left, today):
