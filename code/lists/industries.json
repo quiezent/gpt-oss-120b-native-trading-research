@@ -1,0 +1,3663 @@
+{
+ "A": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Diagnostic Equipment",
+  "stock_type": "COMMON",
+  "long_name": "AGILENT TECHNOLOGIES INC"
+ },
+ "AAPL": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computers",
+  "stock_type": "COMMON",
+  "long_name": "APPLE INC"
+ },
+ "ABBV": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Drugs",
+  "stock_type": "COMMON",
+  "long_name": "ABBVIE INC"
+ },
+ "ABNB": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "E-Commerce/Services",
+  "stock_type": "COMMON",
+  "long_name": "AIRBNB INC-CLASS A"
+ },
+ "ABT": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "ABBOTT LABORATORIES ."
+ },
+ "ACGL": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Property/Casualty Ins",
+  "stock_type": "COMMON",
+  "long_name": "ARCH CAPITAL GROUP LTD"
+ },
+ "ACN": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computer Services",
+  "stock_type": "COMMON",
+  "long_name": "ACCENTURE PLC-CL A"
+ },
+ "ADBE": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Electronic Forms",
+  "stock_type": "COMMON",
+  "long_name": "ADOBE INC"
+ },
+ "ADI": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "ANALOG DEVICES INC"
+ },
+ "ADM": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Agriculture",
+  "subcategory": "Agricultural Operations",
+  "stock_type": "COMMON",
+  "long_name": "ARCHER-DANIELS-MIDLAND CO"
+ },
+ "ADP": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Services",
+  "stock_type": "COMMON",
+  "long_name": "AUTOMATIC DATA PROCESSING"
+ },
+ "ADSK": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Computer Aided Design",
+  "stock_type": "COMMON",
+  "long_name": "AUTODESK INC"
+ },
+ "AEE": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "AMEREN CORP"
+ },
+ "AEP": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "AMERICAN ELECTRIC POWER"
+ },
+ "AES": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "AES CORP"
+ },
+ "AFL": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Life/Health Insurance",
+  "stock_type": "COMMON",
+  "long_name": "AFLAC INC"
+ },
+ "AIG": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Multi-line Insurance",
+  "stock_type": "COMMON",
+  "long_name": "AMERICAN INTERNATIONAL GROUP"
+ },
+ "AIZ": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Property/Casualty Ins",
+  "stock_type": "COMMON",
+  "long_name": "ASSURANT INC"
+ },
+ "AJG": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Insurance Brokers",
+  "stock_type": "COMMON",
+  "long_name": "ARTHUR J GALLAGHER & CO"
+ },
+ "AKAM": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Computer Software",
+  "stock_type": "COMMON",
+  "long_name": "AKAMAI TECHNOLOGIES INC"
+ },
+ "ALB": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Chemicals-Specialty",
+  "stock_type": "COMMON",
+  "long_name": "ALBEMARLE CORP"
+ },
+ "ALGN": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "ALIGN TECHNOLOGY INC"
+ },
+ "ALL": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Multi-line Insurance",
+  "stock_type": "COMMON",
+  "long_name": "ALLSTATE CORP"
+ },
+ "ALLE": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Secur Devices",
+  "stock_type": "COMMON",
+  "long_name": "ALLEGION PLC"
+ },
+ "AMAT": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Semiconductor Equipment",
+  "stock_type": "COMMON",
+  "long_name": "APPLIED MATERIALS INC"
+ },
+ "AMCR": {
+  "industry": "Industrial",
+  "category": "Packaging&Containers",
+  "subcategory": "Containers-Paper/Plastic",
+  "stock_type": "COMMON",
+  "long_name": "AMCOR PLC"
+ },
+ "AMD": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "ADVANCED MICRO DEVICES"
+ },
+ "AME": {
+  "industry": "Industrial",
+  "category": "Electrical Compo&Equip",
+  "subcategory": "Electric Products-Misc",
+  "stock_type": "COMMON",
+  "long_name": "AMETEK INC"
+ },
+ "AMGN": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Biotechnology",
+  "subcategory": "Medical-Biomedical/Gene",
+  "stock_type": "COMMON",
+  "long_name": "AMGEN INC"
+ },
+ "AMP": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Invest Mgmnt/Advis Serv",
+  "stock_type": "COMMON",
+  "long_name": "AMERIPRISE FINANCIAL INC"
+ },
+ "AMT": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Diversified",
+  "stock_type": "REIT",
+  "long_name": "AMERICAN TOWER CORP"
+ },
+ "AMZN": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "E-Commerce/Products",
+  "stock_type": "COMMON",
+  "long_name": "AMAZON.COM INC"
+ },
+ "ANET": {
+  "industry": "Communications",
+  "category": "Telecommunications",
+  "subcategory": "Networking Products",
+  "stock_type": "COMMON",
+  "long_name": "ARISTA NETWORKS INC"
+ },
+ "AON": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Insurance Brokers",
+  "stock_type": "COMMON",
+  "long_name": "AON PLC-CLASS A"
+ },
+ "AOS": {
+  "industry": "Industrial",
+  "category": "Miscellaneous Manufactur",
+  "subcategory": "Diversified Manufact Op",
+  "stock_type": "COMMON",
+  "long_name": "SMITH (A.O.) CORP"
+ },
+ "APA": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Explor&Prodtn",
+  "stock_type": "COMMON",
+  "long_name": "APA CORP"
+ },
+ "APD": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Industrial Gases",
+  "stock_type": "COMMON",
+  "long_name": "AIR PRODUCTS & CHEMICALS INC"
+ },
+ "APH": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Connectors",
+  "stock_type": "COMMON",
+  "long_name": "AMPHENOL CORP-CL A"
+ },
+ "APTV": {
+  "industry": "Consumer, Cyclical",
+  "category": "Auto Parts&Equipment",
+  "subcategory": "Auto/Trk Prts&Equip-Orig",
+  "stock_type": "COMMON",
+  "long_name": "APTIV PLC"
+ },
+ "ARE": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Health Care",
+  "stock_type": "REIT",
+  "long_name": "ALEXANDRIA REAL ESTATE EQUIT"
+ },
+ "ARKK": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ARK INNOVATION ETF"
+ },
+ "ATO": {
+  "industry": "Utilities",
+  "category": "Gas",
+  "subcategory": "Gas-Distribution",
+  "stock_type": "COMMON",
+  "long_name": "ATMOS ENERGY CORP"
+ },
+ "AVGO": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "BROADCOM INC"
+ },
+ "AVY": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Household Products/Wares",
+  "subcategory": "Office Supplies&Forms",
+  "stock_type": "COMMON",
+  "long_name": "AVERY DENNISON CORP"
+ },
+ "AWK": {
+  "industry": "Utilities",
+  "category": "Water",
+  "subcategory": "Water",
+  "stock_type": "COMMON",
+  "long_name": "AMERICAN WATER WORKS CO INC"
+ },
+ "AXON": {
+  "industry": "Industrial",
+  "category": "Miscellaneous Manufactur",
+  "subcategory": "Firearms&Ammunition",
+  "stock_type": "COMMON",
+  "long_name": "AXON ENTERPRISE INC"
+ },
+ "AXP": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Credit Card",
+  "stock_type": "COMMON",
+  "long_name": "AMERICAN EXPRESS CO"
+ },
+ "AZO": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Auto Parts",
+  "stock_type": "COMMON",
+  "long_name": "AUTOZONE INC"
+ },
+ "BA": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense",
+  "stock_type": "COMMON",
+  "long_name": "BOEING CO/THE"
+ },
+ "BAC": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Diversified Banking Inst",
+  "stock_type": "COMMON",
+  "long_name": "BANK OF AMERICA CORP"
+ },
+ "BALL": {
+  "industry": "Industrial",
+  "category": "Packaging&Containers",
+  "subcategory": "Containers-Metal/Glass",
+  "stock_type": "COMMON",
+  "long_name": "BALL CORP"
+ },
+ "BAX": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "BAXTER INTERNATIONAL INC."
+ },
+ "BBY": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Consumer Electron",
+  "stock_type": "COMMON",
+  "long_name": "BEST BUY CO INC"
+ },
+ "BDX": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Drug Delivery Systems",
+  "stock_type": "COMMON",
+  "long_name": "BECTON DICKINSON AND CO"
+ },
+ "BEN": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Invest Mgmnt/Advis Serv",
+  "stock_type": "COMMON",
+  "long_name": "FRANKLIN TEMPLETON INC"
+ },
+ "BF B": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Beverages",
+  "subcategory": "Beverages-Wine/Spirits",
+  "stock_type": "COMMON",
+  "long_name": "BROWN-FORMAN CORP-CLASS B"
+ },
+ "BG": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Agriculture",
+  "subcategory": "Agricultural Operations",
+  "stock_type": "COMMON",
+  "long_name": "BUNGE GLOBAL SA"
+ },
+ "BIIB": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Biotechnology",
+  "subcategory": "Medical-Biomedical/Gene",
+  "stock_type": "COMMON",
+  "long_name": "BIOGEN INC"
+ },
+ "BITO": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "PROSHARES BITCOIN ETF-USD"
+ },
+ "BKNG": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "E-Commerce/Services",
+  "stock_type": "COMMON",
+  "long_name": "BOOKING HOLDINGS INC"
+ },
+ "BKR": {
+  "industry": "Energy",
+  "category": "Oil&Gas Services",
+  "subcategory": "Oil-Field Services",
+  "stock_type": "COMMON",
+  "long_name": "BAKER HUGHES CO"
+ },
+ "BLK": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Invest Mgmnt/Advis Serv",
+  "stock_type": "COMMON",
+  "long_name": "BLACKROCK INC"
+ },
+ "BMY": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Drugs",
+  "stock_type": "COMMON",
+  "long_name": "BRISTOL-MYERS SQUIBB CO"
+ },
+ "BNY": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Fiduciary Banks",
+  "stock_type": "COMMON",
+  "long_name": "BANK OF NEW YORK MELLON CORP"
+ },
+ "BR": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Other Services",
+  "stock_type": "COMMON",
+  "long_name": "BROADRIDGE FINANCIAL SOLUTIO"
+ },
+ "BRK B": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Property/Casualty Ins",
+  "stock_type": "COMMON",
+  "long_name": "BERKSHIRE HATHAWAY INC-CL B"
+ },
+ "BRO": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Insurance Brokers",
+  "stock_type": "COMMON",
+  "long_name": "BROWN & BROWN INC"
+ },
+ "BSX": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Instruments",
+  "stock_type": "COMMON",
+  "long_name": "BOSTON SCIENTIFIC CORP"
+ },
+ "BX": {
+  "industry": "Financial",
+  "category": "Private Equity",
+  "subcategory": "Private Equity",
+  "stock_type": "COMMON",
+  "long_name": "BLACKSTONE INC"
+ },
+ "BXP": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Office Property",
+  "stock_type": "REIT",
+  "long_name": "BXP INC"
+ },
+ "C": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Diversified Banking Inst",
+  "stock_type": "COMMON",
+  "long_name": "CITIGROUP INC"
+ },
+ "CAH": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Whsle Drug Dist",
+  "stock_type": "COMMON",
+  "long_name": "CARDINAL HEALTH INC"
+ },
+ "CARR": {
+  "industry": "Industrial",
+  "category": "Building Materials",
+  "subcategory": "Bldg Prod-Air&Heating",
+  "stock_type": "COMMON",
+  "long_name": "CARRIER GLOBAL CORP"
+ },
+ "CAT": {
+  "industry": "Industrial",
+  "category": "Machinery-Constr&Mining",
+  "subcategory": "Machinery-Constr&Mining",
+  "stock_type": "COMMON",
+  "long_name": "CATERPILLAR INC"
+ },
+ "CB": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Multi-line Insurance",
+  "stock_type": "COMMON",
+  "long_name": "CHUBB LTD"
+ },
+ "CBOE": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Other Services",
+  "stock_type": "COMMON",
+  "long_name": "CBOE GLOBAL MARKETS INC"
+ },
+ "CBRE": {
+  "industry": "Financial",
+  "category": "Real Estate",
+  "subcategory": "Real Estate Mgmnt/Servic",
+  "stock_type": "COMMON",
+  "long_name": "CBRE GROUP INC - A"
+ },
+ "CCI": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Diversified",
+  "stock_type": "REIT",
+  "long_name": "CROWN CASTLE INC"
+ },
+ "CCL": {
+  "industry": "Consumer, Cyclical",
+  "category": "Leisure Time",
+  "subcategory": "Cruise Lines",
+  "stock_type": "COMMON",
+  "long_name": "CARNIVAL CORP LTD"
+ },
+ "CDNS": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Computer Aided Design",
+  "stock_type": "COMMON",
+  "long_name": "CADENCE DESIGN SYS INC"
+ },
+ "CDW": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "E-Services/Consulting",
+  "stock_type": "COMMON",
+  "long_name": "CDW CORP/DE"
+ },
+ "CEG": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Generation",
+  "stock_type": "COMMON",
+  "long_name": "CONSTELLATION ENERGY"
+ },
+ "CF": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Agricultural Chemicals",
+  "stock_type": "COMMON",
+  "long_name": "CF INDUSTRIES HOLDINGS INC"
+ },
+ "CFG": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Commer Banks-Eastern US",
+  "stock_type": "COMMON",
+  "long_name": "CITIZENS FINANCIAL GROUP"
+ },
+ "CHD": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Household Products/Wares",
+  "subcategory": "Soap&Cleaning Prepar",
+  "stock_type": "COMMON",
+  "long_name": "CHURCH & DWIGHT CO INC"
+ },
+ "CHRW": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Services",
+  "stock_type": "COMMON",
+  "long_name": "C.H. ROBINSON WORLDWIDE INC"
+ },
+ "CHTR": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Cable/Satellite TV",
+  "stock_type": "COMMON",
+  "long_name": "CHARTER COMMUNICATIONS INC-A"
+ },
+ "CI": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical-HMO",
+  "stock_type": "COMMON",
+  "long_name": "THE CIGNA GROUP"
+ },
+ "CINF": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Multi-line Insurance",
+  "stock_type": "COMMON",
+  "long_name": "CINCINNATI FINANCIAL CORP"
+ },
+ "CL": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Cosmetics/Personal Care",
+  "subcategory": "Cosmetics&Toiletries",
+  "stock_type": "COMMON",
+  "long_name": "COLGATE-PALMOLIVE CO"
+ },
+ "CLX": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Household Products/Wares",
+  "subcategory": "Consumer Products-Misc",
+  "stock_type": "COMMON",
+  "long_name": "CLOROX COMPANY"
+ },
+ "CMCSA": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Cable/Satellite TV",
+  "stock_type": "COMMON",
+  "long_name": "COMCAST CORP-CLASS A"
+ },
+ "CME": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Other Services",
+  "stock_type": "COMMON",
+  "long_name": "CME GROUP INC"
+ },
+ "CMG": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Restaurants",
+  "stock_type": "COMMON",
+  "long_name": "CHIPOTLE MEXICAN GRILL INC"
+ },
+ "CMI": {
+  "industry": "Consumer, Cyclical",
+  "category": "Auto Manufacturers",
+  "subcategory": "Auto-Med&Heavy Duty Trks",
+  "stock_type": "COMMON",
+  "long_name": "CUMMINS INC"
+ },
+ "CMS": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "CMS ENERGY CORP"
+ },
+ "CNC": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical-HMO",
+  "stock_type": "COMMON",
+  "long_name": "CENTENE CORP"
+ },
+ "CNP": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "CENTERPOINT ENERGY INC"
+ },
+ "COF": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Credit Card",
+  "stock_type": "COMMON",
+  "long_name": "CAPITAL ONE FINANCIAL CORP"
+ },
+ "COO": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "COOPER COS INC/THE"
+ },
+ "COP": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Explor&Prodtn",
+  "stock_type": "COMMON",
+  "long_name": "CONOCOPHILLIPS"
+ },
+ "COR": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Whsle Drug Dist",
+  "stock_type": "COMMON",
+  "long_name": "CENCORA INC"
+ },
+ "COST": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Discount",
+  "stock_type": "COMMON",
+  "long_name": "COSTCO WHOLESALE CORP"
+ },
+ "CPAY": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Serv-Finance",
+  "stock_type": "COMMON",
+  "long_name": "CORPAY INC"
+ },
+ "CPRT": {
+  "industry": "Consumer, Cyclical",
+  "category": "Distribution/Wholesale",
+  "subcategory": "Distribution/Wholesale",
+  "stock_type": "COMMON",
+  "long_name": "COPART INC"
+ },
+ "CPT": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Apartments",
+  "stock_type": "REIT",
+  "long_name": "CAMDEN PROPERTY TRUST"
+ },
+ "CRL": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical Labs&Testing Srv",
+  "stock_type": "COMMON",
+  "long_name": "CHARLES RIVER LABORATORIES"
+ },
+ "CRM": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Enterprise Software/Serv",
+  "stock_type": "COMMON",
+  "long_name": "SALESFORCE INC"
+ },
+ "CRWD": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computer Data Security",
+  "stock_type": "COMMON",
+  "long_name": "CROWDSTRIKE HOLDINGS INC - A"
+ },
+ "CSCO": {
+  "industry": "Communications",
+  "category": "Telecommunications",
+  "subcategory": "Networking Products",
+  "stock_type": "COMMON",
+  "long_name": "CISCO SYSTEMS INC"
+ },
+ "CSGP": {
+  "industry": "Financial",
+  "category": "Real Estate",
+  "subcategory": "Real Estate Mgmnt/Servic",
+  "stock_type": "COMMON",
+  "long_name": "COSTAR GROUP INC"
+ },
+ "CSX": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Rail",
+  "stock_type": "COMMON",
+  "long_name": "CSX CORP"
+ },
+ "CTAS": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Services",
+  "stock_type": "COMMON",
+  "long_name": "CINTAS CORP"
+ },
+ "CTSH": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computer Services",
+  "stock_type": "COMMON",
+  "long_name": "COGNIZANT TECH SOLUTIONS-A"
+ },
+ "CVS": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Pharmacy Services",
+  "stock_type": "COMMON",
+  "long_name": "CVS HEALTH CORP"
+ },
+ "CVX": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "CHEVRON CORP"
+ },
+ "D": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "DOMINION ENERGY INC"
+ },
+ "DAL": {
+  "industry": "Consumer, Cyclical",
+  "category": "Airlines",
+  "subcategory": "Airlines",
+  "stock_type": "COMMON",
+  "long_name": "DELTA AIR LINES INC."
+ },
+ "DBC": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "INVESCO DB COMMODITY INDEX T"
+ },
+ "DD": {
+  "industry": "Industrial",
+  "category": "Miscellaneous Manufactur",
+  "subcategory": "Diversified Manufact Op",
+  "stock_type": "COMMON",
+  "long_name": "DUPONT DE NEMOURS INC"
+ },
+ "DE": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Machinery-Farm",
+  "stock_type": "COMMON",
+  "long_name": "DEERE & CO"
+ },
+ "DECK": {
+  "industry": "Consumer, Cyclical",
+  "category": "Apparel",
+  "subcategory": "Apparel Manufacturers",
+  "stock_type": "COMMON",
+  "long_name": "DECKERS OUTDOOR CORP"
+ },
+ "DELL": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computers",
+  "stock_type": "COMMON",
+  "long_name": "DELL TECHNOLOGIES -C"
+ },
+ "DG": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Discount",
+  "stock_type": "COMMON",
+  "long_name": "DOLLAR GENERAL CORP"
+ },
+ "DGX": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical Labs&Testing Srv",
+  "stock_type": "COMMON",
+  "long_name": "QUEST DIAGNOSTICS INC"
+ },
+ "DHI": {
+  "industry": "Consumer, Cyclical",
+  "category": "Home Builders",
+  "subcategory": "Bldg-Residential/Commer",
+  "stock_type": "COMMON",
+  "long_name": "DR HORTON INC"
+ },
+ "DHR": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Diagnostic Equipment",
+  "stock_type": "COMMON",
+  "long_name": "DANAHER CORP"
+ },
+ "DIA": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR DOW JONES INDUS AVG"
+ },
+ "DIS": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Multimedia",
+  "stock_type": "COMMON",
+  "long_name": "WALT DISNEY CO/THE"
+ },
+ "DLR": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Diversified",
+  "stock_type": "REIT",
+  "long_name": "DIGITAL REALTY TRUST INC."
+ },
+ "DLTR": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Discount",
+  "stock_type": "COMMON",
+  "long_name": "DOLLAR TREE INC"
+ },
+ "DOC": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Health Care",
+  "stock_type": "REIT",
+  "long_name": "HEALTHPEAK PROPERTIES INC"
+ },
+ "DOV": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Machinery-Pumps",
+  "stock_type": "COMMON",
+  "long_name": "DOVER CORP"
+ },
+ "DOW": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Chemicals-Diversified",
+  "stock_type": "COMMON",
+  "long_name": "DOW INC"
+ },
+ "DPZ": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Restaurants",
+  "stock_type": "COMMON",
+  "long_name": "DOMINO'S PIZZA INC"
+ },
+ "DRI": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Restaurants",
+  "stock_type": "COMMON",
+  "long_name": "DARDEN RESTAURANTS INC"
+ },
+ "DTE": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "DTE ENERGY COMPANY"
+ },
+ "DUK": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "DUKE ENERGY CORP"
+ },
+ "DVA": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Dialysis Centers",
+  "stock_type": "COMMON",
+  "long_name": "DAVITA INC"
+ },
+ "DVN": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Explor&Prodtn",
+  "stock_type": "COMMON",
+  "long_name": "DEVON ENERGY CORP"
+ },
+ "DXCM": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Drug Delivery Systems",
+  "stock_type": "COMMON",
+  "long_name": "DEXCOM INC"
+ },
+ "EBAY": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "E-Commerce/Products",
+  "stock_type": "COMMON",
+  "long_name": "EBAY INC"
+ },
+ "ECL": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Chemicals-Specialty",
+  "stock_type": "COMMON",
+  "long_name": "ECOLAB INC"
+ },
+ "ED": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Distribution",
+  "stock_type": "COMMON",
+  "long_name": "CONSOLIDATED EDISON INC"
+ },
+ "EEM": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES MSCI EMERGING MARKET"
+ },
+ "EFA": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES MSCI EAFE ETF"
+ },
+ "EFX": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Serv-Finance",
+  "stock_type": "COMMON",
+  "long_name": "EQUIFAX INC"
+ },
+ "EG": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Reinsurance",
+  "stock_type": "COMMON",
+  "long_name": "EVEREST GROUP LTD"
+ },
+ "EIX": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "EDISON INTL"
+ },
+ "EL": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Cosmetics/Personal Care",
+  "subcategory": "Cosmetics&Toiletries",
+  "stock_type": "COMMON",
+  "long_name": "ESTEE LAUDER COMPANIES-CL A"
+ },
+ "ELV": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical-HMO",
+  "stock_type": "COMMON",
+  "long_name": "ELEVANCE HEALTH INC"
+ },
+ "EMR": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Measur Instr",
+  "stock_type": "COMMON",
+  "long_name": "EMERSON ELECTRIC CO"
+ },
+ "EOG": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Explor&Prodtn",
+  "stock_type": "COMMON",
+  "long_name": "EOG RESOURCES INC"
+ },
+ "EQIX": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Diversified",
+  "stock_type": "REIT",
+  "long_name": "EQUINIX INC"
+ },
+ "EQT": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Explor&Prodtn",
+  "stock_type": "COMMON",
+  "long_name": "EQT CORP"
+ },
+ "ERIE": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Property/Casualty Ins",
+  "stock_type": "COMMON",
+  "long_name": "ERIE INDEMNITY COMPANY-CL A"
+ },
+ "ES": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Distribution",
+  "stock_type": "COMMON",
+  "long_name": "EVERSOURCE ENERGY"
+ },
+ "ESS": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Apartments",
+  "stock_type": "REIT",
+  "long_name": "ESSEX PROPERTY TRUST INC"
+ },
+ "ETHA": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES ETHEREUM TRUST ETF"
+ },
+ "ETN": {
+  "industry": "Industrial",
+  "category": "Electrical Compo&Equip",
+  "subcategory": "Power Conv/Supply Equip",
+  "stock_type": "COMMON",
+  "long_name": "EATON CORP PLC"
+ },
+ "ETR": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "ENTERGY CORP"
+ },
+ "EVRG": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "EVERGY INC"
+ },
+ "EW": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Instruments",
+  "stock_type": "COMMON",
+  "long_name": "EDWARDS LIFESCIENCES CORP"
+ },
+ "EWJ": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES MSCI JAPAN ETF"
+ },
+ "EWZ": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES MSCI BRAZIL ETF"
+ },
+ "EXC": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Distribution",
+  "stock_type": "COMMON",
+  "long_name": "EXELON CORP"
+ },
+ "EXPD": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Services",
+  "stock_type": "COMMON",
+  "long_name": "EXPEDITORS INTL WASH INC"
+ },
+ "EXPE": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "E-Commerce/Services",
+  "stock_type": "COMMON",
+  "long_name": "EXPEDIA GROUP INC"
+ },
+ "EXR": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Storage",
+  "stock_type": "REIT",
+  "long_name": "EXTRA SPACE STORAGE INC"
+ },
+ "F": {
+  "industry": "Consumer, Cyclical",
+  "category": "Auto Manufacturers",
+  "subcategory": "Auto-Cars/Light Trucks",
+  "stock_type": "COMMON",
+  "long_name": "FORD MOTOR CO"
+ },
+ "FANG": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Explor&Prodtn",
+  "stock_type": "COMMON",
+  "long_name": "DIAMONDBACK ENERGY INC"
+ },
+ "FAST": {
+  "industry": "Consumer, Cyclical",
+  "category": "Distribution/Wholesale",
+  "subcategory": "Distribution/Wholesale",
+  "stock_type": "COMMON",
+  "long_name": "FASTENAL CO"
+ },
+ "FCX": {
+  "industry": "Basic Materials",
+  "category": "Mining",
+  "subcategory": "Metal-Copper",
+  "stock_type": "COMMON",
+  "long_name": "FREEPORT-MCMORAN INC"
+ },
+ "FDS": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Multimedia",
+  "stock_type": "COMMON",
+  "long_name": "FACTSET RESEARCH SYSTEMS INC"
+ },
+ "FDX": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Services",
+  "stock_type": "COMMON",
+  "long_name": "FEDEX CORPORATION"
+ },
+ "FE": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "FIRSTENERGY CORP"
+ },
+ "FFIV": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Internet Infrastr Sftwr",
+  "stock_type": "COMMON",
+  "long_name": "F5 INC"
+ },
+ "FICO": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Data Processing/Mgmt",
+  "stock_type": "COMMON",
+  "long_name": "FAIR ISAAC CORP"
+ },
+ "FIS": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Data Processing/Mgmt",
+  "stock_type": "COMMON",
+  "long_name": "FIDELITY NATIONAL INFO SERV"
+ },
+ "FISV": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Data Processing/Mgmt",
+  "stock_type": "COMMON",
+  "long_name": "FISERV INC"
+ },
+ "FITB": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Super-Regional Banks-US",
+  "stock_type": "COMMON",
+  "long_name": "FIFTH THIRD BANCORP"
+ },
+ "FOX": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Broadcast Serv/Program",
+  "stock_type": "COMMON",
+  "long_name": "FOX CORP - CLASS B"
+ },
+ "FOXA": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Broadcast Serv/Program",
+  "stock_type": "COMMON",
+  "long_name": "FOX CORP - CLASS A"
+ },
+ "FRT": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Shopping Centers",
+  "stock_type": "REIT",
+  "long_name": "FEDERAL REALTY INVS TRUST"
+ },
+ "FSLR": {
+  "industry": "Energy",
+  "category": "Energy-Alternate Sources",
+  "subcategory": "Energy-Alternate Sources",
+  "stock_type": "COMMON",
+  "long_name": "FIRST SOLAR INC"
+ },
+ "FTNT": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computer Data Security",
+  "stock_type": "COMMON",
+  "long_name": "FORTINET INC"
+ },
+ "FTV": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Measur Instr",
+  "stock_type": "COMMON",
+  "long_name": "FORTIVE CORP"
+ },
+ "FXE": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "INVESCO CURRENCYSHARES EURO"
+ },
+ "FXI": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES CHINA LARGE-CAP ETF"
+ },
+ "GD": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense",
+  "stock_type": "COMMON",
+  "long_name": "GENERAL DYNAMICS CORP"
+ },
+ "GDDY": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Web Hosting/Design",
+  "stock_type": "COMMON",
+  "long_name": "GODADDY INC - CLASS A"
+ },
+ "GDX": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "VANECK GOLD MINERS ETF"
+ },
+ "GDXJ": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "VANECK JUNIOR GOLD MINERS"
+ },
+ "GE": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense-Equip",
+  "stock_type": "COMMON",
+  "long_name": "GENERAL ELECTRIC"
+ },
+ "GEHC": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Imaging Systems",
+  "stock_type": "COMMON",
+  "long_name": "GE HEALTHCARE TECHNOLOGY"
+ },
+ "GEN": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Internet Security",
+  "stock_type": "COMMON",
+  "long_name": "GEN DIGITAL INC"
+ },
+ "GEV": {
+  "industry": "Industrial",
+  "category": "Machinery-Constr&Mining",
+  "subcategory": "Machinery-Electric Util",
+  "stock_type": "COMMON",
+  "long_name": "GE VERNOVA INC"
+ },
+ "GILD": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Biotechnology",
+  "subcategory": "Medical-Biomedical/Gene",
+  "stock_type": "COMMON",
+  "long_name": "GILEAD SCIENCES INC"
+ },
+ "GIS": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Misc/Diversified",
+  "stock_type": "COMMON",
+  "long_name": "GENERAL MILLS INC"
+ },
+ "GL": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Life/Health Insurance",
+  "stock_type": "COMMON",
+  "long_name": "GLOBE LIFE INC"
+ },
+ "GLD": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SPDR GOLD SHARES"
+ },
+ "GLW": {
+  "industry": "Communications",
+  "category": "Telecommunications",
+  "subcategory": "Telecom Eq Fiber Optics",
+  "stock_type": "COMMON",
+  "long_name": "CORNING INC"
+ },
+ "GM": {
+  "industry": "Consumer, Cyclical",
+  "category": "Auto Manufacturers",
+  "subcategory": "Auto-Cars/Light Trucks",
+  "stock_type": "COMMON",
+  "long_name": "GENERAL MOTORS CO"
+ },
+ "GNRC": {
+  "industry": "Industrial",
+  "category": "Electrical Compo&Equip",
+  "subcategory": "Power Conv/Supply Equip",
+  "stock_type": "COMMON",
+  "long_name": "GENERAC HOLDINGS INC"
+ },
+ "GOOG": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Web Portals/ISP",
+  "stock_type": "COMMON",
+  "long_name": "ALPHABET INC-CL C"
+ },
+ "GOOGL": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Web Portals/ISP",
+  "stock_type": "COMMON",
+  "long_name": "ALPHABET INC-CL A"
+ },
+ "GPC": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Auto Parts",
+  "stock_type": "COMMON",
+  "long_name": "GENUINE PARTS CO"
+ },
+ "GPN": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Serv-Finance",
+  "stock_type": "COMMON",
+  "long_name": "GLOBAL PAYMENTS INC"
+ },
+ "GRMN": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Compo-Misc",
+  "stock_type": "COMMON",
+  "long_name": "GARMIN LTD"
+ },
+ "GS": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Diversified Banking Inst",
+  "stock_type": "COMMON",
+  "long_name": "GOLDMAN SACHS GROUP INC"
+ },
+ "GWW": {
+  "industry": "Consumer, Cyclical",
+  "category": "Distribution/Wholesale",
+  "subcategory": "Distribution/Wholesale",
+  "stock_type": "COMMON",
+  "long_name": "WW GRAINGER INC"
+ },
+ "HAL": {
+  "industry": "Energy",
+  "category": "Oil&Gas Services",
+  "subcategory": "Oil-Field Services",
+  "stock_type": "COMMON",
+  "long_name": "HALLIBURTON CO"
+ },
+ "HAS": {
+  "industry": "Consumer, Cyclical",
+  "category": "Toys/Games/Hobbies",
+  "subcategory": "Toys",
+  "stock_type": "COMMON",
+  "long_name": "HASBRO INC"
+ },
+ "HBAN": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Super-Regional Banks-US",
+  "stock_type": "COMMON",
+  "long_name": "HUNTINGTON BANCSHARES INC"
+ },
+ "HCA": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical-Hospitals",
+  "stock_type": "COMMON",
+  "long_name": "HCA HEALTHCARE INC"
+ },
+ "HD": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Building Products",
+  "stock_type": "COMMON",
+  "long_name": "HOME DEPOT INC"
+ },
+ "HIG": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Multi-line Insurance",
+  "stock_type": "COMMON",
+  "long_name": "HARTFORD INSURANCE GROUP INC"
+ },
+ "HII": {
+  "industry": "Industrial",
+  "category": "Shipbuilding",
+  "subcategory": "Shipbuilding",
+  "stock_type": "COMMON",
+  "long_name": "HUNTINGTON INGALLS INDUSTRIE"
+ },
+ "HLT": {
+  "industry": "Consumer, Cyclical",
+  "category": "Lodging",
+  "subcategory": "Hotels&Motels",
+  "stock_type": "COMMON",
+  "long_name": "HILTON WORLDWIDE HOLDINGS IN"
+ },
+ "HON": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Instruments-Controls",
+  "stock_type": "COMMON",
+  "long_name": "HONEYWELL INTERNATIONAL INC"
+ },
+ "HPE": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computers",
+  "stock_type": "COMMON",
+  "long_name": "HEWLETT PACKARD ENTERPRISE"
+ },
+ "HPQ": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computers",
+  "stock_type": "COMMON",
+  "long_name": "HP INC"
+ },
+ "HRL": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Meat Products",
+  "stock_type": "COMMON",
+  "long_name": "HORMEL FOODS CORP"
+ },
+ "HSIC": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Whsle Drug Dist",
+  "stock_type": "COMMON",
+  "long_name": "HENRY SCHEIN INC"
+ },
+ "HST": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Hotels",
+  "stock_type": "REIT",
+  "long_name": "HOST HOTELS & RESORTS INC"
+ },
+ "HSY": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Confectionery",
+  "stock_type": "COMMON",
+  "long_name": "HERSHEY CO/THE"
+ },
+ "HUBB": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Compo-Misc",
+  "stock_type": "COMMON",
+  "long_name": "HUBBELL INC"
+ },
+ "HUM": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical-HMO",
+  "stock_type": "COMMON",
+  "long_name": "HUMANA INC"
+ },
+ "HWM": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense-Equip",
+  "stock_type": "COMMON",
+  "long_name": "HOWMET AEROSPACE INC"
+ },
+ "HYG": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHR IBX USD HIYLD CB ETF-UI"
+ },
+ "IBB": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES BIOTECHNOLOGY ETF"
+ },
+ "IBIT": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES BITCOIN TRUST ETF"
+ },
+ "IBM": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computer Services",
+  "stock_type": "COMMON",
+  "long_name": "INTL BUSINESS MACHINES CORP"
+ },
+ "ICE": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Other Services",
+  "stock_type": "COMMON",
+  "long_name": "INTERCONTINENTAL EXCHANGE IN"
+ },
+ "ICLN": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES GLOBAL CLEAN ENERGY"
+ },
+ "IDXX": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Diagnostic Kits",
+  "stock_type": "COMMON",
+  "long_name": "IDEXX LABORATORIES INC"
+ },
+ "IEF": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES 7-10 YEAR TREASURY B"
+ },
+ "IEX": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Machinery-General Indust",
+  "stock_type": "COMMON",
+  "long_name": "IDEX CORP"
+ },
+ "IFF": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Chemicals-Specialty",
+  "stock_type": "COMMON",
+  "long_name": "INTL FLAVORS & FRAGRANCES"
+ },
+ "INCY": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Biotechnology",
+  "subcategory": "Medical-Biomedical/Gene",
+  "stock_type": "COMMON",
+  "long_name": "INCYTE CORP"
+ },
+ "INDA": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES MSCI INDIA ETF"
+ },
+ "INTC": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "INTEL CORP"
+ },
+ "INTU": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Applications Software",
+  "stock_type": "COMMON",
+  "long_name": "INTUIT INC"
+ },
+ "INVH": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Apartments",
+  "stock_type": "REIT",
+  "long_name": "INVITATION HOMES INC"
+ },
+ "IP": {
+  "industry": "Basic Materials",
+  "category": "Forest Products&Paper",
+  "subcategory": "Paper&Related Products",
+  "stock_type": "COMMON",
+  "long_name": "INTERNATIONAL PAPER CO"
+ },
+ "IQV": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical Labs&Testing Srv",
+  "stock_type": "COMMON",
+  "long_name": "IQVIA HOLDINGS INC"
+ },
+ "IR": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Machinery-Pumps",
+  "stock_type": "COMMON",
+  "long_name": "INGERSOLL-RAND INC"
+ },
+ "IRM": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Storage",
+  "stock_type": "REIT",
+  "long_name": "IRON MOUNTAIN INC"
+ },
+ "ISRG": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Instruments",
+  "stock_type": "COMMON",
+  "long_name": "INTUITIVE SURGICAL INC"
+ },
+ "IT": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computer Services",
+  "stock_type": "COMMON",
+  "long_name": "GARTNER INC"
+ },
+ "ITB": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES U.S. HOME CONSTRUCTI"
+ },
+ "ITW": {
+  "industry": "Industrial",
+  "category": "Miscellaneous Manufactur",
+  "subcategory": "Diversified Manufact Op",
+  "stock_type": "COMMON",
+  "long_name": "ILLINOIS TOOL WORKS"
+ },
+ "IVZ": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Invest Mgmnt/Advis Serv",
+  "stock_type": "COMMON",
+  "long_name": "INVESCO LTD"
+ },
+ "IWM": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES RUSSELL 2000 ETF"
+ },
+ "IYR": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES US REAL ESTATE ETF"
+ },
+ "J": {
+  "industry": "Industrial",
+  "category": "Engineering&Construction",
+  "subcategory": "Engineering/R&D Services",
+  "stock_type": "COMMON",
+  "long_name": "JACOBS SOLUTIONS INC"
+ },
+ "JBHT": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Truck",
+  "stock_type": "COMMON",
+  "long_name": "HUNT (JB) TRANSPRT SVCS INC"
+ },
+ "JBL": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Compo-Misc",
+  "stock_type": "COMMON",
+  "long_name": "JABIL INC"
+ },
+ "JCI": {
+  "industry": "Industrial",
+  "category": "Building Materials",
+  "subcategory": "Bldg Prod-Air&Heating",
+  "stock_type": "COMMON",
+  "long_name": "JOHNSON CONTROLS INTERNATION"
+ },
+ "JETS": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "US GLOBAL JETS ETF"
+ },
+ "JKHY": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Data Processing/Mgmt",
+  "stock_type": "COMMON",
+  "long_name": "JACK HENRY & ASSOCIATES INC"
+ },
+ "JNJ": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Drugs",
+  "stock_type": "COMMON",
+  "long_name": "JOHNSON & JOHNSON"
+ },
+ "JPM": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Diversified Banking Inst",
+  "stock_type": "COMMON",
+  "long_name": "JPMORGAN CHASE & CO"
+ },
+ "KBE": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR S&P BANK ETF"
+ },
+ "KDP": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Beverages",
+  "subcategory": "Beverages-Non-alcoholic",
+  "stock_type": "COMMON",
+  "long_name": "KEURIG DR PEPPER INC"
+ },
+ "KEY": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Super-Regional Banks-US",
+  "stock_type": "COMMON",
+  "long_name": "KEYCORP"
+ },
+ "KEYS": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Measur Instr",
+  "stock_type": "COMMON",
+  "long_name": "KEYSIGHT TECHNOLOGIES IN"
+ },
+ "KHC": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Misc/Diversified",
+  "stock_type": "COMMON",
+  "long_name": "KRAFT HEINZ CO/THE"
+ },
+ "KIM": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Shopping Centers",
+  "stock_type": "REIT",
+  "long_name": "KIMCO REALTY CORP"
+ },
+ "KKR": {
+  "industry": "Financial",
+  "category": "Private Equity",
+  "subcategory": "Private Equity",
+  "stock_type": "COMMON",
+  "long_name": "KKR & CO INC"
+ },
+ "KLAC": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Semiconductor Equipment",
+  "stock_type": "COMMON",
+  "long_name": "KLA CORP"
+ },
+ "KMB": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Household Products/Wares",
+  "subcategory": "Consumer Products-Misc",
+  "stock_type": "COMMON",
+  "long_name": "KIMBERLY-CLARK CORP"
+ },
+ "KMI": {
+  "industry": "Energy",
+  "category": "Pipelines",
+  "subcategory": "Pipelines",
+  "stock_type": "COMMON",
+  "long_name": "KINDER MORGAN INC"
+ },
+ "KO": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Beverages",
+  "subcategory": "Beverages-Non-alcoholic",
+  "stock_type": "COMMON",
+  "long_name": "COCA-COLA CO/THE"
+ },
+ "KR": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Retail",
+  "stock_type": "COMMON",
+  "long_name": "KROGER CO"
+ },
+ "KRE": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR S&P REGIONAL BANK"
+ },
+ "KVUE": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Cosmetics/Personal Care",
+  "subcategory": "Cosmetics&Toiletries",
+  "stock_type": "COMMON",
+  "long_name": "KENVUE INC"
+ },
+ "KWEB": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "KRANESH CSI CHINA INTERNET"
+ },
+ "L": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Multi-line Insurance",
+  "stock_type": "COMMON",
+  "long_name": "LOEWS CORP"
+ },
+ "LDOS": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computer Services",
+  "stock_type": "COMMON",
+  "long_name": "LEIDOS HOLDINGS INC"
+ },
+ "LEN": {
+  "industry": "Consumer, Cyclical",
+  "category": "Home Builders",
+  "subcategory": "Bldg-Residential/Commer",
+  "stock_type": "COMMON",
+  "long_name": "LENNAR CORP-A"
+ },
+ "LH": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical Labs&Testing Srv",
+  "stock_type": "COMMON",
+  "long_name": "LABCORP HOLDINGS INC"
+ },
+ "LHX": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense-Equip",
+  "stock_type": "COMMON",
+  "long_name": "L3HARRIS TECHNOLOGIES INC"
+ },
+ "LIN": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Industrial Gases",
+  "stock_type": "COMMON",
+  "long_name": "LINDE PLC"
+ },
+ "LLY": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Drugs",
+  "stock_type": "COMMON",
+  "long_name": "ELI LILLY & CO"
+ },
+ "LMT": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense",
+  "stock_type": "COMMON",
+  "long_name": "LOCKHEED MARTIN CORP"
+ },
+ "LNT": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "ALLIANT ENERGY CORP"
+ },
+ "LOW": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Building Products",
+  "stock_type": "COMMON",
+  "long_name": "LOWE'S COS INC"
+ },
+ "LQD": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHR IBX USD INVGD CB ETF-UI"
+ },
+ "LRCX": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Semiconductor Equipment",
+  "stock_type": "COMMON",
+  "long_name": "LAM RESEARCH CORP"
+ },
+ "LULU": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Apparel/Shoe",
+  "stock_type": "COMMON",
+  "long_name": "LULULEMON ATHLETICA INC"
+ },
+ "LUV": {
+  "industry": "Consumer, Cyclical",
+  "category": "Airlines",
+  "subcategory": "Airlines",
+  "stock_type": "COMMON",
+  "long_name": "SOUTHWEST AIRLINES CO"
+ },
+ "LVS": {
+  "industry": "Consumer, Cyclical",
+  "category": "Lodging",
+  "subcategory": "Casino Hotels",
+  "stock_type": "COMMON",
+  "long_name": "LAS VEGAS SANDS CORP"
+ },
+ "LYB": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Chemicals-Diversified",
+  "stock_type": "COMMON",
+  "long_name": "LYONDELLBASELL INDU-CL A"
+ },
+ "LYV": {
+  "industry": "Consumer, Cyclical",
+  "category": "Entertainment",
+  "subcategory": "Theaters",
+  "stock_type": "COMMON",
+  "long_name": "LIVE NATION ENTERTAINMENT IN"
+ },
+ "MA": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Credit Card",
+  "stock_type": "COMMON",
+  "long_name": "MASTERCARD INC - A"
+ },
+ "MAA": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Apartments",
+  "stock_type": "REIT",
+  "long_name": "MID-AMERICA APARTMENT COMM"
+ },
+ "MAR": {
+  "industry": "Consumer, Cyclical",
+  "category": "Lodging",
+  "subcategory": "Hotels&Motels",
+  "stock_type": "COMMON",
+  "long_name": "MARRIOTT INTERNATIONAL -CL A"
+ },
+ "MAS": {
+  "industry": "Industrial",
+  "category": "Building Materials",
+  "subcategory": "Bldg Prod-Wood",
+  "stock_type": "COMMON",
+  "long_name": "MASCO CORP"
+ },
+ "MCD": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Restaurants",
+  "stock_type": "COMMON",
+  "long_name": "MC DONALD'S-CORP"
+ },
+ "MCHP": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "MICROCHIP TECHNOLOGY INC"
+ },
+ "MCK": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Whsle Drug Dist",
+  "stock_type": "COMMON",
+  "long_name": "MCKESSON CORP"
+ },
+ "MCO": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Serv-Finance",
+  "stock_type": "COMMON",
+  "long_name": "MOODY'S CORP"
+ },
+ "MDLZ": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Confectionery",
+  "stock_type": "COMMON",
+  "long_name": "MONDELEZ INTERNATIONAL INC-A"
+ },
+ "MDT": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "MEDTRONIC PLC"
+ },
+ "MDY": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "STATE STREET SPDR S&P MIDCAP"
+ },
+ "MET": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Multi-line Insurance",
+  "stock_type": "COMMON",
+  "long_name": "METLIFE INC"
+ },
+ "META": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Internet Content-Entmnt",
+  "stock_type": "COMMON",
+  "long_name": "META PLATFORMS INC-CLASS A"
+ },
+ "MGM": {
+  "industry": "Consumer, Cyclical",
+  "category": "Lodging",
+  "subcategory": "Casino Hotels",
+  "stock_type": "COMMON",
+  "long_name": "MGM RESORTS INTERNATIONAL"
+ },
+ "MKC": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Misc/Diversified",
+  "stock_type": "COMMON",
+  "long_name": "MCCORMICK & CO-NON VTG SHRS"
+ },
+ "MLM": {
+  "industry": "Industrial",
+  "category": "Building Materials",
+  "subcategory": "Bldg Prod-Cement/Aggreg",
+  "stock_type": "COMMON",
+  "long_name": "MARTIN MARIETTA MATERIALS"
+ },
+ "MMM": {
+  "industry": "Industrial",
+  "category": "Miscellaneous Manufactur",
+  "subcategory": "Diversified Manufact Op",
+  "stock_type": "COMMON",
+  "long_name": "3M CO"
+ },
+ "MNST": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Beverages",
+  "subcategory": "Beverages-Non-alcoholic",
+  "stock_type": "COMMON",
+  "long_name": "MONSTER BEVERAGE CORP"
+ },
+ "MO": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Agriculture",
+  "subcategory": "Tobacco",
+  "stock_type": "COMMON",
+  "long_name": "ALTRIA GROUP INC"
+ },
+ "MOS": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Agricultural Chemicals",
+  "stock_type": "COMMON",
+  "long_name": "MOSAIC CO/THE"
+ },
+ "MPC": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Refining&Marketing",
+  "stock_type": "COMMON",
+  "long_name": "MARATHON PETROLEUM CORP"
+ },
+ "MPWR": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "MONOLITHIC POWER SYSTEMS INC"
+ },
+ "MRK": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Drugs",
+  "stock_type": "COMMON",
+  "long_name": "MERCK & CO INC"
+ },
+ "MRNA": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Biotechnology",
+  "subcategory": "Medical-Biomedical/Gene",
+  "stock_type": "COMMON",
+  "long_name": "MODERNA INC"
+ },
+ "MRSH": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Insurance Brokers",
+  "stock_type": "COMMON",
+  "long_name": "MARSH & MCLENNAN COS"
+ },
+ "MS": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Diversified Banking Inst",
+  "stock_type": "COMMON",
+  "long_name": "MORGAN STANLEY"
+ },
+ "MSCI": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Decision Support Softwar",
+  "stock_type": "COMMON",
+  "long_name": "MSCI INC"
+ },
+ "MSFT": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Applications Software",
+  "stock_type": "COMMON",
+  "long_name": "MICROSOFT CORP"
+ },
+ "MSI": {
+  "industry": "Communications",
+  "category": "Telecommunications",
+  "subcategory": "Wireless Equipment",
+  "stock_type": "COMMON",
+  "long_name": "MOTOROLA SOLUTIONS INC"
+ },
+ "MTB": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Commer Banks-Eastern US",
+  "stock_type": "COMMON",
+  "long_name": "M & T BANK CORP"
+ },
+ "MTD": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Instruments-Controls",
+  "stock_type": "COMMON",
+  "long_name": "METTLER-TOLEDO INTERNATIONAL"
+ },
+ "MU": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "MICRON TECHNOLOGY INC"
+ },
+ "NCLH": {
+  "industry": "Consumer, Cyclical",
+  "category": "Leisure Time",
+  "subcategory": "Cruise Lines",
+  "stock_type": "COMMON",
+  "long_name": "NORWEGIAN CRUISE LINE HOLDIN"
+ },
+ "NDAQ": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Other Services",
+  "stock_type": "COMMON",
+  "long_name": "NASDAQ INC"
+ },
+ "NDSN": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Machinery-General Indust",
+  "stock_type": "COMMON",
+  "long_name": "NORDSON CORP"
+ },
+ "NEE": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "NEXTERA ENERGY INC"
+ },
+ "NEM": {
+  "industry": "Basic Materials",
+  "category": "Mining",
+  "subcategory": "Gold Mining",
+  "stock_type": "COMMON",
+  "long_name": "NEWMONT CORP"
+ },
+ "NFLX": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Internet Content-Entmnt",
+  "stock_type": "COMMON",
+  "long_name": "NETFLIX INC"
+ },
+ "NI": {
+  "industry": "Utilities",
+  "category": "Gas",
+  "subcategory": "Gas-Distribution",
+  "stock_type": "COMMON",
+  "long_name": "NISOURCE INC"
+ },
+ "NKE": {
+  "industry": "Consumer, Cyclical",
+  "category": "Apparel",
+  "subcategory": "Athletic Footwear",
+  "stock_type": "COMMON",
+  "long_name": "NIKE INC -CL B"
+ },
+ "NOC": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense",
+  "stock_type": "COMMON",
+  "long_name": "NORTHROP GRUMMAN CORP"
+ },
+ "NOW": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Applications Software",
+  "stock_type": "COMMON",
+  "long_name": "SERVICENOW INC"
+ },
+ "NRG": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Independ Power Producer",
+  "stock_type": "COMMON",
+  "long_name": "NRG ENERGY INC"
+ },
+ "NSC": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Rail",
+  "stock_type": "COMMON",
+  "long_name": "NORFOLK SOUTHERN CORP"
+ },
+ "NTAP": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computers-Memory Devices",
+  "stock_type": "COMMON",
+  "long_name": "NETAPP INC"
+ },
+ "NTRS": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Fiduciary Banks",
+  "stock_type": "COMMON",
+  "long_name": "NORTHERN TRUST CORP"
+ },
+ "NUE": {
+  "industry": "Basic Materials",
+  "category": "Iron/Steel",
+  "subcategory": "Steel-Producers",
+  "stock_type": "COMMON",
+  "long_name": "NUCOR CORP"
+ },
+ "NVDA": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "NVIDIA CORP"
+ },
+ "NVR": {
+  "industry": "Consumer, Cyclical",
+  "category": "Home Builders",
+  "subcategory": "Bldg-Residential/Commer",
+  "stock_type": "COMMON",
+  "long_name": "NVR INC"
+ },
+ "NWS": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Publishing-Newspapers",
+  "stock_type": "COMMON",
+  "long_name": "NEWS CORP - CLASS B"
+ },
+ "NWSA": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Publishing-Newspapers",
+  "stock_type": "COMMON",
+  "long_name": "NEWS CORP - CLASS A"
+ },
+ "NXPI": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Semicon Compo-Intg Circu",
+  "stock_type": "COMMON",
+  "long_name": "NXP SEMICONDUCTORS NV"
+ },
+ "O": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Single Tenant",
+  "stock_type": "REIT",
+  "long_name": "REALTY INCOME CORP"
+ },
+ "ODFL": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Truck",
+  "stock_type": "COMMON",
+  "long_name": "OLD DOMINION FREIGHT LINE"
+ },
+ "OKE": {
+  "industry": "Energy",
+  "category": "Pipelines",
+  "subcategory": "Pipelines",
+  "stock_type": "COMMON",
+  "long_name": "ONEOK INC"
+ },
+ "OMC": {
+  "industry": "Communications",
+  "category": "Advertising",
+  "subcategory": "Advertising Agencies",
+  "stock_type": "COMMON",
+  "long_name": "OMNICOM GROUP"
+ },
+ "ON": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "ON SEMICONDUCTOR"
+ },
+ "ORCL": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Enterprise Software/Serv",
+  "stock_type": "COMMON",
+  "long_name": "ORACLE CORP"
+ },
+ "ORLY": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Auto Parts",
+  "stock_type": "COMMON",
+  "long_name": "O'REILLY AUTOMOTIVE INC"
+ },
+ "OTIS": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Machinery-General Indust",
+  "stock_type": "COMMON",
+  "long_name": "OTIS WORLDWIDE CORP"
+ },
+ "OXY": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Explor&Prodtn",
+  "stock_type": "COMMON",
+  "long_name": "OCCIDENTAL PETROLEUM CORP"
+ },
+ "PANW": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Internet Security",
+  "stock_type": "COMMON",
+  "long_name": "PALO ALTO NETWORKS INC"
+ },
+ "PAYX": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Data Processing/Mgmt",
+  "stock_type": "COMMON",
+  "long_name": "PAYCHEX INC"
+ },
+ "PCAR": {
+  "industry": "Consumer, Cyclical",
+  "category": "Auto Manufacturers",
+  "subcategory": "Auto-Med&Heavy Duty Trks",
+  "stock_type": "COMMON",
+  "long_name": "PACCAR INC"
+ },
+ "PCG": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "P G & E CORP"
+ },
+ "PEG": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "PUBLIC SERVICE ENTERPRISE GP"
+ },
+ "PEP": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Beverages",
+  "subcategory": "Beverages-Non-alcoholic",
+  "stock_type": "COMMON",
+  "long_name": "PEPSICO INC"
+ },
+ "PFE": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Drugs",
+  "stock_type": "COMMON",
+  "long_name": "PFIZER INC"
+ },
+ "PFG": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Life/Health Insurance",
+  "stock_type": "COMMON",
+  "long_name": "PRINCIPAL FINANCIAL GROUP"
+ },
+ "PG": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Cosmetics/Personal Care",
+  "subcategory": "Cosmetics&Toiletries",
+  "stock_type": "COMMON",
+  "long_name": "PROCTER & GAMBLE CO/THE"
+ },
+ "PGR": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Property/Casualty Ins",
+  "stock_type": "COMMON",
+  "long_name": "PROGRESSIVE CORP"
+ },
+ "PH": {
+  "industry": "Industrial",
+  "category": "Miscellaneous Manufactur",
+  "subcategory": "Diversified Manufact Op",
+  "stock_type": "COMMON",
+  "long_name": "PARKER HANNIFIN CORP"
+ },
+ "PHM": {
+  "industry": "Consumer, Cyclical",
+  "category": "Home Builders",
+  "subcategory": "Bldg-Residential/Commer",
+  "stock_type": "COMMON",
+  "long_name": "PULTEGROUP INC"
+ },
+ "PKG": {
+  "industry": "Industrial",
+  "category": "Packaging&Containers",
+  "subcategory": "Containers-Paper/Plastic",
+  "stock_type": "COMMON",
+  "long_name": "PACKAGING CORP OF AMERICA"
+ },
+ "PLD": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Warehouse/Industr",
+  "stock_type": "REIT",
+  "long_name": "PROLOGIS INC"
+ },
+ "PLTR": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Enterprise Software/Serv",
+  "stock_type": "COMMON",
+  "long_name": "PALANTIR TECHNOLOGIES INC-A"
+ },
+ "PM": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Agriculture",
+  "subcategory": "Tobacco",
+  "stock_type": "COMMON",
+  "long_name": "PHILIP MORRIS INTERNATIONAL"
+ },
+ "PNC": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Super-Regional Banks-US",
+  "stock_type": "COMMON",
+  "long_name": "PNC FINANCIAL SERVICES GROUP"
+ },
+ "PNR": {
+  "industry": "Industrial",
+  "category": "Environmental Control",
+  "subcategory": "Water Treatment Systems",
+  "stock_type": "COMMON",
+  "long_name": "PENTAIR PLC"
+ },
+ "PNW": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "PINNACLE WEST CAPITAL"
+ },
+ "PODD": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Patient Monitoring Equip",
+  "stock_type": "COMMON",
+  "long_name": "INSULET CORP"
+ },
+ "PPG": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Chemicals-Diversified",
+  "stock_type": "COMMON",
+  "long_name": "PPG INDUSTRIES INC"
+ },
+ "PPL": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "PPL CORP"
+ },
+ "PRU": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Life/Health Insurance",
+  "stock_type": "COMMON",
+  "long_name": "PRUDENTIAL FINANCIAL INC"
+ },
+ "PSA": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Storage",
+  "stock_type": "REIT",
+  "long_name": "PUBLIC STORAGE"
+ },
+ "PSX": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Refining&Marketing",
+  "stock_type": "COMMON",
+  "long_name": "PHILLIPS 66"
+ },
+ "PTC": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Applications Software",
+  "stock_type": "COMMON",
+  "long_name": "PTC INC"
+ },
+ "PWR": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Services",
+  "stock_type": "COMMON",
+  "long_name": "QUANTA SERVICES INC"
+ },
+ "PYPL": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Serv-Finance",
+  "stock_type": "COMMON",
+  "long_name": "PAYPAL HOLDINGS INC"
+ },
+ "QCOM": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Semicon Compo-Intg Circu",
+  "stock_type": "COMMON",
+  "long_name": "QUALCOMM INC"
+ },
+ "QQQ": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "INVESCO QQQ TRUST SERIES 1"
+ },
+ "RCL": {
+  "industry": "Consumer, Cyclical",
+  "category": "Leisure Time",
+  "subcategory": "Cruise Lines",
+  "stock_type": "COMMON",
+  "long_name": "ROYAL CARIBBEAN CRUISES LTD"
+ },
+ "REG": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Shopping Centers",
+  "stock_type": "REIT",
+  "long_name": "REGENCY CENTERS CORP"
+ },
+ "REGN": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Biotechnology",
+  "subcategory": "Medical-Biomedical/Gene",
+  "stock_type": "COMMON",
+  "long_name": "REGENERON PHARMACEUTICALS"
+ },
+ "RF": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Commer Banks-Southern US",
+  "stock_type": "COMMON",
+  "long_name": "REGIONS FINANCIAL CORP"
+ },
+ "RJF": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Invest Mgmnt/Advis Serv",
+  "stock_type": "COMMON",
+  "long_name": "RAYMOND JAMES FINANCIAL INC"
+ },
+ "RL": {
+  "industry": "Consumer, Cyclical",
+  "category": "Apparel",
+  "subcategory": "Apparel Manufacturers",
+  "stock_type": "COMMON",
+  "long_name": "RALPH LAUREN CORP"
+ },
+ "RMD": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Respiratory Products",
+  "stock_type": "COMMON",
+  "long_name": "RESMED INC"
+ },
+ "ROK": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Industrial Automat/Robot",
+  "stock_type": "COMMON",
+  "long_name": "ROCKWELL AUTOMATION INC"
+ },
+ "ROL": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Building-Maint&Service",
+  "stock_type": "COMMON",
+  "long_name": "ROLLINS INC"
+ },
+ "ROP": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Applications Software",
+  "stock_type": "COMMON",
+  "long_name": "ROPER TECHNOLOGIES INC"
+ },
+ "ROST": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Apparel/Shoe",
+  "stock_type": "COMMON",
+  "long_name": "ROSS STORES INC"
+ },
+ "RSG": {
+  "industry": "Industrial",
+  "category": "Environmental Control",
+  "subcategory": "Non-hazardous Waste Disp",
+  "stock_type": "COMMON",
+  "long_name": "REPUBLIC SERVICES INC"
+ },
+ "RSP": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "INVESCO S&P 500 EQUAL WEIGHT"
+ },
+ "RTX": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense",
+  "stock_type": "COMMON",
+  "long_name": "RTX CORP"
+ },
+ "RVTY": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Diagnostic Equipment",
+  "stock_type": "COMMON",
+  "long_name": "REVVITY INC"
+ },
+ "SBAC": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Diversified",
+  "stock_type": "REIT",
+  "long_name": "SBA COMMUNICATIONS CORP"
+ },
+ "SBUX": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Restaurants",
+  "stock_type": "COMMON",
+  "long_name": "STARBUCKS CORP"
+ },
+ "SCHW": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Invest Bnkr/Brkr",
+  "stock_type": "COMMON",
+  "long_name": "SCHWAB (CHARLES) CORP"
+ },
+ "SHW": {
+  "industry": "Basic Materials",
+  "category": "Chemicals",
+  "subcategory": "Coatings/Paint",
+  "stock_type": "COMMON",
+  "long_name": "SHERWIN-WILLIAMS CO/THE"
+ },
+ "SHY": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES 1-3 YEAR TREASURY BO"
+ },
+ "SJM": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Confectionery",
+  "stock_type": "COMMON",
+  "long_name": "JM SMUCKER CO/THE"
+ },
+ "SKYD": {
+  "industry": "Communications",
+  "category": "Media",
+  "subcategory": "Broadcast Serv/Program",
+  "stock_type": "COMMON",
+  "long_name": "SKYDANCE CORP"
+ },
+ "SLB": {
+  "industry": "Energy",
+  "category": "Oil&Gas Services",
+  "subcategory": "Oil-Field Services",
+  "stock_type": "COMMON",
+  "long_name": "SLB LTD"
+ },
+ "SLV": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES SILVER TRUST"
+ },
+ "SMCI": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computers-Integrated Sys",
+  "stock_type": "COMMON",
+  "long_name": "SUPER MICRO COMPUTER INC"
+ },
+ "SMH": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "VANECK SEMICONDUCTOR ETF"
+ },
+ "SNA": {
+  "industry": "Industrial",
+  "category": "Hand/Machine Tools",
+  "subcategory": "Tools-Hand Held",
+  "stock_type": "COMMON",
+  "long_name": "SNAP-ON INC"
+ },
+ "SNPS": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Computer Aided Design",
+  "stock_type": "COMMON",
+  "long_name": "SYNOPSYS INC"
+ },
+ "SO": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "SOUTHERN CO/THE"
+ },
+ "SOLV": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "SOLVENTUM CORP"
+ },
+ "SOXX": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES SEMICONDUCTOR ETF"
+ },
+ "SPG": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Regional Malls",
+  "stock_type": "REIT",
+  "long_name": "SIMON PROPERTY GROUP INC"
+ },
+ "SPGI": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Commercial Serv-Finance",
+  "stock_type": "COMMON",
+  "long_name": "S&P GLOBAL INC"
+ },
+ "SPY": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR S&P 500 ETF TRUST-US"
+ },
+ "SRE": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Distribution",
+  "stock_type": "COMMON",
+  "long_name": "SEMPRA"
+ },
+ "STE": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "STERIS PLC"
+ },
+ "STLD": {
+  "industry": "Basic Materials",
+  "category": "Iron/Steel",
+  "subcategory": "Steel-Producers",
+  "stock_type": "COMMON",
+  "long_name": "STEEL DYNAMICS INC"
+ },
+ "STT": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Fiduciary Banks",
+  "stock_type": "COMMON",
+  "long_name": "STATE STREET CORP"
+ },
+ "STX": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computers-Memory Devices",
+  "stock_type": "COMMON",
+  "long_name": "SEAGATE TECHNOLOGY HOLDINGS"
+ },
+ "STZ": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Beverages",
+  "subcategory": "Brewery",
+  "stock_type": "COMMON",
+  "long_name": "CONSTELLATION BRANDS INC-A"
+ },
+ "SW": {
+  "industry": "Industrial",
+  "category": "Packaging&Containers",
+  "subcategory": "Containers-Paper/Plastic",
+  "stock_type": "COMMON",
+  "long_name": "SMURFIT WESTROCK PLC"
+ },
+ "SWK": {
+  "industry": "Industrial",
+  "category": "Hand/Machine Tools",
+  "subcategory": "Tools-Hand Held",
+  "stock_type": "COMMON",
+  "long_name": "STANLEY BLACK & DECKER INC"
+ },
+ "SWKS": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "SKYWORKS SOLUTIONS INC"
+ },
+ "SYF": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Credit Card",
+  "stock_type": "COMMON",
+  "long_name": "SYNCHRONY FINANCIAL"
+ },
+ "SYK": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "STRYKER CORP"
+ },
+ "SYY": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Wholesale/Distrib",
+  "stock_type": "COMMON",
+  "long_name": "SYSCO CORP"
+ },
+ "T": {
+  "industry": "Communications",
+  "category": "Telecommunications",
+  "subcategory": "Telephone-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "AT&T INC"
+ },
+ "TAN": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "INVESCO SOLAR ETF"
+ },
+ "TDG": {
+  "industry": "Industrial",
+  "category": "Aerospace/Defense",
+  "subcategory": "Aerospace/Defense-Equip",
+  "stock_type": "COMMON",
+  "long_name": "TRANSDIGM GROUP INC"
+ },
+ "TDY": {
+  "industry": "Industrial",
+  "category": "Miscellaneous Manufactur",
+  "subcategory": "Miscellaneous Manufactur",
+  "stock_type": "COMMON",
+  "long_name": "TELEDYNE TECHNOLOGIES INC"
+ },
+ "TECH": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Instruments",
+  "stock_type": "COMMON",
+  "long_name": "BIO-TECHNE CORP"
+ },
+ "TEL": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Compo-Misc",
+  "stock_type": "COMMON",
+  "long_name": "TE CONNECTIVITY PLC"
+ },
+ "TER": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Semiconductor Equipment",
+  "stock_type": "COMMON",
+  "long_name": "TERADYNE INC"
+ },
+ "TFC": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Commer Banks-Southern US",
+  "stock_type": "COMMON",
+  "long_name": "TRUIST FINANCIAL CORP"
+ },
+ "TGT": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Discount",
+  "stock_type": "COMMON",
+  "long_name": "TARGET CORP"
+ },
+ "TIP": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES TIPS BOND ETF"
+ },
+ "TJX": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Major Dept Store",
+  "stock_type": "COMMON",
+  "long_name": "TJX COMPANIES INC"
+ },
+ "TLT": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES 20+ YEAR TREASURY BD"
+ },
+ "TMO": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Diagnostic Equipment",
+  "stock_type": "COMMON",
+  "long_name": "THERMO FISHER SCIENTIFIC INC"
+ },
+ "TMUS": {
+  "industry": "Communications",
+  "category": "Telecommunications",
+  "subcategory": "Cellular Telecom",
+  "stock_type": "COMMON",
+  "long_name": "T-MOBILE US INC"
+ },
+ "TPR": {
+  "industry": "Consumer, Cyclical",
+  "category": "Apparel",
+  "subcategory": "Apparel Manufacturers",
+  "stock_type": "COMMON",
+  "long_name": "TAPESTRY INC"
+ },
+ "TRGP": {
+  "industry": "Energy",
+  "category": "Pipelines",
+  "subcategory": "Pipelines",
+  "stock_type": "COMMON",
+  "long_name": "TARGA RESOURCES CORP"
+ },
+ "TRMB": {
+  "industry": "Industrial",
+  "category": "Electronics",
+  "subcategory": "Electronic Measur Instr",
+  "stock_type": "COMMON",
+  "long_name": "TRIMBLE INC"
+ },
+ "TROW": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Invest Mgmnt/Advis Serv",
+  "stock_type": "COMMON",
+  "long_name": "T ROWE PRICE GROUP INC"
+ },
+ "TRV": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Property/Casualty Ins",
+  "stock_type": "COMMON",
+  "long_name": "TRAVELERS COS INC/THE"
+ },
+ "TSCO": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Gardening Prod",
+  "stock_type": "COMMON",
+  "long_name": "TRACTOR SUPPLY COMPANY"
+ },
+ "TSLA": {
+  "industry": "Consumer, Cyclical",
+  "category": "Auto Manufacturers",
+  "subcategory": "Auto-Cars/Light Trucks",
+  "stock_type": "COMMON",
+  "long_name": "TESLA INC"
+ },
+ "TSN": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Food",
+  "subcategory": "Food-Meat Products",
+  "stock_type": "COMMON",
+  "long_name": "TYSON FOODS INC-CL A"
+ },
+ "TT": {
+  "industry": "Industrial",
+  "category": "Building Materials",
+  "subcategory": "Bldg Prod-Air&Heating",
+  "stock_type": "COMMON",
+  "long_name": "TRANE TECHNOLOGIES PLC"
+ },
+ "TTWO": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Entertainment Software",
+  "stock_type": "COMMON",
+  "long_name": "TAKE-TWO INTERACTIVE SOFTWRE"
+ },
+ "TXN": {
+  "industry": "Technology",
+  "category": "Semiconductors",
+  "subcategory": "Electronic Compo-Semicon",
+  "stock_type": "COMMON",
+  "long_name": "TEXAS INSTRUMENTS INC"
+ },
+ "TXT": {
+  "industry": "Industrial",
+  "category": "Miscellaneous Manufactur",
+  "subcategory": "Diversified Manufact Op",
+  "stock_type": "COMMON",
+  "long_name": "TEXTRON INC"
+ },
+ "TYL": {
+  "industry": "Technology",
+  "category": "Software",
+  "subcategory": "Enterprise Software/Serv",
+  "stock_type": "COMMON",
+  "long_name": "TYLER TECHNOLOGIES INC"
+ },
+ "UAL": {
+  "industry": "Consumer, Cyclical",
+  "category": "Airlines",
+  "subcategory": "Airlines",
+  "stock_type": "COMMON",
+  "long_name": "UNITED AIRLINES HOLDINGS INC"
+ },
+ "UBER": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "E-Commerce/Services",
+  "stock_type": "COMMON",
+  "long_name": "UBER TECHNOLOGIES INC"
+ },
+ "UDR": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Apartments",
+  "stock_type": "REIT",
+  "long_name": "UDR INC"
+ },
+ "UHS": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical-Hospitals",
+  "stock_type": "COMMON",
+  "long_name": "UNIVERSAL HEALTH SERVICES-B"
+ },
+ "ULTA": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Perfume&Cosmetics",
+  "stock_type": "COMMON",
+  "long_name": "ULTA BEAUTY INC"
+ },
+ "UNG": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "US NATURAL GAS FUND LP"
+ },
+ "UNH": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Services",
+  "subcategory": "Medical-HMO",
+  "stock_type": "COMMON",
+  "long_name": "UNITEDHEALTH GROUP INC"
+ },
+ "UNP": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Rail",
+  "stock_type": "COMMON",
+  "long_name": "UNION PACIFIC CORP"
+ },
+ "UPS": {
+  "industry": "Industrial",
+  "category": "Transportation",
+  "subcategory": "Transport-Services",
+  "stock_type": "COMMON",
+  "long_name": "UNITED PARCEL SERVICE-CL B"
+ },
+ "URA": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "GLOBAL X URANIUM ETF"
+ },
+ "URI": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Rental Auto/Equipment",
+  "stock_type": "COMMON",
+  "long_name": "UNITED RENTALS INC"
+ },
+ "USB": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Super-Regional Banks-US",
+  "stock_type": "COMMON",
+  "long_name": "US BANCORP"
+ },
+ "USO": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "UNITED STATES OIL FUND LP"
+ },
+ "UUP": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "INVESCO DB US DOLLAR INDEX B"
+ },
+ "V": {
+  "industry": "Financial",
+  "category": "Diversified Finan Serv",
+  "subcategory": "Finance-Credit Card",
+  "stock_type": "COMMON",
+  "long_name": "VISA INC-CLASS A SHARES"
+ },
+ "VICI": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Diversified",
+  "stock_type": "REIT",
+  "long_name": "VICI PROPERTIES INC"
+ },
+ "VLO": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Refining&Marketing",
+  "stock_type": "COMMON",
+  "long_name": "VALERO ENERGY CORP"
+ },
+ "VLTO": {
+  "industry": "Industrial",
+  "category": "Environmental Control",
+  "subcategory": "Water Treatment Systems",
+  "stock_type": "COMMON",
+  "long_name": "VERALTO CORP"
+ },
+ "VMC": {
+  "industry": "Industrial",
+  "category": "Building Materials",
+  "subcategory": "Bldg Prod-Cement/Aggreg",
+  "stock_type": "COMMON",
+  "long_name": "VULCAN MATERIALS CO"
+ },
+ "VMRK": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Apartments",
+  "stock_type": "REIT",
+  "long_name": "VIVMARK RESIDENTIAL"
+ },
+ "VNQ": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "VANGUARD REAL ESTATE ETF"
+ },
+ "VRSK": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Commercial Services",
+  "subcategory": "Consulting Services",
+  "stock_type": "COMMON",
+  "long_name": "VERISK ANALYTICS INC"
+ },
+ "VRSN": {
+  "industry": "Communications",
+  "category": "Internet",
+  "subcategory": "Web Hosting/Design",
+  "stock_type": "COMMON",
+  "long_name": "VERISIGN INC"
+ },
+ "VRTX": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Biotechnology",
+  "subcategory": "Medical-Biomedical/Gene",
+  "stock_type": "COMMON",
+  "long_name": "VERTEX PHARMACEUTICALS INC"
+ },
+ "VST": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Independ Power Producer",
+  "stock_type": "COMMON",
+  "long_name": "VISTRA CORP"
+ },
+ "VTR": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Health Care",
+  "stock_type": "REIT",
+  "long_name": "VENTAS INC."
+ },
+ "VTRS": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Generic Drugs",
+  "stock_type": "COMMON",
+  "long_name": "VIATRIS INC"
+ },
+ "VZ": {
+  "industry": "Communications",
+  "category": "Telecommunications",
+  "subcategory": "Telephone-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "VERIZON COMMUNICATIONS INC"
+ },
+ "WAB": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Machinery-General Indust",
+  "stock_type": "COMMON",
+  "long_name": "WABTEC CORP"
+ },
+ "WAT": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Diagnostic Equipment",
+  "stock_type": "COMMON",
+  "long_name": "WATERS CORP"
+ },
+ "WDC": {
+  "industry": "Technology",
+  "category": "Computers",
+  "subcategory": "Computers-Memory Devices",
+  "stock_type": "COMMON",
+  "long_name": "WESTERN DIGITAL CORP"
+ },
+ "WEC": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "WEC ENERGY GROUP INC"
+ },
+ "WELL": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Health Care",
+  "stock_type": "REIT",
+  "long_name": "WELLTOWER INC"
+ },
+ "WFC": {
+  "industry": "Financial",
+  "category": "Banks",
+  "subcategory": "Super-Regional Banks-US",
+  "stock_type": "COMMON",
+  "long_name": "WELLS FARGO & CO"
+ },
+ "WM": {
+  "industry": "Industrial",
+  "category": "Environmental Control",
+  "subcategory": "Non-hazardous Waste Disp",
+  "stock_type": "COMMON",
+  "long_name": "WASTE MANAGEMENT INC"
+ },
+ "WMB": {
+  "industry": "Energy",
+  "category": "Pipelines",
+  "subcategory": "Pipelines",
+  "stock_type": "COMMON",
+  "long_name": "WILLIAMS COS INC"
+ },
+ "WMT": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Discount",
+  "stock_type": "COMMON",
+  "long_name": "WALMART INC"
+ },
+ "WRB": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Property/Casualty Ins",
+  "stock_type": "COMMON",
+  "long_name": "WR BERKLEY CORP"
+ },
+ "WST": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "WEST PHARMACEUTICAL SERVICES"
+ },
+ "WTW": {
+  "industry": "Financial",
+  "category": "Insurance",
+  "subcategory": "Insurance Brokers",
+  "stock_type": "COMMON",
+  "long_name": "WILLIS TOWERS WATSON PLC"
+ },
+ "WY": {
+  "industry": "Financial",
+  "category": "REITS",
+  "subcategory": "REITS-Diversified",
+  "stock_type": "REIT",
+  "long_name": "WEYERHAEUSER CO"
+ },
+ "WYNN": {
+  "industry": "Consumer, Cyclical",
+  "category": "Lodging",
+  "subcategory": "Casino Hotels",
+  "stock_type": "COMMON",
+  "long_name": "WYNN RESORTS LTD"
+ },
+ "XBI": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR S&P BIOTECH ETF"
+ },
+ "XEL": {
+  "industry": "Utilities",
+  "category": "Electric",
+  "subcategory": "Electric-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "XCEL ENERGY INC"
+ },
+ "XHB": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR S&P HOMEBLDRS ETF"
+ },
+ "XLB": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS MATERIALS SELECT SECTOR"
+ },
+ "XLC": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS COMM SELECT SECTOR SPDR"
+ },
+ "XLE": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS ENERGY SELECT SECTOR"
+ },
+ "XLF": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS FINANCIAL SELECT SECTOR"
+ },
+ "XLI": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS INDUSTRIAL SELECT SECTOR"
+ },
+ "XLK": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS TECHNOLOGY SELECT SECTOR"
+ },
+ "XLP": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS CONSUMER STAPLES SEL SECT"
+ },
+ "XLRE": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS REAL ESTATE SELECT SECTOR"
+ },
+ "XLU": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "ST SR UTL SL SE SPDR ETF-USD"
+ },
+ "XLV": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS HEALTH CARE SELECT SECTOR"
+ },
+ "XLY": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS CONSUMER DISC SELECT SECT"
+ },
+ "XME": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR S&P METALS MINING"
+ },
+ "XOM": {
+  "industry": "Energy",
+  "category": "Oil&Gas",
+  "subcategory": "Oil Comp-Integrated",
+  "stock_type": "COMMON",
+  "long_name": "EXXONMOBIL HOLDINGS CORP"
+ },
+ "XRT": {
+  "industry": "",
+  "category": "",
+  "subcategory": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR S&P RETAIL ETF"
+ },
+ "XYL": {
+  "industry": "Industrial",
+  "category": "Machinery-Diversified",
+  "subcategory": "Machinery-Pumps",
+  "stock_type": "COMMON",
+  "long_name": "XYLEM INC"
+ },
+ "YUM": {
+  "industry": "Consumer, Cyclical",
+  "category": "Retail",
+  "subcategory": "Retail-Restaurants",
+  "stock_type": "COMMON",
+  "long_name": "YUM! BRANDS INC"
+ },
+ "ZBH": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Healthcare-Products",
+  "subcategory": "Medical Products",
+  "stock_type": "COMMON",
+  "long_name": "ZIMMER BIOMET HOLDINGS INC"
+ },
+ "ZBRA": {
+  "industry": "Technology",
+  "category": "Office/Business Equip",
+  "subcategory": "Office Automation&Equip",
+  "stock_type": "COMMON",
+  "long_name": "ZEBRA TECHNOLOGIES CORP-CL A"
+ },
+ "ZTS": {
+  "industry": "Consumer, Non-cyclical",
+  "category": "Pharmaceuticals",
+  "subcategory": "Medical-Drugs",
+  "stock_type": "COMMON",
+  "long_name": "ZOETIS INC"
+ }
+}
