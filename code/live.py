@@ -30,7 +30,7 @@ import sys
 import threading
 import time
 import traceback
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from datetime import time as dtime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -49,7 +49,6 @@ LIVE = ROOT / "runs" / "live"
 STOP = LIVE / "STOP"
 HOLD = LIVE / "HOLD"   # while it exists, looks wait (not marked done) and place nothing; refresh/record run
 ET = ZoneInfo("America/New_York")
-GW_TZ = timezone(timedelta(hours=8))   # the Gateway's login time zone (UTC+8, no DST): its day ends at midnight here
 PROJECT_ID = "51e502c3-a670-40ad-b14a-c9eb569d4363"
 BASE = "openai/gpt-oss-120b"
 HOLIDAYS = {"2026-11-26", "2026-12-25", "2027-01-01", "2027-01-18", "2027-02-15", "2027-03-26", "2027-05-31",
@@ -66,21 +65,6 @@ def log(msg):
     print(line, flush=True)
     with (LIVE / "live.log").open("a", encoding="utf-8") as f:
         f.write(line + "\n")
-
-
-def gateway_cutoff(d):
-    """When the Gateway's day ends: midnight in its login time zone (UTC+8), 12:00 ET in US daylight time and
-    11:00 ET otherwise. Executions and completed orders from before it are no longer served (19 Oct: the 11:30 look's
-    fills were lost that way), so the "sync" job records fills 3 minutes before it."""
-    t = datetime.combine(d + timedelta(days=1), dtime(0, 0), GW_TZ).astimezone(ET) - timedelta(minutes=3)
-    return t.hour, t.minute
-
-
-def sync():
-    with gateway() as gw:
-        n = paper.sync_fills(gw)
-        reconcile(gw)
-    log(f"fills synced before the gateway's midnight (UTC+8): {n} new")
 
 
 def reconcile(gw):
@@ -240,7 +224,13 @@ def look(dry_run=False, only=None):
             for name in sleeves:
                 held |= set(paper.book(name)["positions"])
             rows, _ = data.table_rows(d, extra=sorted(held))
-            live = {q["symbol"]: paper.mark(q) for q in gw.quotes(rows) if not q.get("error")}
+            syms = sorted(set(rows) | held)                 # held names outside the table too, else they show at cost;
+            live = {}                                       # at most 90 snapshots at a time (IBKR's 100 market-data lines)
+            for i in range(0, len(syms), 90):
+                for q in gw.quotes(syms[i:i + 90]):
+                    m = None if q.get("error") else paper.mark(q)
+                    if m is not None:
+                        live[q["symbol"]] = m
         for name, meta in sleeves.items():
             world = trader.PaperWorld(gw, name, data)
             world.dry_run = dry_run
@@ -280,7 +270,7 @@ def look(dry_run=False, only=None):
             trace = trace + [{"error": "placing: " + traceback.format_exc()[-1500:]}]
         finish(now, name, meta, text, st, call, trace, notes, rows, dry_run, secs=secs)
     if not dry_run:
-        try:                                # record this look's fills now, not at the next look: see gateway_cutoff()
+        try:                                # record this look's fills now, not at the next look
             with gateway() as gw:
                 time.sleep(5)
                 paper.sync_fills(gw)
@@ -369,16 +359,11 @@ def loop():
     while not STOP.exists():
         now = datetime.now(ET)
         if trading_day(now.date()):
-            for name, (h, m) in JOBS + [("sync", gateway_cutoff(now.date()))]:
+            for name, (h, m) in JOBS:
                 key = (now.date().isoformat(), name)
                 if key in done or (name.startswith("look-") and dtime(h, m) >= close_time(now.date())):
                     continue
                 due = now.replace(hour=h, minute=m, second=0, microsecond=0)
-                if name == "sync":                # once, and only in the 3 minutes before the cutoff
-                    if due <= now < due + timedelta(minutes=3):
-                        mark_done(done, key)
-                        run_job(name, sync)
-                    continue
                 if due <= now < due + (timedelta(hours=2) if name in ("refresh", "record") else WINDOW):
                     if name in ("refresh", "record"):     # no orders: retry every 5 minutes until it succeeds
                         if now - tried.get(key, now - timedelta(hours=1)) < timedelta(minutes=5):

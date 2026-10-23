@@ -608,14 +608,16 @@ def _need(row, t, idx):
     return any(not np.isfinite(row[t - k]) for k in idx)
 
 
-def _iv_hist(s, row, t, d, gw, lc, notes):
-    """The symbol's end-of-day IV history aligned to d.dates: cache, then this tool's live cache, then (if t-1 or t-5
-    is still missing) the gateway's daily OPTION_IMPLIED_VOLATILITY bars for the last month."""
+def _iv_hist(s, row, t, d, gw, lc, notes, need=(1, 5)):
+    """The symbol's end-of-day IV history aligned to d.dates: cache, then this tool's live cache, then (if a session in
+    `need` is still missing: t-1 and t-5, plus t itself when no decision-time IV stands in for it) the gateway's daily
+    OPTION_IMPLIED_VOLATILITY bars for the last month. Only completed sessions are kept (today's bar is partial)."""
     row = _align(row, lc["iv"].get(s, {}), d.dates)
-    if gw is not None and _need(row, t, (1, 5)):
+    if gw is not None and _need(row, t, need):
         try:
             bars = gw.bars(s, duration="1 M", bar_size="1 day", what="OPTION_IMPLIED_VOLATILITY") or []
             got = {str(b["date"]).replace("-", "")[:8]: float(b["close"]) for b in bars if b.get("close") and b["close"] > 0}
+            got = {k: v for k, v in got.items() if k <= d.dates[t]}
             lc["iv"].setdefault(s, {}).update(got)
             row = _align(row, got, d.dates)
             lc["dirty"] = True
@@ -637,6 +639,7 @@ def _rv_hist(s, t, d, gw, lc, notes):
     if gw is not None and _need(row, t, (0,)):
         try:
             got = rv_from_bars(gw.bars(s, duration="1 M", bar_size="30 mins", what="TRADES") or [])
+            got = {k: v for k, v in got.items() if k <= d.dates[t]}     # completed sessions only (today's is partial)
             lc["rv"].setdefault(s, {}).update(got)
             row = _align(row, got, d.dates)
             lc["dirty"] = True
@@ -682,7 +685,7 @@ def live(gw=None, symbols=None, data=None, **kw):
         symbols = [symbols]
     req = list(dict.fromkeys(str(s).upper().strip() for s in symbols if str(s).strip()))[:MAX_SYMBOLS] if symbols else list(d.sym)
     live_iv = {}
-    if gw is not None and symbols:
+    if gw is not None and symbols and kw.get("decision_iv", True):   # forecast's look-time rows use the close IV, as compute()
         try:
             st = gw.stats(req + (["SPY"] if "SPY" not in req else []))
             for r in st or []:
@@ -707,10 +710,16 @@ def live(gw=None, symbols=None, data=None, **kw):
             base = {k: float(M[k][j, t]) for k in M}
             ivrow, rv22 = ivh[j], M["lcc22"][j]
         else:
-            got = None
-            if gw is not None:
+            got, bsrc = None, None         # dividend-adjusted, as the cache: data/bars (refreshed each morning for held
+            try:                           # names) when it reaches the last cached close, else the gateway
+                doc = trader.barsmod.load(s)
+            except (OSError, ValueError):
+                doc = None
+            if doc and doc.get("what") == "ADJUSTED_LAST" and any(b.get("date") == as_of for b in doc.get("bars", [])[-3:]):
+                got, bsrc = doc["bars"], "data/bars"
+            elif gw is not None:
                 try:
-                    got = gw.bars(s, duration="1 Y", bar_size="1 day")
+                    got, bsrc = gw.bars(s, duration="1 Y", bar_size="1 day", what="ADJUSTED_LAST"), "gateway daily bars"
                 except Exception as e:     # noqa: BLE001
                     notes.append(f"{s}: gateway bars failed ({e})")
             if not got:
@@ -720,6 +729,9 @@ def live(gw=None, symbols=None, data=None, **kw):
             if not np.isfinite(m.c[1, t]):
                 rows[s] = {"note": "not covered (gateway bars do not reach the last cached close)"}
                 continue
+            if np.isfinite(m.c[1, max(0, t - 59):t + 1]).sum() < 50:    # the HAR features reach back 60 sessions; with
+                rows[s] = {"note": "not covered (fewer than 50 of the last 60 sessions traded)"}   # fewer, vol20's
+                continue                                                 # fallback would score zero-filled features
             F, S, _, _, V, _ = risk.build(m)
             base = {k: float(v[1, t]) for k, v in {**F, **S, **V}.items()}
             for k in M:             # cross-sectional market features come from the full cache
@@ -727,9 +739,9 @@ def live(gw=None, symbols=None, data=None, **kw):
                     base[k] = float(M[k][0, t])
             close = m.c[1, t]
             ivrow, rv22 = np.full(len(d.dates), np.nan), F["lcc22"][1]
-            notes.append(f"{s}: outside the cache; HAR features from gateway daily bars (TRADES, not dividend-adjusted)")
+            notes.append(f"{s}: outside the cache; HAR features from {bsrc} (ADJUSTED_LAST, as the cache)")
         if symbols:                 # requested symbols: complete the IV (and intraday) history the models need
-            ivrow = _iv_hist(s, ivrow, t, d, gw, lc, notes)
+            ivrow = _iv_hist(s, ivrow, t, d, gw, lc, notes, need=(1, 5) if s in live_iv else (0, 1, 5))
             if use_intra:
                 g_in = intra_feats(_rv_hist(s, t, d, gw, lc, notes)[None, :])
                 base.update({k: float(v[0, t]) for k, v in g_in.items()})
@@ -772,7 +784,7 @@ def live(gw=None, symbols=None, data=None, **kw):
             else:
                 reason = "intraday history missing"
             note.append(f"{reason}: HAR fallback for {', '.join(why)}")
-        if row.get("vol20_pct") is not None and row["vol20_pct"] < 5:
+        if row.get("vol20_pct") is not None and row["vol20_pct"] < 5 and s not in trader.etfs():   # a stock's signature; bond ETFs sit there
             note.append("unusually low volatility (pending acquisition?)")
         row["note"] = "; ".join(note)
         rows[s] = row

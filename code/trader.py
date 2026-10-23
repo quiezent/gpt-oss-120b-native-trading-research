@@ -526,7 +526,18 @@ class PaperWorld:
         return sorted(set(b["positions"]) | {o["symbol"] for o in self.paper.open_orders(self.gw, self.sleeve)})
 
     def state(self, d, feats, live=None):
-        marks = {s: x["close"] for s, x in feats.items()} | (live or {})   # during the session: delayed last prices
+        marks = {s: x["close"] for s, x in feats.items()}
+        last = self.data.dates[d - 1] if 0 < d <= len(self.data.dates) else None
+        for s in self.paper.book(self.sleeve)["positions"]:   # held outside the universe: the last close from data/bars
+            if s not in marks:                                 # (refreshed each morning for every held name), not cost
+                try:
+                    doc = barsmod.load(s) or {}
+                except (OSError, ValueError):
+                    doc = {}
+                b0 = (doc.get("bars") or [{}])[-1]
+                if b0.get("close") and b0.get("date") == last:
+                    marks[s] = b0["close"]
+        marks |= live or {}                                    # during the session: delayed last prices
         b = self.paper.book(self.sleeve, marks)
         value = b["cash"] + sum(p["quantity"] * (p["mark"] if p["mark"] is not None else p["avg_cost"])
                                 for p in b["positions"].values())

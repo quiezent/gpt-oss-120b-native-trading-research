@@ -32,5 +32,8 @@ def get(path, **params):
             continue
         if r.status_code != 200:
             raise RuntimeError(f"FRED {path} HTTP {r.status_code}: {r.text[:300].replace(key, 'REDACTED')}")
-        return r.json()
+        try:
+            return r.json()
+        except ValueError:                      # a 200 with a non-JSON body (21 Oct 16:26 ET): transient, retry
+            time.sleep(5 * (attempt + 1))
     raise RuntimeError(f"FRED {path}: retries exhausted")

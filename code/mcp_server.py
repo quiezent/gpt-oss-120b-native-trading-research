@@ -10,6 +10,9 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Annotated
+
+from pydantic import Field
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -88,8 +91,10 @@ if os.environ.get("TRADER_HAS_FORECAST") == "1":
     import forecast as _forecast
 
     @server.tool(description=_forecast.SPEC["description"])
-    def forecast(symbols: list[str]) -> str:
-        return research("forecast", {"symbols": symbols})
+    def forecast(symbols: list[str],
+                 notional_usd: Annotated[float | None, Field(description=_forecast.SPEC["parameters"]["properties"]
+                                                             ["notional_usd"]["description"])] = None) -> str:
+        return research("forecast", {"symbols": symbols, "notional_usd": notional_usd})
 
 if os.environ.get("TRADER_HAS_SCANNER") == "1":
     @server.tool(description=DESC["scanner"])

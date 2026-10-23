@@ -4,8 +4,9 @@ Each order a model places carries the orderRef "tt-<sleeve>-<hex>", so every fil
 exactly one sleeve. A sleeve's cash, positions and realized, costed P&L are computed from its own
 fills (runs/fills.jsonl), never from the account-wide positions, which mix all sleeves.
 
-IB Gateway reports only today's executions, so sync_fills() must run at least once after the last
-fill of each day (the trading loop calls it every look and after the close).
+The trading loop calls sync_fills() after every look and after the close. It asks IB Gateway for the last
+7 calendar days of executions (the Gateway's day runs 00:00-24:00 ET since 23 Oct), so a missed sync is
+caught up later; exec_id dedupes the overlap.
 """
 
 import json
@@ -80,15 +81,21 @@ ARCHIVE = RUNS / "archive"   # past weeks' ledgers (runs/archive/<week>/fills.js
 
 
 def sync_fills(gw):
-    """Append today's new executions (and late commission reports) to runs/fills.jsonl."""
+    """Append new executions from the last 7 days (and late commission reports) to runs/fills.jsonl."""
     known = {}
     for p in ARCHIVE.glob("*/fills.jsonl"):
         for f in read(p):
             known[f["exec_id"]] = {**f, "commission": f.get("commission", 0.0)}   # archived: never re-append
     for f in read(FILLS):
         known[f["exec_id"]] = f
+    recon = {}   # ref -> latest time booked from IBKR's confirmation after the gateway stopped serving it
+    for f in known.values():
+        if str(f["exec_id"]).startswith("recon-"):
+            recon[f.get("ref")] = max(recon.get(f.get("ref"), ""), f["time"][:17])
     new = 0
-    for e in gw.executions():
+    for e in gw.executions(days=7):
+        if e.get("ref") in recon and str(e.get("time", ""))[:17] <= recon[e["ref"]]:
+            continue   # served again (e.g. after the gateway's time-zone switch) but already booked as recon-<ref>
         old = known.get(e["exec_id"])
         if old is None or (old.get("commission") is None and e.get("commission") is not None):
             append(FILLS, {**e, "sleeve": sleeve_of(e.get("ref")), "synced": now_iso()})

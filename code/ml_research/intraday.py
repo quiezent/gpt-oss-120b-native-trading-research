@@ -840,7 +840,8 @@ def live(gw, symbols=None, now=None, **kw):
             continue
         pair = {s: hist[s], "SPY": hist["SPY"]} if s != "SPY" else {"SPY": hist["SPY"]}
         p, ps = _panel_from(pair, {x: todays[x] for x in pair})
-        iv, ivsrc = _iv_prev(s, today, gw)
+        hint = (kw.get("iv_hint") or {}).get(s)     # forecast's look-time rows for names outside the cache: their close IV
+        iv, ivsrc = (hint, "forecast row (IV at the last close)") if hint else _iv_prev(s, today, gw)
         if iv is None:
             out[s] = {"error": "no implied or historical vol"}
             continue

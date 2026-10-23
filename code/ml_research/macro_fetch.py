@@ -31,7 +31,7 @@ from ml_research import fred  # noqa: E402
 OUT = ROOT / "data" / "macro"
 CACHE = OUT / "cache"
 ET = ZoneInfo("America/New_York")
-UA = "Trader Training research (contact via github.com/quiezent)"
+UA = "Trader Training research contact via github.com/quiezent"
 START, END = "2023-10-01", "2027-12-31"
 TODAY = datetime.now(ET).date()
 
