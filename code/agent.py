@@ -97,7 +97,7 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
         prefill += len(prompt) + len(force)
         sampled += len(seq.tokens)
         kind, name, val = parse_any(toks, seq.stop_reason, names)
-        said = trader.tokenizer().decode(toks)[:4000]     # the reasoning and call, for the look log
+        said = trader.tokenizer().decode(toks)            # the reasoning and call, in full: week 3 is the next replay set
         if kind != "TOOL":
             bad += 1
             trace.append({"step": step, "error": f"{kind}: {str(val)[:200]}", "tokens": len(seq.tokens), "said": said})
@@ -119,7 +119,7 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
         else:
             calls += 1
             out = tools.run(gw, name, val)
-        trace.append({"step": step, "tool": name, "args": val, "result": out[:1500], "tokens": len(seq.tokens), "said": said})
+        trace.append({"step": step, "tool": name, "args": val, "result": out, "tokens": len(seq.tokens), "said": said})
         prompt = prompt + toks + tool_result_tokens(name, out)
     return None, trace + [{"error": "no submit within the step limit"}], prefill, sampled
 

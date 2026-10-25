@@ -56,7 +56,7 @@ TAPE_DESC = ("Recent market-wide headlines. First our macro rows, newest first: 
              "sectors, Fed.")
 
 SPECS = [
-    {"name": "quote", "description": "Delayed (about 15 minutes) snapshot quotes: last, bid, ask, today's open/high/low, previous close, volume.",
+    {"name": "quote", "description": "Delayed (about 15 minutes) snapshot quotes, one labelled line per symbol: last with its % change vs the previous close, bid, ask, the session's open/high/low, previous close, volume.",
      "parameters": {"type": "object", "properties": {"symbols": {"type": "array", "items": {"type": "string"},
                                                                  "description": f"Up to {MAX_SYMBOLS} US stock or ETF symbols."}},
                     "required": ["symbols"]}},
@@ -145,7 +145,7 @@ def run(gw, name, args):
             syms = [str(s).upper().strip() for s in (args.get("symbols") or [])][:MAX_SYMBOLS]
             if not syms:
                 return "error: give at least one symbol"
-            lines = ["sym last bid ask open high low prev_close volume last_time_ET"]
+            lines = []
             for q in gw.quotes(syms):
                 if q.get("error"):
                     lines.append(f"{q['symbol']} error: {q['error']}")
@@ -156,8 +156,11 @@ def run(gw, name, args):
                         t = datetime.fromisoformat(t.replace("Z", "+00:00")).astimezone(ET).strftime("%H:%M")
                     except ValueError:
                         pass
-                lines.append(" ".join([q["symbol"], _f(q.get("last")), _f(q.get("bid")), _f(q.get("ask")), _f(q.get("open")),
-                                       _f(q.get("high")), _f(q.get("low")), _f(q.get("close")), _f(q.get("volume"), 0), str(t)]))
+                last, prev = q.get("last"), q.get("close")
+                chg = f" ({(last / prev - 1) * 100:+.2f}% vs prev_close)" if last and prev else ""
+                lines.append(f"{q['symbol']}: last {_f(last)}{chg} | bid {_f(q.get('bid'))} ask {_f(q.get('ask'))} | session "
+                             f"open {_f(q.get('open'))} high {_f(q.get('high'))} low {_f(q.get('low'))} | prev_close {_f(prev)} "
+                             f"| volume {_f(q.get('volume'), 0)} | last trade {f'{t} ET' if t else 'na'}")
             return "\n".join(lines)
         if name == "bars":
             sym = str(args.get("symbol", "")).upper().strip()

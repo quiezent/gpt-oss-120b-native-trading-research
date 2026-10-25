@@ -81,7 +81,8 @@ def main():
     R = out["rows"]
     assert R["NOPE"]["note"].startswith("not covered"), R["NOPE"]
     assert R["AAPL"]["iv_src"].startswith("gateway"), R["AAPL"]
-    assert "HAR fallback" in R["NVR"]["note"] or all(v == "har" for v in out["ship"].values()), R["NVR"]
+    assert R["NVR"]["note"].startswith("no implied vol or intraday data: previous model for ") or         all(v == "har" for v in out["ship"].values()), R["NVR"]           # the simulator's wording (forecast_fixes_prereg.md)
+    assert not any("HAR fallback" in (r.get("note") or "") for r in R.values()), R
     for t in vol2.TARGETS:      # ZZZT = NVR's bars from the gateway: same HAR fallback numbers (gateway bars cover 1 year)
         assert R["ZZZT"]["model"][t] == R["NVR"]["model"][t], (t, R["ZZZT"], R["NVR"])
         assert R["ZZIV"]["model"][t] == R["AAPL"]["model"][t], (t, R["ZZIV"], R["AAPL"])

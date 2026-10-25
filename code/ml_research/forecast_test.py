@@ -60,22 +60,27 @@ def main():
     txt = forecast.run(fg, {"symbols": ["AAPL", "ZZIV", "ZZZT", "ZZSH", "NOPE", "../X"]})
     lines = {ln.split(" ")[0]: ln for ln in txt.splitlines()}
     print(txt, "\n")
-    assert "stale" not in txt.splitlines()[0], txt.splitlines()[0]
+    stale = as_of < forecast._prev_session(forecast._today_et())     # e.g. at the weekend, before Monday's refresh
+    assert ("stale" in txt.splitlines()[0]) == stale, txt.splitlines()[0]
     assert txt.splitlines()[0].startswith(f"as of the close of {as_of[:4]}-")
     cols = [ln for ln in txt.splitlines() if ln.startswith("sym close")][0]
-    assert cols == ("sym close range1%(10-90) absr1% vol20% spread_bps(10-90) cost_bps(10-90) tier adv_$m "
-                    "next60%(10-90) rest_of_day%(10-90) note"), cols
+    assert cols == ("sym close range1±%(10-90) absr1±% vol20% spread_bps(10-90) cost_bps(10-90) tier adv_$m "
+                    "next60±%(10-90) rest_of_day±%(10-90) move$±(90) sleeve%±(90) note"), cols
+    assert any(ln.startswith("No column forecasts direction") for ln in txt.splitlines())
     a, z = fcr["AAPL"], fcr["NVR"]
+    hv = lambda x: f"{round(x / 2, 2):g}"
     for sym, ref in (("ZZIV", a), ("ZZZT", z)):
         tok = lines[sym].split(" ")
-        assert tok[2] == f"{ref['range1_pct']:g}({ref['range1_lo']:g}-{ref['range1_hi']:g})", (sym, tok[2], ref)
+        assert tok[2] == f"{hv(ref['range1_pct'])}({hv(ref['range1_lo'])}-{hv(ref['range1_hi'])})", (sym, tok[2], ref)
         assert (tok[3], tok[4]) == (f"{ref['absr1_pct']:g}", f"{ref['vol20_pct']:g}"), (sym, tok[3:5], ref)
     assert "outside the validated universe (an ETF" in lines["ZZIV"] and "leveraged" in lines["ZZIV"], lines["ZZIV"]
     assert "outside the validated universe;" in lines["ZZZT"] and "no 8-K earnings correction" in lines["ZZZT"], lines["ZZZT"]
-    assert "HAR fallback" in lines["ZZZT"], lines["ZZZT"]
+    assert "; no implied vol or intraday data: previous model for absr1, vol20" in lines["ZZZT"] or         "; no implied vol or intraday data: previous model for vol20" in lines["ZZZT"], lines["ZZZT"]   # the simulator's
+    assert "HAR fallback" not in txt, txt                                     # wording (forecast_fixes_prereg.md, item c)
     assert "na na na" in lines["ZZSH"] and "fewer than 50 of the last 60 sessions" in lines["ZZSH"], lines["ZZSH"]
-    assert lines["NOPE"].startswith("NOPE not covered"), lines["NOPE"]
-    assert lines["../X"].startswith("../X not covered") or "not a symbol" in lines["../X"], lines["../X"]
+    assert lines["NOPE"] == "NOPE not covered (not enough daily bars to size liquidity)", lines["NOPE"]   # no bars, no error
+    assert lines["../X"] == "../X not covered (no daily bars (162: HMDS query returned no data))", lines["../X"]  # names
+    # its gateway failure (forecast_fixes_prereg.md, item a)
     files = sorted(p.name for p in (forecast.ONDEMAND / as_of).glob("*"))
     assert files == ["ZZIV.json", "ZZSH.json", "ZZZT.json"], files
     assert not list(tmp.rglob("X.json")), "path traversal"
@@ -97,14 +102,54 @@ def main():
     out["second"] = txt2
 
     forecast._MEMO.clear()              # another process: no memo, but the files
-    forecast.ONDEMAND_BUDGET_S = 0.0
+    budget, floor = forecast.ONDEMAND_BUDGET_S, forecast.OUTSIDE_FLOOR_S
+    forecast.OUTSIDE_FLOOR_S = 0.0      # item b's budget alone (the remedy's floor is tested below)
+    forecast.ONDEMAND_BUDGET_S = 4.0    # cost passes (1 s left is enough); no new on-demand name starts (5 s needed)
     fg3 = FG(d, iv)
     txt3 = forecast.run(fg3, {"symbols": ["ZZIV", "MSFTX"]})
     l3 = {ln.split(" ")[0]: ln for ln in txt3.splitlines()}
     assert "outside the validated universe" in l3["ZZIV"], l3["ZZIV"]          # saved row still served
     assert "MSFTX not covered" in l3["MSFTX"] or "time cap" in l3["MSFTX"], l3["MSFTX"]
     assert not (forecast.ONDEMAND / as_of / "MSFTX.json").exists()
-    forecast.ONDEMAND_BUDGET_S = 45.0
+
+    # The budget counts from the start of the call, and cost.live keeps to it (forecast_fixes_prereg.md, item b): when the
+    # cached names' part of the call has used it, the outside names' cost requests are refused and the line says so.
+    import time
+    forecast.ONDEMAND_BUDGET_S = 3.0
+
+    def slow_session(gw, syms, iv_hint=None):
+        time.sleep(2.5)
+        return fake_session(gw, syms, iv_hint)
+    forecast._session = slow_session
+    fg6 = FG(d, iv)                     # the daily bars are in the 15-minute memo: cost needs no request; the saved row is
+    txt6 = forecast.run(fg6, {"symbols": ["AAPL", "ZZIV"]})                     # served; its session ranges are not asked
+    l6 = {ln.split(" ")[0]: ln for ln in txt6.splitlines()}
+    assert " na na " in l6["ZZIV"] and l6["ZZIV"].endswith("; session ranges skipped (time cap)"), l6["ZZIV"]
+    assert sess_calls[-1][0] == ["AAPL"], sess_calls
+    forecast._MEMO.clear()              # nothing in the memo: cost.live's requests are refused, and the line says so
+    fg6 = FG(d, iv)
+    t = time.monotonic()
+    txt6 = forecast.run(fg6, {"symbols": ["AAPL", "ZZIV"]})
+    took = time.monotonic() - t
+    l6 = {ln.split(" ")[0]: ln for ln in txt6.splitlines()}
+    assert l6["ZZIV"] == "ZZIV not covered (cost skipped (time cap): ask again)", l6["ZZIV"]
+    assert not [c for c in fg6.calls if c[1] == "ZZIV"], fg6.calls              # no request after the deadline
+    assert took < forecast.ONDEMAND_BUDGET_S + 1, took
+    forecast._session = fake_session
+    forecast.ONDEMAND_BUDGET_S = budget
+    # Amendment 1's remedy: with the call-start budget spent, an outside name still gets OUTSIDE_FLOOR_S from _outside's
+    # start, so a name never scored is scored (the 24 Oct smoke: item 2 alone scored 0 of 16 in a fresh process)
+    forecast.OUTSIDE_FLOOR_S = floor
+    forecast.ONDEMAND_BUDGET_S = 0.0
+    forecast._MEMO.clear()
+    (forecast.ONDEMAND / as_of / "ZZZT.json").unlink()          # ZZZT has to be scored afresh
+    fg7 = FG(d, iv)
+    txt7 = forecast.run(fg7, {"symbols": ["AAPL", "ZZZT"]})
+    l7 = {ln.split(" ")[0]: ln for ln in txt7.splitlines()}
+    assert " na na " not in l7["ZZZT"] and "time cap" not in l7["ZZZT"], l7["ZZZT"]
+    assert (forecast.ONDEMAND / as_of / "ZZZT.json").exists()
+    forecast.ONDEMAND_BUDGET_S = budget
+    assert forecast.ONDEMAND_BUDGET_S + 5 <= 45 and forecast.CALL_CAP_S >= forecast.ONDEMAND_BUDGET_S   # F12's 45 s bar
 
     class SimGW:                        # the simulator: unchanged ("not covered", no gateway calls)
         calls = []
@@ -139,7 +184,7 @@ def main():
     fg5 = FG(d, iv)
     v = vol2.live(fg5, symbols=["ZZIV"], data=d, no_stale_check=True, decision_iv=False)
     assert any(c[0] == "bars" and c[3] == "OPTION_IMPLIED_VOLATILITY" for c in fg5.calls), fg5.calls
-    assert v["rows"]["ZZIV"].get("iv_pct") and "HAR fallback" not in v["rows"]["ZZIV"].get("note", ""), v["rows"]["ZZIV"]
+    assert v["rows"]["ZZIV"].get("iv_pct") and "previous model" not in v["rows"]["ZZIV"].get("note", ""), v["rows"]["ZZIV"]
     assert v["rows"]["ZZIV"]["vol20_pct"] == a["vol20_pct"], (v["rows"]["ZZIV"], a)
     lc = _json.loads(vol2.LIVECACHE.read_text())
     assert max(lc["iv"]["ZZIV"]) <= d.dates[t] and all(k <= d.dates[t] for k in lc["rv"].get("ZZIV", {})), "partial day cached"

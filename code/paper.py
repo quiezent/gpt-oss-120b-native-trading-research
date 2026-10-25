@@ -213,6 +213,25 @@ def open_orders(gw, sleeve):
     return [o for o in gw.orders() if sleeve_of(o.get("ref")) == sleeve and o.get("status") not in done]
 
 
+def placed_fields(sleeve):
+    """{ref: the extra order fields this sleeve sent (e.g. trailingPercent)}, from runs/orders.jsonl: IBKR's open-order
+    rows carry no trailing percent, so the state shows it from here."""
+    return {r["ref"]: r.get("fields") or {} for r in read(ORDERS) if r.get("ref") and r.get("sleeve") == sleeve}
+
+
+def cancel_requested(sleeve):
+    """Refs of this sleeve's orders whose cancel IBKR accepted (runs/orders.jsonl). An order in this set that is still open
+    is a cancel IBKR has not confirmed (22 Oct: some took hours). A cancel that came back with another error (e.g. 504 not
+    connected, 161) doesn't count: that order is still working."""
+    def accepted(res):
+        if res.get("status") in ("PendingCancel", "Cancelled", "ApiCancelled"):
+            return True
+        msgs = [str(m) for m in res.get("messages") or []]
+        return bool(msgs) and all("not confirmed within" in m or m.startswith(("10148", "202")) for m in msgs)
+    return {str(r["cancel"]) for r in read(ORDERS)
+            if r.get("cancel") and r.get("sleeve") == sleeve and isinstance(r.get("result"), dict) and accepted(r["result"])}
+
+
 # ---------------------------------------------------------------- what the model hears about at its next look
 LOOKS = RUNS / "looks.json"   # {sleeve: {"reported_exec": [...], "reported_orders": [...]}}
 

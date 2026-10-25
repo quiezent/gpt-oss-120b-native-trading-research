@@ -39,7 +39,7 @@ SYSTEM_LIVE = """You manage a ${size:,} sleeve of an Interactive Brokers paper a
 
 You get a look every 30 minutes, from 09:00 ET (before the 09:30 open) to 15:30 ET. Each look shows your sleeve and a market table built from daily bars through the previous close; during the session the table also has delayed (about 15 minutes) last prices. Before deciding you may research with the tools you are given (quotes, price history and, where available, news and market scanners), then you call submit exactly once. Orders work from the moment you submit them (from the open, if you submit before it). DAY orders expire at the close; GTC orders work until they fill or you cancel them. To do nothing, submit empty lists.
 
-Your goal: grow the sleeve {goal_pct}% this week, from ${size:,} to ${target:,} by the close on {deadline}: the pace of +200% a year. The sleeve's value counts after commissions ($0.005 a share, minimum $1 an order) and slippage, and it is compared with holding cash and with holding SPY over the same time. Missing an opportunity is as much an error as a bad trade.
+Your target pace: about +{goal_pct}% a week, the pace of +200% a year. The sleeve is judged on its realized, costed results over days to months (after commissions of $0.005 a share, minimum $1 an order, and slippage), against holding cash and against holding SPY over the same time. Missing an opportunity is as much an error as a bad trade.
 
 Order types: MKT (market), MOO (opening auction; only before the open), LMT (needs limit), STP (stop; needs stop), STP LMT (needs stop and limit), TRAIL (trailing stop; needs trail_percent), MOC and LOC (at the close; LOC needs limit). Short selling is allowed. Gross exposure may not exceed 2x the sleeve.
 
@@ -69,25 +69,27 @@ S4_NEWS, S4_NONE = "4. Check every candidate with news and quote;", "4. Check ev
 
 
 def live_system(size, today, ml=False, news=True):
-    """SYSTEM_LIVE for a sleeve of this size, with this week's goal. ml: the sleeve has the forecast tool;
-    news=False: the training simulator, which has no news for past dates."""
-    g = goal_date(today)
+    """SYSTEM_LIVE for a sleeve of this size, with the target pace (Clayton, 24 Oct: a pace, not a weekly dollar goal
+    with a deadline). ml: the sleeve has the forecast tool; news=False: the training simulator, which has no news."""
     text = SYSTEM_LIVE
     if ml:
         text = text.replace(S3_SCAN, S3_ML)
     if not news:
         text = text.replace(S1_NEWS, S1_NONE).replace(S4_NEWS, S4_NONE)
-    return (text.replace("${size:,}", f"${size:,.0f}").replace("${target:,}", f"${size * (1 + GOAL_PCT / 100):,.0f}")
-            .replace("{goal_pct}", f"{GOAL_PCT:g}").replace("{deadline}", f"{g:%A} {g.day} {g:%B} {g.year}"))
+    return text.replace("${size:,}", f"${size:,.0f}").replace("{goal_pct}", f"{GOAL_PCT:g}")
 
 
-def goal_line(size, value, sessions_left, today):
-    target = size * (1 + GOAL_PCT / 100)
-    g = goal_date(today)
-    gap = (f"{fmt_money(target - value)} to go" if value < target else f"{fmt_money(value - target)} above the goal")
-    return (f"Goal: {fmt_money(target)} by the close on {g:%A} {g.day} {g:%B} ({GOAL_PCT:g}% above the "
-            f"{fmt_money(size)} start). Sleeve now {fmt_money(value)} ({100 * (value / size - 1):+.1f}% since the start), {gap}; "
-            f"{sessions_left} session{'s' if sessions_left != 1 else ''} left including today.")
+def goal_line(size, value, sessions_left=None, today=None):
+    """The sleeve against its start: no dollar target, gap or deadline (Clayton, 24 Oct; week 2 sized from the gap),
+    and the weekly reset stated as a fact (Clayton, 24 Oct: positions are still flattened every Monday).
+    sessions_left is kept for callers and unused; today (a date or ISO string) dates the next reset."""
+    line = f"Sleeve now {fmt_money(value)} ({100 * (value / size - 1):+.1f}% since its {fmt_money(size)} start)."
+    if today is not None:
+        t = date.fromisoformat(str(today)[:10]) if not isinstance(today, date) else today
+        nxt = t + timedelta(days=7 - t.weekday())
+        line += (f" All positions are closed at market at the open on Monday {nxt.day} {nxt:%B}, and the sleeve "
+                 f"restarts at {fmt_money(size)}.")
+    return line
 
 
 def live_steps(ml=False, news=True):
@@ -257,6 +259,38 @@ class Data:
         rows += [s for s in extra if s in feats and s not in rows]
         return rows, feats
 
+    def outside_features(self, d, syms):
+        """vol and beta for symbols outside the universe (e.g. held scanner names and leveraged ETFs) from their own
+        data/bars (refreshed each morning for held names), so the risk line and the beta-weighted exposure don't fall
+        back to "unknown" and 1.0 exactly where risk is largest (week 2: base's UVXY book showed +2.00x, about -6.5x
+        in fact). Raw beta, no shrinkage: these are mostly ETFs and small caps. Marked outside=True: no mark comes from
+        here (PaperWorld keeps its own rule for those)."""
+        t, out = d - 1, {}
+        if t < 60 or "SPY" not in self.k:
+            return out
+        spy = self.lr[self.k["SPY"], t - 59:t + 1]
+        for s in syms:
+            if s in self.k:
+                continue
+            try:
+                doc = barsmod.load(s) or {}
+            except (OSError, ValueError):
+                continue
+            bars = {str(x.get("date", ""))[:8]: x.get("close") for x in doc.get("bars") or []}
+            have = [k for k in bars if k <= self.dates[t]]
+            if not have or max(have) < self.dates[t - 5]:            # no bar in the last 5 sessions: say nothing
+                continue
+            c = np.array([bars.get(k) if bars.get(k) else np.nan for k in self.dates[t - 60:t + 1]], dtype=float)
+            lr = np.diff(np.log(c))
+            r20 = lr[-20:]
+            vol = np.nanstd(r20, ddof=1) * 100 if np.sum(~np.isnan(r20)) >= 15 else np.nan
+            ok = ~np.isnan(lr) & ~np.isnan(spy)
+            beta = np.nan
+            if ok.sum() >= 40 and np.var(spy[ok], ddof=1) > 0:
+                beta = np.cov(spy[ok], lr[ok], ddof=1)[0, 1] / np.var(spy[ok], ddof=1)
+            out[s] = {"vol": vol, "beta": beta, "outside": True}
+        return out
+
     def table(self, d, extra=(), live=None):
         """live: {symbol: delayed last price} during the session; adds 'last' and 'today' (% vs previous close)."""
         rows, feats = self.table_rows(d, extra)
@@ -348,33 +382,74 @@ def fmt_money(x):
 
 def account_text(world, data, d, feats, header=None, live=None):
     st = world.state(d, feats, live) if live else world.state(d, feats)
-    lines = [header or (f"Date: {data.iso(d)} ({date.fromisoformat(data.iso(d)).strftime('%A')}). "
-                        f"Orders you submit now work from today's open."),
+    header = header or (f"Date: {data.iso(d)} ({date.fromisoformat(data.iso(d)).strftime('%A')}). "
+                        f"Orders you submit now work from today's open.")
+    return render_account(st, feats, header, live, getattr(world, "MAX_GROSS", None)), st
+
+
+def render_account(st, feats, header, live=None, max_gross=2.0):
+    """The account part of a look's state text from a state dict (world.state(): value, cash, gross, net, beta_net,
+    positions, orders with cancel_pending, events). Callable on a stored look file's "state" for replays."""
+    class _W:
+        MAX_GROSS = max_gross
+    world = _W
+    lines = [header,
              f"Sleeve value {'now, at delayed last prices' if live else 'at last close'}: {fmt_money(st['value'])} (cash {fmt_money(st['cash'])}). "
              f"Gross exposure {st['gross']:.2f}x, net {st['net']:+.2f}x, beta-weighted {st['beta_net']:+.2f}x."]
-    if getattr(world, "MAX_GROSS", None) and st["gross"] > world.MAX_GROSS:
-        lines.append(f"Over the margin limit: gross exposure is {st['gross']:.2f}x the sleeve, above {world.MAX_GROSS:g}x. "
-                     f"Orders that add exposure are rejected until you bring it under {world.MAX_GROSS:g}x.")
+    if getattr(world, "MAX_GROSS", None):
+        cap, used = world.MAX_GROSS * max(st["value"], 0.0), st["gross"] * max(st["value"], 0.0)
+        rule = ("Orders in one submit are checked in turn, each as if the earlier ones had filled: an order that only "
+                "shrinks a position (without crossing zero) is never rejected for margin; one that adds to a position or "
+                "crosses zero is rejected if it would take gross exposure past the limit.")
+        if st["value"] <= 0:
+            lines.append(f"Buying power: none (the sleeve's value is not positive). {rule}")
+        elif st["gross"] > world.MAX_GROSS:
+            lines.append(f"Over the margin limit: gross exposure is {st['gross']:.2f}x the sleeve, above {world.MAX_GROSS:g}x. "
+                         f"Orders that add exposure are rejected until you bring it under {world.MAX_GROSS:g}x. {rule}")
+        else:
+            lines.append(f"Buying power: ${cap - used:,.0f} of gross exposure left before the {world.MAX_GROSS:g}x limit "
+                         f"(${used:,.0f} used of ${cap:,.0f}). {rule}")
     if st["positions"]:
-        lines.append(f"Positions (sym qty avg_cost {'last' if live else 'close'} unrealized days_held):")
+        lines.append(f"Positions (sym side shares avg_cost {'last' if live else 'close'} unrealized days_held):")
         for p in st["positions"]:
-            lines.append(f"  {p['symbol']} {p['quantity']:+d} {p['avg_cost']:.2f} {p['close']:.2f} {p['unrealized']:+,.0f} {p['days']}")
+            side = "LONG" if p["quantity"] > 0 else "SHORT"
+            lines.append(f"  {p['symbol']} {side} {abs(p['quantity'])} {p['avg_cost']:.2f} {p['close']:.2f} "
+                         f"{p['unrealized']:+,.0f} {p['days']}")
+        lines.append("  (To close a LONG, SELL its shares; to close a SHORT, BUY them back.)")
+        lines.append("Risk of each position (share of the sleeve; a one-sigma day move from the vol column, in dollars):")
+        for p in st["positions"]:                      # Clayton, 24 Oct: dollars at risk, which week 2's models never computed
+            v = abs(p["quantity"]) * p["close"]
+            share = f"{100 * v / st['value']:.0f}% of the sleeve" if st["value"] > 0 else "sleeve value not positive"
+            vol = (feats.get(p["symbol"]) or {}).get("vol")
+            if vol is not None and math.isfinite(vol):
+                loss = v * vol / 100
+                risk = (f"a {vol:.1f}% move = {fmt_money(loss)}" +
+                        (f" = {100 * loss / st['value']:.1f}% of the sleeve" if st["value"] > 0 else ""))
+            else:
+                risk = "volatility unknown"
+            lines.append(f"  {p['symbol']} {'LONG' if p['quantity'] > 0 else 'SHORT'}: {share}; {risk}")
     else:
         lines.append("Positions: none.")
     if st["orders"]:
-        lines.append("Open orders (ref sym action qty type limit stop trail% tif):")
+        lines.append("Open orders (ref sym action qty type limit stop trail% tif status):")
         for o in st["orders"]:
             g = lambda k: "-" if o.get(k) in (None, 0) else f"{o[k]:g}"
-            lines.append(f"  {o['ref']} {o['symbol']} {o['action']} {o['quantity']} {o['type']} {g('limit')} {g('stop')} {g('trail_percent')} {o['tif']}")
+            lines.append(f"  {o['ref']} {o['symbol']} {o['action']} {o['quantity']} {o['type']} {g('limit')} {g('stop')} "
+                         f"{g('trail_percent')} {o['tif']} {'CANCEL-PENDING' if o.get('cancel_pending') else 'working'}")
+        if any(o.get("cancel_pending") for o in st["orders"]):
+            lines.append("  (CANCEL-PENDING: you already asked to cancel it and the broker has not confirmed yet. It can still "
+                         "fill until it leaves this list. Cancelling it again does nothing.)")
     else:
         lines.append("Open orders: none.")
     lines.append("Since your last decision: " + ("; ".join(st["events"]) if st["events"] else "nothing happened."))
-    return "\n".join(lines), st
+    return "\n".join(lines)
 
 
 def state_text(world, data, d, header=None, live=None):
     held = world.symbols_in_play()
     table, feats = data.table(d, extra=held, live=live)
+    if hasattr(data, "outside_features"):
+        feats = feats | data.outside_features(d, [s for s in held if s not in feats])
     acct, st = account_text(world, data, d, feats, header, live)
     label = (f"daily bars through the close of {data.iso(d - 1)}" +
              ("; last = delayed last price, today = % change from the previous close" if live else ""))
@@ -495,7 +570,8 @@ class SimWorld:
         self.m.advance(1)
         d = self.m.session - 1
         for f in self.m.fills[self._seen_fills:]:
-            self.events.append(f"filled {f.side} {f.shares:g} {f.symbol} @ {f.price:.2f} (commission ${f.commission:.2f}, ref {f.ref})")
+            side = "BUY" if f.side in ("BUY", "BOT") else "SELL"     # the same words as live (paper.events_since_last_look)
+            self.events.append(f"filled {side} {f.shares:g} {f.symbol} @ {f.price:.2f} (commission ${f.commission:.2f}, ref {f.ref})")
             q = self.m.positions.get(f.symbol, [0])[0]
             if q and f.symbol not in self.opened:
                 self.opened[f.symbol] = d
@@ -526,7 +602,7 @@ class PaperWorld:
         return sorted(set(b["positions"]) | {o["symbol"] for o in self.paper.open_orders(self.gw, self.sleeve)})
 
     def state(self, d, feats, live=None):
-        marks = {s: x["close"] for s, x in feats.items()}
+        marks = {s: x["close"] for s, x in feats.items() if not x.get("outside")}
         last = self.data.dates[d - 1] if 0 < d <= len(self.data.dates) else None
         for s in self.paper.book(self.sleeve)["positions"]:   # held outside the universe: the last close from data/bars
             if s not in marks:                                 # (refreshed each morning for every held name), not cost
@@ -553,10 +629,17 @@ class PaperWorld:
             pos.append({"symbol": s, "quantity": int(p["quantity"]), "avg_cost": p["avg_cost"], "close": px,
                         "unrealized": p.get("unrealized", 0.0), "days": held})
         orders = []
+        asked = self.paper.cancel_requested(self.sleeve)      # still open after our cancel: IBKR has not confirmed it
+        sent = self.paper.placed_fields(self.sleeve)
         for o in self.paper.open_orders(self.gw, self.sleeve):
             orders.append({"ref": o["ref"], "symbol": o["symbol"], "action": o["action"], "quantity": o["quantity"],
-                           "type": o["order_type"], "limit": o.get("limit"), "stop": o.get("aux"), "trail_percent": None,
-                           "tif": o.get("tif", "DAY")})
+                           "type": o["order_type"], "stop": o.get("aux"),
+                           "trail_percent": (sent.get(o["ref"]) or {}).get("trailingPercent") if o["order_type"] == "TRAIL" else None,
+                           # IBKR reports a lmtPrice (stop + 0.03) on plain STP orders; it is not a limit (23 Oct: Opus read
+                           # its stops as STP LMT "on the wrong side"), so only order types with a limit show one
+                           "limit": o.get("limit") if o["order_type"] in ("LMT", "STP LMT", "LOC") else None,
+                           "tif": o.get("tif", "DAY"),
+                           "cancel_pending": o.get("status") == "PendingCancel" or o["ref"] in asked})
         ev = self.paper.events_since_last_look(self.gw, self.sleeve, commit=not self.dry_run) + self.paper.take_notes(self.sleeve, commit=not self.dry_run)
         return {"value": value, "cash": b["cash"], "positions": pos, "orders": orders, "events": ev,
                 "gross": gross / value if value else 0, "net": net / value if value else 0, "beta_net": bnet / value if value else 0}

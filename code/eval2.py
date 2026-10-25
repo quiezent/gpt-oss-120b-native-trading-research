@@ -127,13 +127,14 @@ async def main_async(cfg):
     data = trader.Data(last="20261015")
     pre = simgw.Precomputed(data)
     prov = fc.sim_provider(data)
-    pool = [i for i, x in enumerate(data.dates) if VAL_FIRST <= x <= VAL_LAST and i + 10 < len(data.dates)]
+    pool = [i for i, x in enumerate(data.dates) if cfg.first <= x <= cfg.last and i + 10 < len(data.dates)]
     rng = random.Random(cfg.seed)
     dates = sorted(rng.sample(pool, cfg.dates))
     burns = [rng.randint(0, 5) for _ in dates]
     service = tinker.ServiceClient(project_id=train2.PROJECT_ID, user_metadata={"purpose": f"eval2:{cfg.tag}"})
     models = dict(m.split("=", 1) for m in cfg.models)
-    clients = {name: service.create_sampling_client(model_path=path) for name, path in models.items()}
+    clients = {name: service.create_sampling_client(base_model=train2.BASE) if path == "base"   # gpt-oss-120b, as live.py
+               else service.create_sampling_client(model_path=path) for name, path in models.items()}
     ref = clients[next(iter(clients))]          # burn-in books come from the first model, shared by all
     out = ROOT / "runs" / "eval2" / cfg.tag
     out.mkdir(parents=True, exist_ok=True)
@@ -209,6 +210,8 @@ def main():
     ap.add_argument("--max-tokens", type=int, default=agent.MAX_OUT, help="per turn, less what the context has no room for")
     ap.add_argument("--effort", default="high")
     ap.add_argument("--seed", type=int, default=20261018)
+    ap.add_argument("--first", default=VAL_FIRST, help="first decision session (YYYYMMDD)")
+    ap.add_argument("--last", default=VAL_LAST, help="last decision session; its 10-session horizon must be in the data")
     ap.add_argument("--tag", required=True)
     ap.add_argument("--news", action="store_true",
                     help="offer point-in-time news, article and tape (ml_research/simnews.py) with the live news prompt")

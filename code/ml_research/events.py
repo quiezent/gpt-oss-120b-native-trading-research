@@ -1034,8 +1034,8 @@ def note(row):
     of the last 7 days, and the next earnings estimate when it falls within 10 sessions (or is overdue)."""
     parts = []
     if row.get("range1_event_pct") is not None:
-        parts.append(f"range1 corrected for {row.get('range1_event_reason') or 'an 8-K'} (uncorrected "
-                     f"{row.get('range1_shipped_pct'):g})")
+        parts.append(f"range1 corrected for {row.get('range1_event_reason') or 'an 8-K'} (uncorrected "     # ± half-span,
+                     f"±{round(row.get('range1_shipped_pct') / 2, 2):g})")                                   # as the column
     rec = row.get("recent_8k") or []
     if rec:
         e = rec[0]

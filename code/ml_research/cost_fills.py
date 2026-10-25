@@ -33,10 +33,18 @@ def _bars30(sym, cache={}):
 
 
 def _quote_tables(text):
-    """Rows of a quote-tool result: {sym: (last, bid, ask, last_time)}."""
+    """Rows of a quote-tool result: {sym: (last, bid, ask, last_time)}. Reads the week-1/2 table and the labelled lines
+    of week 3 ("SYM: last X (...) | bid B ask A | ... | last trade HH:MM ET")."""
     out = {}
     lines = text.splitlines()
-    if not lines or not lines[0].startswith("sym last bid ask"):
+    for ln in lines:
+        m = re.match(r"^(\S+): last (\S+)(?: \([^)]*\))? \| bid (\S+) ask (\S+) \|.*\| last trade (\S+)", ln)
+        if m:
+            try:
+                out[m.group(1)] = (float(m.group(2)), float(m.group(3)), float(m.group(4)), m.group(5))
+            except ValueError:
+                pass
+    if out or not lines or not lines[0].startswith("sym last bid ask"):
         return out
     for ln in lines[1:]:
         m = re.match(r"^(.+?) (\S+) (\S+) (\S+) (\S+) (\S+) (\S+) (\S+) (\S+) (\S+)$", ln)

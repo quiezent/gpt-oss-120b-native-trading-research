@@ -49,6 +49,7 @@ LIVE = ROOT / "runs" / "live"
 STOP = LIVE / "STOP"
 HOLD = LIVE / "HOLD"   # while it exists, looks wait (not marked done) and place nothing; refresh/record run
 ET = ZoneInfo("America/New_York")
+HOLD_MODEL = "hold"   # sleeves.json model of a sleeve waiting for an approved model: it gets no looks and stays in cash
 PROJECT_ID = "51e502c3-a670-40ad-b14a-c9eb569d4363"
 BASE = "openai/gpt-oss-120b"
 HOLIDAYS = {"2026-11-26", "2026-12-25", "2027-01-01", "2027-01-18", "2027-02-15", "2027-03-26", "2027-05-31",
@@ -151,11 +152,17 @@ def load_memo(name):
     return (json.loads(MEMO.read_text(encoding="utf-8")) if MEMO.exists() else {}).get(name, {})
 
 
-def save_memo(name, now, call):
+NOTES_CAP = {"claude": 8000, "gpt-oss": 2000}   # characters kept for the next look. gpt-oss stays at the 2,000 it was
+                                                # trained with; Opus, told its cap, was cut silently at 2,000 in week 2
+                                                # (118 memos, a median 28% lost)
+
+
+def save_memo(name, now, call, model=""):
     if not call:                      # no valid decision: the previous notes stay
         return
+    cap = NOTES_CAP["claude" if str(model).startswith("claude-") else "gpt-oss"]
     d = json.loads(MEMO.read_text(encoding="utf-8")) if MEMO.exists() else {}
-    d[name] = {"when": f"{now:%a %d %b %H:%M} ET", "notes": str(call.get("notes") or "")[:2000]}
+    d[name] = {"when": f"{now:%a %d %b %H:%M} ET", "notes": str(call.get("notes") or "")[:cap]}
     MEMO.write_text(json.dumps(d, indent=1), encoding="utf-8")
 
 
@@ -177,7 +184,7 @@ def finish(now, name, meta, text, st, call, trace, notes, table_rows, dry_run, c
         paper.append(LIVE / "research.jsonl", {"time": rec["time"], "sleeve": name, **summ,
                                                "orders": len(call["place"]) if call else None,
                                                "notes_chars": len(str((call or {}).get("notes") or ""))})
-        save_memo(name, now, call)
+        save_memo(name, now, call, meta["model"])
     log(f"{name}: {'DRY RUN ' if dry_run else ''}"
         + (f"{len(call['place'])} orders, {len(call['cancel'])} cancels" if call else "no valid decision")
         + f"; research {summ['research_calls']} {summ['tools'] or ''}; traded {summ['traded']}"
@@ -189,6 +196,10 @@ def look(dry_run=False, only=None):
     now = datetime.now(ET)
     today = now.date()
     sleeves = {k: v for k, v in paper.sleeves().items() if not only or k in only}
+    held = sorted(k for k, v in sleeves.items() if v.get("model") == HOLD_MODEL)
+    if held:                                # Clayton, 24 Oct: a sleeve without an approved model stays in cash, no look
+        log(f"no look for {', '.join(held)}: model '{HOLD_MODEL}' (no approved model yet); in cash")
+        sleeves = {k: v for k, v in sleeves.items() if k not in held}
     data = trader.Data(last=(today - timedelta(days=1)).strftime("%Y%m%d"))
     data.next_date = today.isoformat()
     d = len(data.dates)
@@ -231,7 +242,7 @@ def look(dry_run=False, only=None):
                     m = None if q.get("error") else paper.mark(q)
                     if m is not None:
                         live[q["symbol"]] = m
-        for name, meta in sleeves.items():
+        def build(name, meta):
             world = trader.PaperWorld(gw, name, data)
             world.dry_run = dry_run
             text, st, feats = trader.state_text(world, data, d, header=header, live=live)
@@ -241,12 +252,25 @@ def look(dry_run=False, only=None):
                                     steps=trader.live_steps(ml))
             rows, _ = data.table_rows(d, extra=world.symbols_in_play())
             system = trader.live_system(meta["start_cash"], today, ml=ml)
+            return world, text, st, system, rows, sp
+
+        for name, meta in sleeves.items():
             if meta["model"].startswith("claude-"):
+                world, text, st, system, rows, sp = build(name, meta)
                 claude_jobs.append((name, meta, text, st, system, rows, sp))
             else:
-                gptoss_jobs.append((name, meta, text, st, system, rows, sp, world))
+                gptoss_jobs.append((name, meta))
         worker.start()                      # the Claude looks run meanwhile; their orders are placed below, on client 10
-        for name, meta, text, st, system, rows, sp, world in gptoss_jobs:
+        for k, (name, meta) in enumerate(gptoss_jobs):
+            if k:                           # each gpt-oss sleeve sees its book as of its own look, not as of the first one
+                paper.sync_fills(gw)        # (the four run one after another, about 8 minutes; at 09:30 the opening
+                if live is not None:        # fills arrived after the state was built and 7 orders were sent again)
+                    missing = sorted(set(paper.book(name)["positions"]) - set(live))
+                    for q in (gw.quotes(missing) if missing else []):
+                        m = None if q.get("error") else paper.mark(q)
+                        if m is not None:
+                            live[q["symbol"]] = m
+            world, text, st, system, rows, sp = build(name, meta)
             model, t0 = meta["model"], time.time()
             call, trace, prefill, sampled, notes = None, [], 0, 0, []
             try:                            # an error ends this sleeve's look only; the rest and the Claude orders go on

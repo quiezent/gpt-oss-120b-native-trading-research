@@ -52,7 +52,7 @@ def research(name, args):
             _calls += 1
             out = tools.run(g, name, args)
     with LOG.open("a", encoding="utf-8") as f:
-        f.write(json.dumps({"tool": name, "args": args, "result": out[:2000]}) + "\n")
+        f.write(json.dumps({"tool": name, "args": args, "result": out}) + "\n")
     return out
 
 
@@ -90,11 +90,13 @@ if os.environ.get("TRADER_HAS_STATS") == "1":
 if os.environ.get("TRADER_HAS_FORECAST") == "1":
     import forecast as _forecast
 
-    @server.tool(description=_forecast.SPEC["description"])
-    def forecast(symbols: list[str],
-                 notional_usd: Annotated[float | None, Field(description=_forecast.SPEC["parameters"]["properties"]
-                                                             ["notional_usd"]["description"])] = None) -> str:
-        return research("forecast", {"symbols": symbols, "notional_usd": notional_usd})
+    _fp = _forecast.SPEC["parameters"]["properties"]
+
+    @server.tool(description=_forecast.SPEC["description"])         # gpt-oss's SPEC text, so both read the same (F12)
+    def forecast(symbols: Annotated[list[str], Field(description=_fp["symbols"]["description"])],
+                 notional_usd: Annotated[float | None, Field(description=_fp["notional_usd"]["description"])] = None,
+                 sleeve_usd: Annotated[float | None, Field(description=_fp["sleeve_usd"]["description"])] = None) -> str:
+        return research("forecast", {"symbols": symbols, "notional_usd": notional_usd, "sleeve_usd": sleeve_usd})
 
 if os.environ.get("TRADER_HAS_SCANNER") == "1":
     @server.tool(description=DESC["scanner"])
@@ -108,12 +110,13 @@ if os.environ.get("TRADER_HAS_SCANNER") == "1":
                          "Call it exactly once; it ends the look. "
                          "Each order: {symbol, action BUY|SELL, quantity (whole shares), type MKT|MOO|LMT|STP|STP LMT|TRAIL|MOC|LOC, "
                          "limit, stop, trail_percent (as needed), tif DAY|GTC, p_fill, p_win}. Empty lists mean no change. "
-                         + tools.PROBS_DESC + " notes: " + tools.NOTES_DESC)
+                         + tools.PROBS_DESC + " notes: " + tools.NOTES_DESC + " Up to 8,000 characters are kept.")
 def submit(place: list[dict], cancel: list[str], notes: str = "") -> str:
     if SUBMIT.exists():
         return "already submitted; only the first submit counts"
     SUBMIT.write_text(json.dumps({"place": place, "cancel": cancel, "notes": notes}), encoding="utf-8")
-    return "submitted: your orders will be placed exactly as written"
+    return ("submitted: your orders go to the broker as written when this look ends; one that would take gross exposure "
+            "past 2x the sleeve is rejected (you'll see it at your next look)")
 
 
 if __name__ == "__main__":

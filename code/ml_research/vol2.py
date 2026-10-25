@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT))
 import ml          # noqa: E402
 import ml_eval     # noqa: E402
 import trader      # noqa: E402
-from ml_research import risk  # noqa: E402
+from ml_research import bondfx, risk  # noqa: E402
 
 OUT = ROOT / "runs" / "ml" / "research"
 IV_DIR, B30_DIR = ROOT / "data" / "iv", ROOT / "data" / "bars30"
@@ -41,6 +41,9 @@ INTRA_LVL = ["sintra1", "sintra5", "sintra22"]
 INTRA_LOG = ["lintra1", "lintra5", "lintra22"]
 QS = (0.1, 0.9)
 MAX_SYMBOLS = 20
+# a row whose absr1 or vol20 came from the previous (HAR) model, live and in forecast.sim_provider: one wording, the
+# description's ("the note says that absr1 and vol20 come from the previous model")
+FALLBACK_NOTE = "no implied vol or intraday data: previous model for"
 
 
 def feats(name, tgt):
@@ -701,6 +704,7 @@ def live(gw=None, symbols=None, data=None, **kw):
     spy_hist = _iv_hist("SPY", ivh[jspy], t, d, gw if symbols else None, lc, notes)
     rows = {}
     for s in req:
+        own = None                 # the name's own last 20 sessions, for names outside the cache (forecast._ondemand)
         if s in d.k:
             j = d.k[s]
             close = d.c[j, t]
@@ -738,6 +742,7 @@ def live(gw=None, symbols=None, data=None, **kw):
                 if k.startswith("xs_"):
                     base[k] = float(M[k][0, t])
             close = m.c[1, t]
+            own = bondfx.own_base(m.h[1, :t + 1], m.l[1, :t + 1], m.c[1, :t + 1])   # forecast's bond/FX funds use it
             ivrow, rv22 = np.full(len(d.dates), np.nan), F["lcc22"][1]
             notes.append(f"{s}: outside the cache; HAR features from {bsrc} (ADJUSTED_LAST, as the cache)")
         if symbols:                 # requested symbols: complete the IV (and intraday) history the models need
@@ -776,22 +781,18 @@ def live(gw=None, symbols=None, data=None, **kw):
             src[tgt] = used
         row = _row(close, vals, src, now if now is not None else (ivrow[t] if np.isfinite(ivrow[t]) else np.nan), iv_src)
         note = []
-        if why:
-            if not np.isfinite(feat["liv"]):
-                reason = "no implied vol"
-            elif not all(np.isfinite(feat[k]) for k in IV_LOG):
-                reason = "IV history too short"
-            else:
-                reason = "intraday history missing"
-            note.append(f"{reason}: HAR fallback for {', '.join(why)}")
+        if why:                    # the simulator's and the description's wording (forecast_fixes_prereg.md, item c)
+            note.append(f"{FALLBACK_NOTE} {', '.join(why)}")
         if row.get("vol20_pct") is not None and row["vol20_pct"] < 5 and s not in trader.etfs():   # a stock's signature; bond ETFs sit there
             note.append("unusually low volatility (pending acquisition?)")
         row["note"] = "; ".join(note)
+        if own is not None:
+            row["own"] = own
         rows[s] = row
     if lc.pop("dirty", False):
         _save_lc(lc)
     if not symbols:
-        n_fb = sum(1 for r in rows.values() if "HAR fallback" in r.get("note", ""))
+        n_fb = sum(1 for r in rows.values() if FALLBACK_NOTE in r.get("note", ""))
         if n_fb:
             notes.append(f"{n_fb} symbols fell back to HAR (IV or intraday history missing in the cache; request them "
                          "by name with a gateway to fill it)")
