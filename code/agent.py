@@ -76,7 +76,24 @@ def harmony_specs(specs):
             for s in specs]
 
 
-def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort, seed=None):
+SAMPLE_TIMEOUT = 600   # s a call; a 16,384-token answer takes about 5 minutes
+
+
+def sample_once(sc, renew, model_input, params, trace, step):
+    """One sample with a deadline. tinker-feedback #151 (open; Tinker Owner, 25 Oct): a dead pooled connection can hang a
+    sample forever, which in live.py would stall every later sleeve's look. On a timeout, retry once on a new client from
+    renew(); a second timeout raises, ending only this look."""
+    try:
+        return sc.sample(model_input, 1, params).result(timeout=SAMPLE_TIMEOUT), sc
+    except TimeoutError:
+        if renew is None:
+            raise
+        trace.append({"step": step, "error": f"sample timed out after {SAMPLE_TIMEOUT} s; retried on a new client"})
+        sc = renew()
+        return sc.sample(model_input, 1, params).result(timeout=SAMPLE_TIMEOUT), sc
+
+
+def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort, seed=None, renew=None):
     from tinker_cookbook.renderers.gpt_oss import GptOssRenderer
     r = GptOssRenderer(trader.tokenizer(), use_system_prompt=True, reasoning_effort=effort, current_date=current_date)
     specs = research_specs + [trader.TOOL_LIVE]
@@ -92,7 +109,8 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
             return None, trace, prefill, sampled
         params = tinker.SamplingParams(temperature=1.0, max_tokens=min(MAX_OUT, room), stop=[trader.RET, trader.CALL],
                                        **({"seed": seed * 100 + step} if seed is not None else {}))
-        seq = sc.sample(tinker.ModelInput.from_ints(prompt + force), 1, params).result().sequences[0]
+        res, sc = sample_once(sc, renew, tinker.ModelInput.from_ints(prompt + force), params, trace, step)
+        seq = res.sequences[0]
         toks = force + list(seq.tokens)
         prefill += len(prompt) + len(force)
         sampled += len(seq.tokens)
@@ -116,9 +134,9 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
         if calls >= tools.MAX_CALLS:      # open the submit call, as for prose: at high effort it kept researching
             out = f"research limit reached ({tools.MAX_CALLS} calls): call submit now"
             force = SUBMIT_OPEN()
-        else:
+        else:                             # the count: week 2, 135 of 276 gpt-oss looks reached the cap, never told it
             calls += 1
-            out = tools.run(gw, name, val)
+            out = tools.run(gw, name, val) + f"\n(research call {calls} of {tools.MAX_CALLS})"
         trace.append({"step": step, "tool": name, "args": val, "result": out, "tokens": len(seq.tokens), "said": said})
         prompt = prompt + toks + tool_result_tokens(name, out)
     return None, trace + [{"error": "no submit within the step limit"}], prefill, sampled
@@ -154,7 +172,7 @@ def claude_look(model, system, state_text, research_specs, workdir, effort, time
     env = dict(os.environ, TRADER_SUBMIT_FILE=str(submit_file), TRADER_LOG_FILE=str(log_file),
                TRADER_HAS_NEWS="1" if "news" in have else "0", TRADER_HAS_SCANNER="1" if "scanner" in have else "0",
                TRADER_HAS_STATS="1" if "stats" in have else "0", TRADER_HAS_FORECAST="1" if "forecast" in have else "0",
-               TRADER_MCP_CLIENT=client)
+               TRADER_MCP_CLIENT=client, CLAUDE_CODE_DISABLE_AUTO_MEMORY="1")
     cfg = {"mcpServers": {"trader": {"command": sys.executable,
                                      "args": [str(ROOT / "mcp_server.py")], "env": {k: env[k] for k in
                                      ("TRADER_SUBMIT_FILE", "TRADER_LOG_FILE", "TRADER_HAS_NEWS", "TRADER_HAS_SCANNER",
@@ -164,9 +182,12 @@ def claude_look(model, system, state_text, research_specs, workdir, effort, time
     allowed = ",".join(f"mcp__trader__{n}" for n in sorted(have | {"submit"}))
     instructions = (system + "\n\nUse the tools named " + ", ".join(sorted(have)) + f" for research (at most {tools.MAX_CALLS} calls), "
                     "then call submit exactly once. Your decision is what you pass to submit; any other text is ignored.")
-    cmd = [claude_exe(), "-p", state_text, "--model", model, "--effort", effort, "--system-prompt", instructions, "--tools", "",
-           "--mcp-config", str(cfg_file), "--strict-mcp-config", "--allowedTools", allowed,
-           "--output-format", "json", "--no-session-persistence"]
+    # The look sees only its system prompt, state and tools: --setting-sources "" keeps out the user's and the repo's
+    # CLAUDE.md, and the env var above the session memory index, which the CLI otherwise loads from the workdir (25 Oct).
+    exe = claude_exe()
+    cmd = [exe, "-p", state_text, "--model", model, "--effort", effort, "--system-prompt", instructions, "--tools", "",
+           "--mcp-config", str(cfg_file), "--strict-mcp-config", "--allowedTools", allowed, "--setting-sources", "",
+           "--output-format", "stream-json", "--verbose", "--no-session-persistence"]
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env,
                            timeout=timeout, cwd=str(workdir))
@@ -175,12 +196,26 @@ def claude_look(model, system, state_text, research_specs, workdir, effort, time
         txt = lambda x: x.decode("utf-8", "replace") if isinstance(x, bytes) else (x or "")
         rc, stdout, stderr = f"timeout after {timeout:.0f}s", txt(e.stdout), txt(e.stderr)
     trace = [json.loads(l) for l in log_file.read_text(encoding="utf-8").splitlines() if l.strip()] if log_file.exists() else []
-    out = {}
-    try:
-        out = json.loads(stdout)
-    except ValueError:
-        out = {"raw": stdout[-2000:]}
+    events = []
+    for l in stdout.splitlines():
+        try:
+            events.append(json.loads(l))
+        except ValueError:
+            pass
+    init = next((e for e in events if e.get("type") == "system" and e.get("subtype") == "init"), {})
+    out = next((e for e in reversed(events) if e.get("type") == "result"), None) or {"raw": stdout[-2000:]}
+    blocks = [b for e in events if e.get("type") == "assistant" for b in (e.get("message") or {}).get("content") or []]
+    # cli_result stays the final message (week_read's frozen M3 input); cli_text and cli_thinking keep every message, so
+    # the opus looks can be read like gpt-oss's "said"; the CLI version and served model record what ran (25 Oct probe).
     trace.append({"cli_returncode": rc, "cli_result": str(out.get("result", out.get("raw", "")))[:2000],
-                  "stderr": stderr[-1000:], "cost_usd": out.get("total_cost_usd"), "turns": out.get("num_turns")})
+                  "stderr": stderr[-1000:], "cost_usd": out.get("total_cost_usd"), "turns": out.get("num_turns"),
+                  "usage": out.get("usage"),
+                  "cli_version": Path(exe).parents[1].name, "cli_model": init.get("model"),
+                  "cli_mcp": init.get("mcp_servers"),
+                  "cli_args": ["<state>" if a == state_text else "<system>" if a == instructions else a for a in cmd[1:]],
+                  "cli_text": [b.get("text") for b in blocks if b.get("type") == "text"],
+                  "cli_thinking": [b["thinking"] for b in blocks if b.get("type") == "thinking" and b.get("thinking")],
+                  # the plan's usage windows as the CLI reports them (the 7-day window was at 83% on 29 Oct)
+                  "cli_rate_limit": [e for e in events if e.get("type") == "rate_limit_event"][-3:]})
     call = json.loads(submit_file.read_text(encoding="utf-8")) if submit_file.exists() else None
     return call, trace

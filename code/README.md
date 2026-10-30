@@ -1,6 +1,6 @@
 # Code
 
-A snapshot of Trader Training's code as of 21 October 2026. It runs on Windows with Python 3.11, against IB Gateway (paper port) through the TWS Gateway Owner's broker framework. That framework is not included here; `trader.py`'s `PaperWorld` and the research tools call it. Market data, news, checkpoints and run logs are not included.
+A snapshot of Trader Training's code as of 30 October 2026. It runs on Windows with Python 3.11, against IB Gateway (paper port) through the TWS Gateway Owner's broker framework. That framework is not included here; `trader.py`'s `PaperWorld` and the research tools call it. Market data, news, checkpoints and run logs are not included.
 
 | File | What it does |
 |---|---|
@@ -14,6 +14,8 @@ A snapshot of Trader Training's code as of 21 October 2026. It runs on Windows w
 | `train.py`, `train2.py`, `sft2.py`, `eval2.py` | rl1; rl2 and rl3; the rejection-sampling SFT test; paired evaluation |
 | `forecast.py`, `ml.py`, `ml_eval.py`, `ml_research/` | The ML forecast tool, and every model we tested for it (see the [ML report](../reports/2026-10-19-ml-forecast-tool.md)) |
 | `p1.py`, `nav_runner.py`, `analyze_nav.py`, `tsla_counterfactual.py` | Our 14 October re-test of Codex's NAV4 and NAV9 |
+| `train4.py`, `intrasim.py`, `replay4.py`, `eval4.py`, `parity4.py` | The intraday simulator, the rl4/rl5 trainer, and the replay, evaluation and parity checks that judge it (rl6 and rl6b were trained from a later branch of these files) |
+| `week_read.py`, `risk_split.py`, `rates.py`, `dividends.py` | The weekly live comparison, the risk split per sleeve, the rates line in every sleeve's state, and dividends in the sleeve books |
 | `lists/` | Stock universes, industries and the ETF list |
 
 API keys are read from environment variables (`ml_research/keys.py`); none are in the code. No open-source licence has been chosen yet, so ask before reusing the code.

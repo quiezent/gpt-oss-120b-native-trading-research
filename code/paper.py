@@ -18,6 +18,7 @@ RUNS = Path(__file__).resolve().parent / "runs"
 FILLS = RUNS / "fills.jsonl"
 ORDERS = RUNS / "orders.jsonl"
 SLEEVES = RUNS / "sleeves.json"   # {name: {"start_cash": float, "start": iso, "model": str}}
+DIVIDENDS = RUNS / "dividends.jsonl"   # dividends.py: one row per (sleeve, symbol, ex_date) on a position held at the close before
 
 
 def now_iso():
@@ -58,11 +59,12 @@ def sleeves():
     return json.loads(SLEEVES.read_text(encoding="utf-8")) if SLEEVES.exists() else {}
 
 
-def add_sleeve(name, start_cash, model):
+def add_sleeve(name, start_cash, model, **meta):
+    """Add a sleeve mid-week (e.g. ml=True, effort="high"); live.py re-reads sleeves.json at each look."""
     s = sleeves()
     if name in s:
         raise ValueError(f"sleeve {name!r} exists")
-    s[name] = {"start_cash": float(start_cash), "start": now_iso(), "model": model}
+    s[name] = {"start_cash": float(start_cash), "start": now_iso(), "model": model} | meta
     RUNS.mkdir(exist_ok=True)
     SLEEVES.write_text(json.dumps(s, indent=1), encoding="utf-8")
 
@@ -151,6 +153,9 @@ def book(sleeve, marks=None):
         if not q:
             opened.pop(f["symbol"], None)
     positions = {s: {"quantity": q, "avg_cost": avg, "opened": opened.get(s)} for s, (q, avg) in pos.items() if q}
+    dividends = sum(r["amount"] for r in read(DIVIDENDS) if r["sleeve"] == sleeve)   # credited on longs, charged on shorts
+    cash += dividends
+    realized += dividends
     unrealized, value = 0.0, 0.0
     for s, p in positions.items():
         m = (marks or {}).get(s)
@@ -162,8 +167,17 @@ def book(sleeve, marks=None):
     unmarked = [s for s, p in positions.items() if p["mark"] is None]
     return {"sleeve": sleeve, "model": meta["model"], "start": meta["start"], "start_cash": meta["start_cash"],
             "cash": cash, "positions": positions, "realized": realized, "unrealized": unrealized,
-            "commissions": commissions, "fills": trades, "missing_commissions": missing,
+            "commissions": commissions, "dividends": dividends, "fills": trades, "missing_commissions": missing,
             "nav": None if unmarked else cash + value, "unmarked": unmarked}
+
+
+def positions_at(sleeve, day):
+    """{symbol: quantity} the sleeve held at the close before `day` (YYYYMMDD): its fills on earlier ET dates."""
+    pos = {}
+    for f in fills():
+        if f.get("sleeve") == sleeve and et_date(f["time"]) < day:
+            pos[f["symbol"]] = pos.get(f["symbol"], 0) + (f["shares"] if f["side"] == "BOT" else -f["shares"])
+    return {s: q for s, q in pos.items() if q}
 
 
 def mark(quote):

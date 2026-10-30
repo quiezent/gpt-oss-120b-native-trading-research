@@ -576,7 +576,7 @@ def run(gw, args):
         cols += " next60±%(10-90) rest_of_day±%(10-90)"
     cols += " move$±(90) sleeve%±(90)"
     lines = [head, mline] + ([m["macro"]] if m.get("macro") else []) + [
-        f"costs for a ${notional:,.0f} order per symbol",
+        f"cost_bps: round trip (spread, impact on entry and exit, both commissions) for a ${notional:,.0f} order per symbol",
         f"move$ ±(90) and sleeve% ±(90): a move of one range1 ± value, up or down, on a ${notional:,.0f} order, in $ and as % "
         f"of a ${sleeve:,.0f} sleeve; in brackets, the same for range1's 90% value. Neither is a loss limit: held from the "
         f"last close, a long or a short was at some point down by more than the bracketed $ in 23-25% of next sessions.",

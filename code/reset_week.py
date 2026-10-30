@@ -7,9 +7,15 @@ sleeves (base, rl1, opus and their -ml arms) from $30,000 cash on Monday, with n
     python reset_week.py week1 --go       # do it (client 10; not while a look is running)
     python reset_week.py week2 --rl rl4=tinker://.../sampler_weights/rl4-stepNNN --go    # week 3 (Clayton, 24 Oct)
 
-Steps: cancel every open order of this client; place a market-on-open order that closes each account
-position (ref tt-reset-..., so the fills belong to no sleeve); move the week's ledgers to runs/archive/<week>/;
-write the new sleeves. paper.sync_fills never re-books an archived execution.
+Steps: cancel every open order of this client (the sleeves' GTC orders can rest over the weekend); move the week's
+ledgers to runs/archive/<week>/; write the new sleeves. paper.sync_fills never re-books an archived execution.
+
+Positions are not touched here: closing the account's holdings and the IBKR reset are the TWS Gateway Owner's
+(Clayton, 26 Oct; the reset is on Monday before the open, the weekend being for analysis and training). Monday:
+create runs/live/HOLD, run this after the Gateway's 06:00 ET restart, check that no open order is left, and tell the
+Owner "reset" with Clayton's amount. The Owner closes every position pre-market from client 1 (refs
+reset-YYYYMMDD-SYMBOL), resets, and says "go" once the Gateway shows the new cash and no positions; then remove HOLD.
+No week-4 order goes in before the go.
 """
 
 import argparse
@@ -23,7 +29,8 @@ from tws import Gateway
 ROOT = Path(__file__).resolve().parent
 RUNS = ROOT / "runs"
 LEDGERS = [RUNS / "sleeves.json", RUNS / "fills.jsonl", RUNS / "orders.jsonl", RUNS / "looks.json", RUNS / "notes.json",
-           RUNS / "live" / "memo.json", RUNS / "live" / "daily.jsonl", RUNS / "live" / "research.jsonl"]
+           RUNS / "live" / "memo.json", RUNS / "live" / "daily.jsonl", RUNS / "live" / "research.jsonl",
+           paper.DIVIDENDS]
 START_CASH = 30000.0
 NEW = {"base": "base", "opus": "claude-opus-5-5"}     # plus the RL sleeve from --rl name=sampler
 EFFORT = {"base": "high", "opus": "max"}             # every sleeve at maximum effort (gpt-oss high, Opus max); RL: high
@@ -42,21 +49,14 @@ def main():
     with Gateway("trader-training", timeout=30) as gw:
         paper.sync_fills(gw)
         live = [o for o in gw.orders() if o.get("status") not in ("Filled", "Cancelled", "ApiCancelled", "Inactive")]
-        pos = [p for p in gw.positions() if (p.get("position") or p.get("quantity"))]
         print(f"cancel {len(live)} open orders: {[(o.get('ref'), o.get('symbol'), o.get('action'), o.get('quantity'), o.get('order_type')) for o in live]}")
-        closes = []
-        for p in pos:
-            q = p.get("position") or p.get("quantity")
-            closes.append((p["symbol"], "SELL" if q > 0 else "BUY", int(abs(q))))
-        print(f"close {len(closes)} positions at Monday's open (MOO): {closes}")
+        held = {s: {k: p["quantity"] for k, p in paper.book(s)["positions"].items()} for s in paper.sleeves()}
+        print(f"sleeve positions at the reset (released by the TWS Gateway Owner): {held}")
         if not a.go:
             return
         for o in live:
             r = gw.cancel(order_id=o["order_id"])
             print("  cancel", o.get("ref"), o.get("symbol"), "->", (r or {}).get("status", r))
-        for sym, act, n in closes:
-            r = paper.place(gw, "reset", sym, act, n, "MKT", None, None, "OPG")
-            print(f"  {act} {n} {sym} MOO ->", (r.get("result") or {}).get("status", r.get("error")))
     dest.mkdir(parents=True)
     for f in LEDGERS:
         if f.exists():

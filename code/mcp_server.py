@@ -50,7 +50,7 @@ def research(name, args):
             out = f"error: research connection failed ({type(e).__name__}: {str(e)[:200]}); this call did not count"
         else:
             _calls += 1
-            out = tools.run(g, name, args)
+            out = tools.run(g, name, args) + f"\n(research call {_calls} of {tools.MAX_CALLS})"   # as agent.gptoss_look
     with LOG.open("a", encoding="utf-8") as f:
         f.write(json.dumps({"tool": name, "args": args, "result": out}) + "\n")
     return out

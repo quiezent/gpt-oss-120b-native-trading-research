@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT))
 import forecast  # noqa: E402
 from ml_research import events, macro_feats  # noqa: E402
 
-REAL_DT, NY, UTC8 = dtmod.datetime, ZoneInfo("America/New_York"), timezone(timedelta(hours=8))
+REAL_DT, NY, MYT = dtmod.datetime, ZoneInfo("America/New_York"), timezone(timedelta(hours=8))
 STALE = "(stale: not from the last session)"
 
 # (ET wall clock, cache close, labelled stale?, why)
@@ -65,7 +65,7 @@ class Clock:
         class FakeDT(REAL_DT):
             @classmethod
             def now(cls, tz=None):
-                return utc.astimezone(tz) if tz else utc.astimezone(UTC8).replace(tzinfo=None)
+                return utc.astimezone(tz) if tz else utc.astimezone(MYT).replace(tzinfo=None)
 
             @classmethod
             def today(cls):
@@ -78,7 +78,7 @@ class Clock:
         class FakeDate(date):
             @classmethod
             def today(cls):
-                return utc.astimezone(UTC8).date()
+                return utc.astimezone(MYT).date()
 
         self.saved = dtmod.datetime, forecast.date
         dtmod.datetime, forecast.date = FakeDT, FakeDate

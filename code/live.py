@@ -17,8 +17,10 @@ Completed jobs are remembered (done.json), so a restart never repeats a look.
 Every look is logged in runs/live/<date>/<sleeve>-<HHMM>.json and summarized in runs/live/research.jsonl.
 
 Start the loop detached from any Claude session (a session restart kills processes it started; that lost
-the 16 Oct 08:15-11:00 jobs), e.g. from PowerShell:
-    Invoke-CimMethod Win32_Process -MethodName Create -Arguments @{CurrentDirectory='C:\\Claude\\Trader';
+the 16 Oct 08:15-11:00 jobs) and with a hidden console (without it Windows Terminal shows the loop's console, and
+closing that window stops the loop; 26 Oct), e.g. from PowerShell:
+    $si = New-CimInstance -ClassName Win32_ProcessStartup -Property @{ShowWindow = [uint16]0} -ClientOnly
+    Invoke-CimMethod Win32_Process -MethodName Create -Arguments @{CurrentDirectory='C:\\Claude\\Trader'; ProcessStartupInformation=$si;
         CommandLine='cmd.exe /c ""C:\\Claude\\Trader\\.venv\\Scripts\\python.exe" live.py >> runs\\live\\live.out.log 2>> runs\\live\\live.err.log"'}
 """
 
@@ -39,8 +41,10 @@ import tinker
 
 import agent
 import bars as barsmod
+import dividends
 import forecast
 import paper
+import rates
 import tools
 import trader
 
@@ -116,6 +120,12 @@ def refresh():
             except Exception as e:
                 bad.append(f"{s}: {e}")
     log(f"refreshed bars for {len(set(syms) | held)} symbols; {len(bad)} failed {bad[:5]}")
+    book_dividends()                                    # a missed record's dividends, before the first look
+    try:                                                # every sleeve's rate line (rates.py); never fails the refresh
+        r = rates.fetch()
+        log(f"rates: target {r['target']} as of {r['target_as_of']}, 3-month bill {r['bill3m']} as of {r['bill3m_as_of']}")
+    except Exception as e:                              # noqa: BLE001 - ml_research.fred redacts the key
+        log(f"rates fetch failed ({type(e).__name__}); the line keeps the last figures until they are {rates.STALE_DAYS} days old")
     if any(m.get("ml") for m in paper.sleeves().values()):
         import fetch_extra                              # inputs of the ML arm's cost and market-vol forecasts
         with gateway() as gw:
@@ -131,6 +141,20 @@ def refresh():
                 f"{len(r['errors'])} errors {r['errors'][:2]}")
         except Exception as e:                          # noqa: BLE001
             log(f"Alpha Vantage capture failed: {type(e).__name__}")
+
+
+def book_dividends(gw=None):
+    """dividends.book with its result logged, on gw or a new client-10 connection; never raises (F6, Clayton 26 Oct)."""
+    try:
+        if gw is None:
+            with gateway() as g:
+                rows = dividends.book(g, log=log)
+        else:
+            rows = dividends.book(gw, log=log)
+        log(f"dividends: {len(rows)} booked" + "".join(f"; {r['sleeve']} {r['symbol']} ex {r['ex_date']} {r['quantity']:+} x "
+                                                      f"{r['per_share']} = {r['amount']:+.2f}" for r in rows))
+    except Exception:                                   # noqa: BLE001
+        log("dividends failed: " + traceback.format_exc()[-300:])
 
 
 def research_summary(trace, call, table_rows):
@@ -210,6 +234,11 @@ def look(dry_run=False, only=None):
               if session else f"{day} Before the open. Orders you submit now work from the 09:30 open.")
     service = tinker.ServiceClient(project_id=PROJECT_ID, user_metadata={"purpose": "live"})
     claude_jobs, gptoss_jobs, claude_out = [], [], {}
+    try:
+        rate_line = rates.line(now)                 # the same facts for every sleeve at this look
+    except Exception:                               # noqa: BLE001 - a look never fails on it
+        rate_line = ""
+        log("rate line failed: " + traceback.format_exc()[-300:])
 
     def run_claude():                       # one at a time; each look's tool server researches on its own client (12, 13)
         start = time.time()                 # all Claude looks share WINDOW, so their orders aren't placed after the open/close
@@ -248,8 +277,10 @@ def look(dry_run=False, only=None):
             text, st, feats = trader.state_text(world, data, d, header=header, live=live)
             ml = bool(meta.get("ml"))           # the ML arm: the same model plus the forecast tool (forecast.py)
             sp = specs + ([forecast.SPEC] if ml else [])
-            text = trader.live_user(text, trader.goal_line(meta["start_cash"], st["value"], sessions_left(today), today), load_memo(name),
-                                    steps=trader.live_steps(ml))
+            # no today: the models aren't told of the Monday close; NAV counts cash and holdings (Clayton, 26 Oct)
+            goal = trader.goal_line(meta["start_cash"], st["value"], sessions_left(today))
+            goal += f"\n{rate_line}" if rate_line else ""
+            text = trader.live_user(text, goal, load_memo(name), steps=trader.live_steps(ml))
             rows, _ = data.table_rows(d, extra=world.symbols_in_play())
             system = trader.live_system(meta["start_cash"], today, ml=ml)
             return world, text, st, system, rows, sp
@@ -274,8 +305,11 @@ def look(dry_run=False, only=None):
             model, t0 = meta["model"], time.time()
             call, trace, prefill, sampled, notes = None, [], 0, 0, []
             try:                            # an error ends this sleeve's look only; the rest and the Claude orders go on
-                sc = service.create_sampling_client(base_model=BASE) if model in ("base", BASE) else service.create_sampling_client(model_path=model)
-                call, trace, prefill, sampled = agent.gptoss_look(sc, gw, system, text, today.isoformat(), sp, effort(meta))
+                sampler = lambda svc, m=model: (svc.create_sampling_client(base_model=BASE) if m in ("base", BASE)
+                                                else svc.create_sampling_client(model_path=m))
+                renew = lambda: sampler(tinker.ServiceClient(project_id=PROJECT_ID, user_metadata={"purpose": "live"}))
+                call, trace, prefill, sampled = agent.gptoss_look(sampler(service), gw, system, text, today.isoformat(), sp,
+                                                                  effort(meta), renew=renew)
                 notes = world.act(call) if call and not dry_run else []
             except Exception:
                 trace = trace + [{"error": traceback.format_exc()[-1500:]}]
@@ -308,6 +342,7 @@ def record():
     with gateway() as gw:
         paper.sync_fills(gw)
         reconcile(gw)
+        book_dividends(gw)                            # today's ex-dates are in today's bars by now
         acct = gw.account()
         rows = []
         for name in paper.sleeves():

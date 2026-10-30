@@ -9,10 +9,14 @@ news, article and tape: live, the gateway's rows plus the company's SEC 8-Ks and
 """
 
 import json
+import os
+import time
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 ET = ZoneInfo("America/New_York")
+LISTS = Path(__file__).resolve().parent / "lists"
 MAX_CALLS = 12
 MAX_SYMBOLS = 20
 MAX_STATS = 10
@@ -54,21 +58,24 @@ TAPE_DESC = ("Recent market-wide headlines. First our macro rows, newest first: 
              "first-release values and the Kalshi pre-release expectation, FOMC decisions, and today's release calendar (ET) "
              "(a release's values reach our data the evening after it). Then {sources} headlines, newest first: markets, "
              "sectors, Fed.")
+LIVE_SOURCES = "Briefing.com and Dow Jones (Dow Jones rows are headlines only, with no article text)"
 
 SPECS = [
-    {"name": "quote", "description": "Delayed (about 15 minutes) snapshot quotes, one labelled line per symbol: last with its % change vs the previous close, bid, ask, the session's open/high/low, previous close, volume.",
+    {"name": "quote", "description": "Delayed (about 15 minutes) snapshot quotes, one labelled line per symbol: last with its % change vs the previous close, bid, ask, the session's open/high/low, previous close, volume, and the security's name (with ETF or its industry).",
      "parameters": {"type": "object", "properties": {"symbols": {"type": "array", "items": {"type": "string"},
                                                                  "description": f"Up to {MAX_SYMBOLS} US stock or ETF symbols."}},
                     "required": ["symbols"]}},
     {"name": "bars", "description": "Price history for one symbol (regular hours). bar_size: '5 mins', '15 mins', '1 hour' or '1 day'. duration: e.g. '1 D', '5 D', '1 M', '6 M', '1 Y'. At most the last 60 bars are returned.",
      "parameters": {"type": "object", "properties": {"symbol": {"type": "string"}, "bar_size": {"type": "string"},
                                                      "duration": {"type": "string"}}, "required": ["symbol", "bar_size", "duration"]}},
-    {"name": "news", "description": "Recent headlines for one symbol, newest first, with article ids: Briefing.com columns and analyst "
+    {"name": "news", "description": "Headlines for one symbol, newest first, with article ids: Briefing.com columns and analyst "
                                     "actions, and the company's SEC 8-K filings (provider EDGAR; acceptance time; its article is the "
-                                    "press release or filing text).",
+                                    "press release or filing text). A symbol's newest headline can be months or even years old; "
+                                    "each row carries its date. ETFs and funds usually have none here (no 8-Ks, few Briefing.com "
+                                    "items); market and sector news is on tape.",
      "parameters": {"type": "object", "properties": {"symbol": {"type": "string"}, "limit": {"type": "integer", "description": "Up to 10."}},
                     "required": ["symbol"]}},
-    {"name": "tape", "description": TAPE_DESC.format(sources="Briefing.com and Dow Jones"),
+    {"name": "tape", "description": TAPE_DESC.format(sources=LIVE_SOURCES),
      "parameters": {"type": "object", "properties": {}, "required": []}},
     {"name": "article", "description": "The text of one news article, by provider and article id from `news` or `tape`.",
      "parameters": {"type": "object", "properties": {"provider": {"type": "string"}, "article_id": {"type": "string"}},
@@ -83,7 +90,7 @@ SPECS = [
                                                                  "description": f"Up to {MAX_STATS} symbols."}},
                     "required": ["symbols"]}},
     {"name": "scanner", "description": "IBKR market scanner for US stocks on the major exchanges: the top-ranked stocks for one scan, "
-                                       "with delayed last price and % change today. Pick the scan (and industry) that tests your hypothesis. Scans by kind: "
+                                       "with delayed last price, % change today and name. Pick the scan (and industry) that tests your hypothesis. Scans by kind: "
                                        + " ".join(f"[{g}] " + "; ".join(f"{k} = {v}" for k, v in s.items()) + "." for g, s in SCANS.items()) +
                                        " industry (optional) limits the scan to one of IBKR's industry classes: " + ", ".join(INDUSTRIES) +
                                        " (health care is in 'Consumer, Non-cyclical'). Unless you set them, price_above is 5 and avg_volume_above is "
@@ -126,6 +133,56 @@ def _f(x, p=2):
     return "na" if x is None else f"{x:.{p}f}" if isinstance(x, float) else str(x)
 
 
+_names = None
+_no_name, _names_off = set(), [0.0]
+NAME_LOOKUPS, NAME_SECONDS = 10, 6
+
+
+def names(gw, syms):
+    """{symbol: "LONG NAME (ETF | industry)"}: lists/industries.json, then, live, the gateway's contract details for
+    any other symbol, kept in lists/names.json (week 2: 18 gpt-oss looks ordered a symbol they had only guessed at,
+    e.g. 'NANO is a biotech?'). Never raises: a symbol without a name gets none."""
+    global _names
+    try:
+        if _names is None:
+            _names = {}
+            for f in (LISTS / "industries.json", LISTS / "names.json"):
+                if f.exists():
+                    _names.update(json.loads(f.read_text(encoding="utf-8")))
+        miss = [s for s in dict.fromkeys(syms) if s not in _names and s not in _no_name]
+        if miss and _live(gw) and hasattr(gw, "details") and time.monotonic() >= _names_off[0]:
+            got, t0 = {}, time.monotonic()
+            for s in miss[:NAME_LOOKUPS]:           # one at a time, at most 10 and none started after 6 s, so a
+                if time.monotonic() - t0 > NAME_SECONDS:    # scanner of unknown names never holds up the look
+                    break
+                try:
+                    r = gw.details(s)
+                except Exception as e:              # noqa: BLE001
+                    if any(k in str(e) for k in ("200", "no contract", "ambiguous")):
+                        _no_name.add(s)             # IBKR has no single such contract: don't ask again
+                        continue
+                    _names_off[0] = time.monotonic() + 600      # a stall or disconnect: no lookups for 10 minutes
+                    break
+                if r.get("long_name"):
+                    got[r["symbol"]] = {k: r.get(k) for k in ("industry", "stock_type", "long_name")}
+            if got:
+                _names.update(got)
+                f = LISTS / "names.json"
+                old = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
+                tmp = f.with_suffix(f".{os.getpid()}.tmp")
+                tmp.write_text(json.dumps(old | got, indent=1), encoding="utf-8")
+                os.replace(tmp, f)
+    except Exception:                               # noqa: BLE001 - names are a courtesy; the quote goes out regardless
+        pass
+    out = {}
+    for s in syms:
+        d = (_names or {}).get(s)
+        if d and d.get("long_name"):
+            kind = "ETF" if d.get("stock_type") == "ETF" else (d.get("industry") or d.get("stock_type") or "")
+            out[s] = d["long_name"] + (f" ({kind})" if kind else "")
+    return out
+
+
 def _headline(r):
     """'YYYY-MM-DD HH:MM ET [provider article_id] headline' (IBKR news times are UTC)."""
     t = r.get("time") or ""
@@ -146,7 +203,9 @@ def run(gw, name, args):
             if not syms:
                 return "error: give at least one symbol"
             lines = []
-            for q in gw.quotes(syms):
+            qs = gw.quotes(syms)
+            nm = names(gw, [q["symbol"] for q in qs if not q.get("error")])   # a stall is names()' own back-off
+            for q in qs:
                 if q.get("error"):
                     lines.append(f"{q['symbol']} error: {q['error']}")
                     continue
@@ -160,15 +219,18 @@ def run(gw, name, args):
                 chg = f" ({(last / prev - 1) * 100:+.2f}% vs prev_close)" if last and prev else ""
                 lines.append(f"{q['symbol']}: last {_f(last)}{chg} | bid {_f(q.get('bid'))} ask {_f(q.get('ask'))} | session "
                              f"open {_f(q.get('open'))} high {_f(q.get('high'))} low {_f(q.get('low'))} | prev_close {_f(prev)} "
-                             f"| volume {_f(q.get('volume'), 0)} | last trade {f'{t} ET' if t else 'na'}")
+                             f"| volume {_f(q.get('volume'), 0)} | last trade {f'{t} ET' if t else 'na'}"
+                             + (f" | {nm[q['symbol']]}" if q["symbol"] in nm else ""))
             return "\n".join(lines)
         if name == "bars":
             sym = str(args.get("symbol", "")).upper().strip()
             rows = gw.bars(sym, duration=str(args.get("duration", "5 D")), bar_size=str(args.get("bar_size", "1 hour")),
                            what="TRADES", rth=True)
+            n = len(rows)
             rows = rows[-60:]
             return "\n".join([f"{sym} time open high low close volume"] +
-                             [f"{r['date']} {_f(r['open'])} {_f(r['high'])} {_f(r['low'])} {_f(r['close'])} {_f(r['volume'], 0)}" for r in rows])
+                             [f"{r['date']} {_f(r['open'])} {_f(r['high'])} {_f(r['low'])} {_f(r['close'])} {_f(r['volume'], 0)}" for r in rows]
+                             + ([f"(the last 60 of {n} bars)"] if n > 60 else []))
         if name == "news":
             sym, lim = str(args.get("symbol", "")).upper().strip(), min(int(args.get("limit") or 10), 10)
             if _live(gw):
@@ -176,7 +238,8 @@ def run(gw, name, args):
                 rows, note = livenews.news(gw, sym, lim)
             else:
                 rows, note = gw.news(sym, limit=lim), ""
-            return "\n".join([_headline(r) for r in rows] + ([note] if note else [])) or "no headlines"
+            return ("\n".join([_headline(r) for r in rows] + ([note] if note else []))
+                    or f"no headlines for {sym} (ETFs and funds usually have none here; market and sector news is on tape)")
         if name == "tape":
             if _live(gw):
                 from ml_research import livenews
@@ -191,7 +254,11 @@ def run(gw, name, args):
             else:
                 text = gw.article(str(args.get("provider")), str(args.get("article_id")))
             text = text.get("text", "") if isinstance(text, dict) else str(text)
-            return text[:4000]
+            if len(text) <= 4000:
+                return text
+            edgar = str(args.get("provider")).upper() == "EDGAR"     # 8-K text is stored only up to 6,000 characters
+            return text[:4000] + (f"\n[cut at 4,000 characters; our copy of the filing stops at {len(text):,}, and the "
+                                  "filing may be longer]" if edgar else f"\n[cut at 4,000 of {len(text):,} characters]")
         if name == "forecast":                     # the ML arm's tool (forecast.py); only -ml sleeves are offered it
             import forecast
             return forecast.run(gw, args)
@@ -220,11 +287,13 @@ def run(gw, name, args):
             if not hits:
                 return "no results"
             q = {x["symbol"]: x for x in gw.quotes([r["symbol"] for r in hits]) if not x.get("error")}
-            lines = ["rank sym last today%"]
+            nm = names(gw, [r["symbol"] for r in hits])
+            lines = ["rank sym last today% name"]
             for r in hits:
                 x = q.get(r["symbol"], {})
                 last, prev = x.get("last"), x.get("close")
-                lines.append(f"{r['rank']} {r['symbol']} {_f(last)} " + (f"{100 * (last / prev - 1):+.1f}" if last and prev else "na"))
+                lines.append(f"{r['rank']} {r['symbol']} {_f(last)} " + (f"{100 * (last / prev - 1):+.1f}" if last and prev else "na")
+                             + (f" {nm[r['symbol']]}" if r["symbol"] in nm else ""))
             return "\n".join(lines)
         return f"error: unknown tool {name!r}"
     except Exception as e:

@@ -114,7 +114,7 @@ GOLDEN = {
         'as of the close of 2026-10-23; session ranges from 09:30 ET\n'
         'market: SPY vol20 15.2% (10-90 12.1-19.4) vol5 14.0% (10-90 10.2-20.5) typical 16.0% size_scale 1.05\n'
         'macro: no scheduled US releases today; next week: GDP Thu 08:30, PCE Fri 08:30\n'
-        'costs for a $5,000 order per symbol\n'
+        'cost_bps: round trip (spread, impact on entry and exit, both commissions) for a $5,000 order per symbol\n'
         'No column forecasts direction: the expected gain from direction is 0. The ± columns are moves up OR down: range1, next60 and rest_of_day are half the expected high-low span (a band around the price; no overnight gap), absr1 the expected size of the close-to-close move (gap included, so usually larger).\n'
         'sym close range1±%(10-90) absr1±% vol20% spread_bps(10-90) cost_bps(10-90) tier adv_$m note\n'
         'AAA 100 1.24(0.85-1.88) 1.6 28 2(1.5-2.8) 6.5(5.7-7.7) A 900\n'
@@ -132,7 +132,7 @@ GOLDEN = {
         'as of the close of 2026-10-23; session ranges from 09:30 ET\n'
         'market: SPY vol20 15.2% (10-90 12.1-19.4) vol5 14.0% (10-90 10.2-20.5) typical 16.0% size_scale 1.05\n'
         'macro: no scheduled US releases today; next week: GDP Thu 08:30, PCE Fri 08:30\n'
-        'costs for a $5,000 order per symbol\n'
+        'cost_bps: round trip (spread, impact on entry and exit, both commissions) for a $5,000 order per symbol\n'
         'No column forecasts direction: the expected gain from direction is 0. The ± columns are moves up OR down: range1, next60 and rest_of_day are half the expected high-low span (a band around the price; no overnight gap), absr1 the expected size of the close-to-close move (gap included, so usually larger).\n'
         'sym close range1±%(10-90) absr1±% vol20% spread_bps(10-90) cost_bps(10-90) tier adv_$m note\n'
         'AAA 100 1.24(0.85-1.88) 1.6 28 2(1.5-2.8) 6.5(5.7-7.7) A 900'
@@ -141,7 +141,7 @@ GOLDEN = {
         'as of the close of 2026-10-23; session ranges from 09:30 ET\n'
         'market: SPY vol20 15.2% (10-90 12.1-19.4) vol5 14.0% (10-90 10.2-20.5) typical 16.0% size_scale 1.05\n'
         'macro: no scheduled US releases today; next week: GDP Thu 08:30, PCE Fri 08:30\n'
-        'costs for a $3,000 order per symbol\n'
+        'cost_bps: round trip (spread, impact on entry and exit, both commissions) for a $3,000 order per symbol\n'
         'No column forecasts direction: the expected gain from direction is 0. The ± columns are moves up OR down: range1, next60 and rest_of_day are half the expected high-low span (a band around the price; no overnight gap), absr1 the expected size of the close-to-close move (gap included, so usually larger).\n'
         'sym close range1±%(10-90) absr1±% vol20% spread_bps(10-90) cost_bps(10-90) tier adv_$m note\n'
         'AAA 100 1.24(0.85-1.88) 1.6 28 2(1.5-2.8) 9(8.3-10.2) A 900'
@@ -150,7 +150,7 @@ GOLDEN = {
         'as of the close of 2026-10-23; session ranges from 09:30 ET\n'
         'market: SPY vol20 15.2% (10-90 12.1-19.4) vol5 14.0% (10-90 10.2-20.5) typical 16.0% size_scale 1.05\n'
         'macro: no scheduled US releases today; next week: GDP Thu 08:30, PCE Fri 08:30\n'
-        'costs for a $5,000 order per symbol\n'
+        'cost_bps: round trip (spread, impact on entry and exit, both commissions) for a $5,000 order per symbol\n'
         'No column forecasts direction: the expected gain from direction is 0. The ± columns are moves up OR down: range1, next60 and rest_of_day are half the expected high-low span (a band around the price; no overnight gap), absr1 the expected size of the close-to-close move (gap included, so usually larger).\n'
         'sym close range1±%(10-90) absr1±% vol20% spread_bps(10-90) cost_bps(10-90) tier adv_$m note\n'
         'AAA 100 1.24(0.85-1.88) 1.6 28 2(1.5-2.8) 6.5(5.7-7.7) A 900\n'
@@ -168,7 +168,7 @@ GOLDEN = {
         'as of the close of 2026-10-23; session ranges at the 10:00 look\n'
         'market: SPY vol20 15.2% (10-90 12.1-19.4) vol5 14.0% (10-90 10.2-20.5) typical 16.0% size_scale 1.05\n'
         'macro: no scheduled US releases today; next week: GDP Thu 08:30, PCE Fri 08:30\n'
-        'costs for a $5,000 order per symbol\n'
+        'cost_bps: round trip (spread, impact on entry and exit, both commissions) for a $5,000 order per symbol\n'
         'No column forecasts direction: the expected gain from direction is 0. The ± columns are moves up OR down: range1, next60 and rest_of_day are half the expected high-low span (a band around the price; no overnight gap), absr1 the expected size of the close-to-close move (gap included, so usually larger).\n'
         'sym close range1±%(10-90) absr1±% vol20% spread_bps(10-90) cost_bps(10-90) tier adv_$m next60±%(10-90) rest_of_day±%(10-90) note\n'
         'AAA 100 1.24(0.85-1.88) 1.6 28 2(1.5-2.8) 6.5(5.7-7.7) A 900 0.5(0.25-0.75) 1(0.5-1.5)\n'
@@ -198,7 +198,7 @@ def expect(golden, notional, sleeve, sess, move):
             t = ln.split(" ")
             ln = " ".join(t[:k] + [move[sym]] + t[k:])
         out.append(ln)
-        if ln.startswith("costs for a "):
+        if ln.startswith("cost_bps: round trip "):
             out.append(LINE.format(n=notional, s=sleeve))
     return "\n".join(out)
 
