@@ -72,7 +72,7 @@ About twenty classical ML models were built and tested out of sample, January 20
 | **Bond, credit and FX recalibration** (24 Oct) | pre-registered, out of sample | Treasury 79.7%, credit 80.2%, FX 80.2% coverage against the 80% target: **shipped for week 3**, with a dollar-move line per order |
 | **Earnings drift** (F8, 25 Oct): follow the first reaction to an earnings 8-K for two sessions | one fixed rule, 1,821 events, pre-registered | **Failed**: gross drift −9 bps, hit rate 49.6%, net of costs −23 to −27 bps, negative in every half-year |
 
-The six that passed form one research tool, `forecast`, which the "+ forecast" sleeves can call. Comparing each sleeve with its twin measures whether the tool helps: in week 2 two of three "+ forecast" sleeves beat their twins (base by 15.1 points, Opus by 11.2) and one trailed (rl3, by 8.0); in week 3 all three did (base by 4.4, rl5 by 6.5, Opus by 5.1). [ML research report](reports/2026-10-19-ml-forecast-tool.md).
+The six that passed form one research tool, `forecast`, which the "+ forecast" sleeves can call. Comparing each sleeve with its twin measures whether the tool helps: in week 2 two of three "+ forecast" sleeves beat their twins (base by 15.1 points, Opus by 11.2) and one trailed (rl3, by 8.0); in week 3 all three did (base by 4.4, rl5 by 6.5, Opus by 5.1). A verified attribution of the base pair does not credit the tool for those gaps: they come mostly from exposure, timing and single trades, and the tool's sizing and cost numbers were rarely used as intended ([week 3](reports/2026-10-30-week3.md)). [ML research report](reports/2026-10-19-ml-forecast-tool.md).
 
 ### What we train next
 
@@ -88,7 +88,7 @@ The six that passed form one research tool, `forecast`, which the "+ forecast" s
 3. **Measuring trading skill takes far more data than it seems.** Two live days, or a few hundred simulated decisions, prove nothing either way.
 4. **Setup changes behaviour as much as training does.** Opus sat almost still in week 1. In week 2, with looks every 30 minutes and maximum reasoning effort, it placed 218 orders, took concentrated positions and shorts, and lost 8.8%. With the forecast tool it placed 149 orders and made 2.4%.
 5. **Losses come from concentration and leverage, not costs.** Week 2's commissions were $62–$153 a sleeve; the four losing sleeves lost $2,300–$4,700, much of it in a few names held on borrowed cash.
-6. **The forecast tool's risk and cost numbers help.** A "+ forecast" sleeve beat its twin in five of six pairs over weeks 2 and 3, for all three models.
+6. **The "+ forecast" sleeves have led their twins, but not visibly because of the tool.** They beat their twins in five of six pairs over weeks 2 and 3. Week 2's base + forecast result (+$1,296) is one AMD dip-buy (+$862) plus an NVDA paper fill $481 better than its limit; week 3's base gap is mostly exposure and timing. Within the noise between identical runs, this is suggestive, not established.
 7. **RL on our reward drifts toward inaction.** Four runs, from rl3 and from base, at two learning rates, all hit their inaction or token-order guards within four updates.
 8. **Plumbing failures cost real results.** A gateway cutoff lost fills twice, a desktop-app update broke two Opus looks, and a stale gateway view turned an account reset into 30 orphan positions. Each was found, fixed and reported; the Gateway now runs on New York time, which removes the cutoff.
 
