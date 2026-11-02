@@ -8,14 +8,14 @@ Our target is +200% a year (CAGR) on NAV, after costs. We publish here what we t
 
 ## Live results: week 3 (26–30 Oct)
 
-Six sleeves of $30,000 each: the untrained base model, our trained checkpoint rl5, and Claude Opus 5.5 as a reference, each run alone and with our ML forecast tool. Values at Friday's close, net of commissions, from each sleeve's own fills.
+Six sleeves of $30,000 each: the untrained base model, our trained checkpoint rl5, and Claude Opus 5.5 as a reference, each run alone and with our ML forecast tool. The tool's version is part of a sleeve's name: ML1 in week 2, ML2 in week 3. Values at Friday's close, net of commissions, from each sleeve's own fills.
 
 | Sleeve | Model | Week | Change |
 |---|---|---:|---:|
-| Base + forecast | gpt-oss-120b, untrained | **+12.20%** | +$3,661 |
+| Base + ML2 | gpt-oss-120b, untrained | **+12.20%** | +$3,661 |
 | Base | gpt-oss-120b, untrained | **+7.83%** | +$2,349 |
-| rl5 + forecast | gpt-oss-120b + our LoRA, rl5 step 2 | **+7.09%** | +$2,126 |
-| Opus + forecast | Claude Opus 5.5 (reference) | **+3.37%** | +$1,011 |
+| rl5 + ML2 | gpt-oss-120b + our LoRA, rl5 step 2 | **+7.09%** | +$2,126 |
+| Opus + ML2 | Claude Opus 5.5 (reference) | **+3.37%** | +$1,011 |
 | rl5 | gpt-oss-120b + our LoRA, rl5 step 2 | +0.63% | +$188 |
 | Opus | Claude Opus 5.5 (reference) | −1.68% | −$504 |
 | **Goal** (+200% a year, weekly pace) | | **+2.14%** | +$642 |
@@ -72,13 +72,13 @@ About twenty classical ML models were built and tested out of sample, January 20
 | **Bond, credit and FX recalibration** (24 Oct) | pre-registered, out of sample | Treasury 79.7%, credit 80.2%, FX 80.2% coverage against the 80% target: **shipped for week 3**, with a dollar-move line per order |
 | **Earnings drift** (F8, 25 Oct): follow the first reaction to an earnings 8-K for two sessions | one fixed rule, 1,821 events, pre-registered | **Failed**: gross drift −9 bps, hit rate 49.6%, net of costs −23 to −27 bps, negative in every half-year |
 
-The six that passed form one research tool, `forecast`, which the "+ forecast" sleeves can call. Comparing each sleeve with its twin measures whether the tool helps: in week 2 two of three "+ forecast" sleeves beat their twins (base by 15.1 points, Opus by 11.2) and one trailed (rl3, by 8.0); in week 3 all three did (base by 4.4, rl5 by 6.5, Opus by 5.1). A verified attribution of the base pair does not credit the tool for those gaps: they come mostly from exposure, timing and single trades, and the tool's sizing and cost numbers were rarely used as intended ([week 3](reports/2026-10-30-week3.md)). [ML research report](reports/2026-10-19-ml-forecast-tool.md).
+The six that passed form one research tool, `forecast`, which the "+ ML" sleeves can call. Comparing each sleeve with its twin measures whether the tool helps: in week 2 two of three "+ ML1" sleeves beat their twins (base by 15.1 points, Opus by 11.2) and one trailed (rl3, by 8.0); in week 3 all three did (base by 4.4, rl5 by 6.5, Opus by 5.1). A verified attribution of the base pair does not credit the tool for those gaps: they come mostly from exposure, timing and single trades, and the tool's sizing and cost numbers were rarely used as intended ([week 3](reports/2026-10-30-week3.md)). [ML research report](reports/2026-10-19-ml-forecast-tool.md).
 
 ### What we train next
 
 1. **No paid RL aimed at P&L until a new information source passes a pre-registered offline test like F8.** Every run (rl4, rl5, rl6, rl6b) drifted toward inaction within four updates; the reading is that the simulator gives the policy no information with an edge, so doing nothing is cheaper than acting.
 2. **Keep the live comparison running** (base, rl5 and Opus, each with and without the tool) to get more draws on whether training helps. A live week gives about 70 looks per sleeve; detecting a 0.36-point edge per decision needs more than 1,300.
-3. **Learn from base + forecast,** the best sleeve two weeks running: what it reads in the tool and how it sizes.
+3. **Learn from Base + ML1 and Base + ML2,** the best sleeve two weeks running: what it reads in the tool and how it sizes.
 4. **Fix the reward's pull toward inaction** before any further run from base; the evidence points at its trading charges, not the learning rate.
 
 ## Findings so far
@@ -88,13 +88,13 @@ The six that passed form one research tool, `forecast`, which the "+ forecast" s
 3. **Measuring trading skill takes far more data than it seems.** Two live days, or a few hundred simulated decisions, prove nothing either way.
 4. **Setup changes behaviour as much as training does.** Opus sat almost still in week 1. In week 2, with looks every 30 minutes and maximum reasoning effort, it placed 218 orders, took concentrated positions and shorts, and lost 8.8%. With the forecast tool it placed 149 orders and made 2.4%.
 5. **Losses come from concentration and leverage, not costs.** Week 2's commissions were $62–$153 a sleeve; the four losing sleeves lost $2,300–$4,700, much of it in a few names held on borrowed cash.
-6. **The "+ forecast" sleeves have led their twins, but not visibly because of the tool.** They beat their twins in five of six pairs over weeks 2 and 3. Week 2's base + forecast result (+$1,296) is one AMD dip-buy (+$862) plus an NVDA paper fill $481 better than its limit; week 3's base gap is mostly exposure and timing. Within the noise between identical runs, this is suggestive, not established.
+6. **The "+ ML" sleeves have led their twins, but not visibly because of the tool.** They beat their twins in five of six pairs over weeks 2 and 3. Week 2's Base + ML1 result (+$1,296) is one AMD dip-buy (+$862) plus an NVDA paper fill $481 better than its limit; week 3's base gap is mostly exposure and timing. Within the noise between identical runs, this is suggestive, not established.
 7. **RL on our reward drifts toward inaction.** Four runs, from rl3 and from base, at two learning rates, all hit their inaction or token-order guards within four updates.
 8. **Plumbing failures cost real results.** A gateway cutoff lost fills twice, a desktop-app update broke two Opus looks, and a stale gateway view turned an account reset into 30 orphan positions. Each was found, fixed and reported; the Gateway now runs on New York time, which removes the cutoff.
 
 ## How the live test works
 
-- **A look.** Every 30 minutes from 09:00 to 15:30 New York time, each sleeve's model reads its positions and a market table, researches with tools, then submits orders and notes for its next look. The tools are quotes, news headlines and full articles, a stock scanner, the market tape, stats, and for "+ forecast" sleeves the forecast tool. gpt-oss runs on Tinker with native tool calls. Claude runs headless through the Claude CLI with exactly the same tools over MCP.
+- **A look.** Every 30 minutes from 09:00 to 15:30 New York time, each sleeve's model reads its positions and a market table, researches with tools, then submits orders and notes for its next look. The tools are quotes, news headlines and full articles, a stock scanner, the market tape, stats, and for "+ ML" sleeves the forecast tool. gpt-oss runs on Tinker with native tool calls. Claude runs headless through the Claude CLI with exactly the same tools over MCP.
 - **Sleeves.** Every order carries a reference tying it to one sleeve, so each fill, commission and position belongs to exactly one model. Each sleeve is valued at 4:15 pm from its own fills.
 - **The only fixed limit** is the broker's 2× gross margin per sleeve, rejected at order time.
 

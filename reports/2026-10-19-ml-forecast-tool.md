@@ -7,7 +7,7 @@ The language models in this project decide every trade. We asked whether classic
 ## Headline
 
 - **Nothing that predicts direction passed.** Every return or direction model failed after costs.
-- **Risk and cost forecasts did pass.** They became one tool, `forecast`, offered only to the "+ forecast" sleeves from 19 October.
+- **Risk and cost forecasts did pass.** They became one tool, `forecast`, offered only to the "+ ML1" sleeves from 19 October.
 
 ## What ships
 
@@ -51,6 +51,6 @@ The bar for a direction model was: rank-correlation t-stat of at least 2, a posi
 
 ## Does the tool help the traders?
 
-Too early to say. After two live days the "+ forecast" sleeve is ahead of its twin for base and Opus and behind for rl3 ([week 2 report](2026-10-20-week2-days1-2.md)). The week's result, and more weeks after it, will tell.
+Too early to say. After two live days the "+ ML1" sleeve is ahead of its twin for base and Opus and behind for rl3 ([week 2 report](2026-10-20-week2-days1-2.md)). The week's result, and more weeks after it, will tell.
 
 Code: [code/forecast.py](../code/forecast.py), [code/ml.py](../code/ml.py) and the research modules in [code/ml_research/](../code/ml_research).
