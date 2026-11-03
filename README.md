@@ -4,7 +4,7 @@ We are training **gpt-oss-120b**, OpenAI's open-weight model, into a specialized
 
 Our target is +200% a year (CAGR) on NAV, after costs. We publish here what we train, what works and what fails. The work is done by a small team of AI agents for Clayton, who sets the goals and budgets.
 
-*Last updated 31 October 2026.*
+*Last updated 3 November 2026, for the corrections and the NAV study below. The live table is still week 3, the last full week.*
 
 ## Live results: week 3 (26–30 Oct)
 
@@ -76,10 +76,10 @@ The six that passed form one research tool, `forecast`, which the "+ ML" sleeves
 
 ### What we train next
 
-1. **No paid RL aimed at P&L until a new information source passes a pre-registered offline test like F8.** Every run (rl4, rl5, rl6, rl6b) drifted toward inaction within four updates; the reading is that the simulator gives the policy no information with an edge, so doing nothing is cheaper than acting.
+1. **No paid RL aimed at P&L until a new information source passes a pre-registered offline test like F8.** Every run (rl4, rl5, rl6, rl6b) drifted toward inaction within four updates; the reading is that the simulator gives the policy no information with an edge, so doing nothing is cheaper than acting. **Rider, 3 Nov:** in rl6 and rl6b the rise in empty looks came from looks at the research limit, under a forced submit with no reasoning turn that we removed on 1 Nov; in rl4 about half did. Below the limit, empties stayed at or under 9%. No RL has run since that change ([NAV study](reports/2026-11-02-nav-study.md)).
 2. **Keep the live comparison running** (base, rl5 and Opus, each with and without the tool) to get more draws on whether training helps. A live week gives about 70 looks per sleeve; detecting a 0.36-point edge per decision needs more than 1,300.
 3. **Learn from Base + ML1 and Base + ML2,** the best sleeve two weeks running: what it reads in the tool and how it sizes.
-4. **Fix the reward's pull toward inaction** before any further run from base; the evidence points at its trading charges, not the learning rate.
+4. **Fix the reward's pull toward inaction** before any further run from base; the evidence points at its trading charges, not the learning rate. See the rider on item 1.
 
 ## Findings so far
 
@@ -89,8 +89,8 @@ The six that passed form one research tool, `forecast`, which the "+ ML" sleeves
 4. **Setup changes behaviour as much as training does.** Opus sat almost still in week 1. In week 2, with looks every 30 minutes and maximum reasoning effort, it placed 218 orders, took concentrated positions and shorts, and lost 8.8%. With the forecast tool it placed 149 orders and made 2.4%.
 5. **Losses come from concentration and leverage, not costs.** Week 2's commissions were $62–$153 a sleeve; the four losing sleeves lost $2,300–$4,700, much of it in a few names held on borrowed cash.
 6. **The "+ ML" sleeves have led their twins, but not visibly because of the tool.** They beat their twins in five of six pairs over weeks 2 and 3. Week 2's Base + ML1 result (+$1,296) is one AMD dip-buy (+$862) plus an NVDA paper fill $481 better than its limit; week 3's base gap is mostly exposure and timing. Within the noise between identical runs, this is suggestive, not established.
-7. **RL on our reward drifts toward inaction.** Four runs, from rl3 and from base, at two learning rates, all hit their inaction or token-order guards within four updates.
-8. **Plumbing failures cost real results.** A gateway cutoff lost fills twice, a desktop-app update broke two Opus looks, and a stale gateway view turned an account reset into 30 orphan positions. Each was found, fixed and reported; the Gateway now runs on New York time, which removes the cutoff.
+7. **RL on our reward drifts toward inaction.** Four runs, from rl3 and from base, at two learning rates, all hit their inaction or token-order guards within four updates. **Rider, 3 Nov:** in rl6 and rl6b the rise in empty looks came from looks at the research limit, under a forced submit with no reasoning turn that we removed on 1 Nov; in rl4 about half did. Below the limit, empties stayed at or under 9%. No RL has run since that change ([NAV study](reports/2026-11-02-nav-study.md)).
+8. **Plumbing failures cost real results.** A gateway cutoff lost fills twice, a desktop-app update broke two Opus looks, and a stale gateway view turned an account reset into 30 orphan positions. Each was found, fixed and reported; the Gateway now runs on New York time, which removes the cutoff. On 2 November we also found that a closing turn ending in the wrong token was thrown away and rewritten with no reasoning turn, which changed 4 of 338 gpt-oss decisions from 26 October; it's fixed ([NAV study](reports/2026-11-02-nav-study.md)).
 
 ## How the live test works
 
@@ -114,7 +114,7 @@ The Tinker Owner task looks after the Tinker SDK and checkpoint storage.
 
 ## Before this: the Codex attempt
 
-From July to 9 October 2026 an earlier agent, Codex, worked on the same goal. Its NAV4 checkpoint made the first model-chosen paper round trip (3 TSLA shares). Our 14 October re-test on 228 new episodes found that neither NAV4 nor NAV9 traded measurably better than the base model or than holding a passive basket. That work, its code, releases and our audit are preserved in [codex/](codex/README.md). The original releases (NAV6–NAV9) are unchanged.
+From July to 9 October 2026 an earlier agent, Codex, worked on the same goal. Its NAV4 checkpoint made the first model-chosen paper round trip (3 TSLA shares). Our 14 October re-test on 228 new episodes found that neither NAV4 nor NAV9 traded measurably better than the base model or than holding a passive basket. That work, its code, releases and our audit are preserved in [codex/](codex/README.md). The original releases (NAV6–NAV9) are unchanged. [What Codex did against Opus and Fable, and how far each checkpoint actually moved from base on live looks](reports/2026-11-02-nav-study.md): NAV9's movement is small but separated from zero.
 
 ## What is not here
 
