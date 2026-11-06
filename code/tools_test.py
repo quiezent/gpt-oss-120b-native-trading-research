@@ -37,6 +37,7 @@ class FakeGW:
         return {"text": "x" * 5000}
 
     def scan(self, code, rows, **f):
+        self.scan_code = code
         return [{"rank": 0, "symbol": "NANO"}, {"rank": 1, "symbol": "AAPL"}]
 
 
@@ -72,4 +73,14 @@ with tempfile.TemporaryDirectory() as d:
     ok += [check("news empty", tools.run(gw, "news", {"symbol": "XLE"}), ["no headlines for XLE (ETFs and funds usually"]),
            check("article cut note", tools.run(gw, "article", {"provider": "BRFG", "article_id": "1"})[-60:],
                  ["[cut at 4,000 of 5,000 characters]"])]
+    for sent, want in (("SCAN_histPerfRatio1m_DESC", "SCAN_histPerfRatio1m_DESC"), ("scan_utilization_desc", "SCAN_utilization_DESC"),
+                       ("top_perc_gain", "TOP_PERC_GAIN"), ("NOT_A_CODE", "NOT_A_CODE")):
+        tools.run(gw, "scanner", {"scan": sent})
+        ok.append(check(f"scan code {sent} reaches IBKR in its own case", gw.scan_code, [want]))
+    ok.append(check("all five mixed-case codes kept", str(sorted(c for c in tools.SCAN_CODES if c != c.upper())),
+                    ["SCAN_histPerfRatio1m_ASC", "SCAN_histPerfRatio1m_DESC", "SCAN_histPerfRatio3m_ASC",
+                     "SCAN_histPerfRatio3m_DESC", "SCAN_utilization_DESC"]))
+    for args, want in (({"symbols": 5}, "[]"), ({"symbols": True}, "[]"), ({"symbols": 1.5}, "[]"), ({"symbols": None}, "[]"),
+                       ({"symbols": ["aapl", " xle "]}, "['AAPL', 'XLE']"), ({"symbols": "ab"}, "['A', 'B']"), ("junk", "[]")):
+        ok.append(check(f"symbols_in {args}", str(tools.symbols_in("quote", args)), [want]))
 print("ALL OK" if all(ok) else "FAILED")

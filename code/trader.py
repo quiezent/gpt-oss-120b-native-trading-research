@@ -335,8 +335,11 @@ def render(state_text, size, decision_date, effort="low"):
     return r.build_generation_prompt(msgs)
 
 
+# The content type may come as "<|constrain|>json" or as a plain " json" or " code": gpt-oss writes all three, and the plain
+# forms were rejected as malformed until 2 Nov (103 of 122 malformed gpt-oss turns in weeks 2-3, every body valid JSON).
 SEG = re.compile(r"^(?: to=(?P<r1>[^\s<]+))?<\|channel\|>(?P<ch>analysis|commentary|final)(?: to=(?P<r2>[^\s<]+))?"
-                 r"\s*(?:<\|constrain\|>(?P<con>\w+))?<\|message\|>(?P<body>.*?)(?P<term><\|end\|>|<\|call\|>|<\|return\|>)$", re.S)
+                 r"(?:\s*<\|constrain\|>(?P<con>\w+)|\s+(?P<plain>json|code))?\s*<\|message\|>(?P<body>.*?)"
+                 r"(?P<term><\|end\|>|<\|call\|>|<\|return\|>)$", re.S)
 
 
 def parse(tokens, stop_reason):
@@ -441,7 +444,9 @@ def render_account(st, feats, header, live=None, max_gross=2.0):
                          "fill until it leaves this list. Cancelling it again does nothing.)")
     else:
         lines.append("Open orders: none.")
-    lines.append("Since your last decision: " + ("; ".join(st["events"]) if st["events"] else "nothing happened."))
+    # gpt-oss adds listed fills to positions that already hold them: 13 of its 16 oversized exits, 26 Oct to 2 Nov ("increase from 20 to 40")
+    held = " (your positions and cash above already include these fills)" if any(e.startswith("filled ") for e in st["events"]) else ""
+    lines.append(f"Since your last decision{held}: " + ("; ".join(st["events"]) if st["events"] else "nothing happened."))
     return "\n".join(lines)
 
 
@@ -695,7 +700,7 @@ class PaperWorld:
             res = r.get("result") or {}
             msg = r.get("error") or "; ".join(res.get("messages", []) or [])
             status = res.get("status", "error" if r.get("error") else "?")
-            if r.get("error") or status in ("Cancelled", "Inactive", "ApiCancelled"):
-                notes.append(f"{o['action']} {o['quantity']} {o['symbol']} {o['type']}: {status} {msg}".strip())
+            if r.get("error") or status is None or status in ("Cancelled", "Inactive", "ApiCancelled"):   # None: an error before any status (so far always 321)
+                notes.append(f"{o['action']} {o['quantity']} {o['symbol']} {o['type']}: {status or 'refused'} {msg}".strip())
         self.paper.add_notes(self.sleeve, notes)
         return notes

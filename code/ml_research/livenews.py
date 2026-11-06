@@ -4,7 +4,8 @@ training simulator serves (ml_research/simnews.py), so live looks and training s
 
 - news(gw, symbol, limit): IBKR headlines merged with the company's 8-K / 8-K/A rows (provider EDGAR, article_id =
   accession), newest first. 8-Ks come from data/edgar/filings.csv and, for newer ones, from the submissions JSON that
-  events.live fetches (cached per look in data/edgar/live/<day>/); times from companies.json's raw_convention.
+  events.live fetches (cached per look in data/edgar/live/<day>/); times from the filing index page when in hand, else
+  the field under the fetch's own convention (edgar_fetch.fetch_convention), else companies.json's raw_convention.
 - article(gw, provider, article_id): EDGAR = the filing's EX-99.1 (or main document) text, extracted as edgar_fetch
   does, capped at 6,000 characters, with simnews's header; cached in data/edgar/live/text/. MACRO = the release detail.
   Anything else goes to the gateway.
@@ -36,7 +37,7 @@ def _companies():
 
 def _live_filing(acc, rc, k, c, syms, name):
     from ml_research import edgar_fetch as ef
-    t = int(ef.raw_to_utc(rc["acceptanceDateTime"][k], c.get("raw_convention") or "shifted").timestamp())
+    t = int(ef.accepted_utc(rc, k, ef.fetch_convention(rc) or c.get("raw_convention")).timestamp())
     return {"t": t, "symbols": syms, "form": rc["form"][k], "name": name, "cik": c["cik"], "accessionNumber": acc,
             "items": [i.strip() for i in (rc.get("items", [""] * (k + 1))[k] or "").split(",") if i.strip()],
             "primaryDocument": rc.get("primaryDocument", [""] * (k + 1))[k]}
@@ -92,7 +93,10 @@ def _find(acc):
         by_cik.setdefault(v.get("cik"), []).append(s)
     for day in sorted((d for d in LIVE.glob("2*") if d.name >= cut), reverse=True):
         for p in day.glob("CIK*.json"):
-            rc = json.loads(p.read_text(encoding="utf-8")).get("filings", {}).get("recent", {})
+            try:
+                rc = json.loads(p.read_text(encoding="utf-8")).get("filings", {}).get("recent", {})
+            except (OSError, ValueError):
+                continue
             if acc in rc.get("accessionNumber", []):
                 k = rc["accessionNumber"].index(acc)
                 syms = by_cik.get(int(p.stem[3:]), [])

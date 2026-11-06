@@ -13,12 +13,21 @@ import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 RUNS = Path(__file__).resolve().parent / "runs"
 FILLS = RUNS / "fills.jsonl"
 ORDERS = RUNS / "orders.jsonl"
 SLEEVES = RUNS / "sleeves.json"   # {name: {"start_cash": float, "start": iso, "model": str}}
 DIVIDENDS = RUNS / "dividends.jsonl"   # dividends.py: one row per (sleeve, symbol, ex_date) on a position held at the close before
+# One row per split: {"symbol", "ex_date": YYYYMMDD (first split-adjusted session), "ratio": new shares per old (3 = 3-for-1)}.
+# A position held into ex_date is multiplied by ratio at an average cost divided by it; fills from ex_date on are already
+# in new shares (SOXX 3-for-1 on 5 Nov 2026: the books kept pre-split shares all day, against the account's).
+SPLITS = RUNS / "splits.jsonl"
+
+
+def et_today():
+    return datetime.now(ZoneInfo("America/New_York")).strftime("%Y%m%d")
 
 
 def now_iso():
@@ -124,9 +133,19 @@ def book(sleeve, marks=None):
     pos = {}   # symbol -> [qty, avg_cost]
     opened = {}  # symbol -> date (YYYYMMDD) the current position was opened
     trades = 0
+    pending = sorted(read(SPLITS), key=lambda r: r["ex_date"])
+
+    def split_through(day):                  # every split up to `day` (YYYYMMDD), on the position held into it
+        while pending and pending[0]["ex_date"] <= day:
+            r = pending.pop(0)
+            if r["symbol"] in pos:
+                q, avg = pos[r["symbol"]]
+                pos[r["symbol"]] = [q * r["ratio"], avg / r["ratio"]]
+
     for f in fills():
         if f.get("sleeve") != sleeve:
             continue
+        split_through(et_date(f["time"]))
         trades += 1
         qty = f["shares"] if f["side"] == "BOT" else -f["shares"]
         px, com = f["price"], f.get("commission")
@@ -152,7 +171,8 @@ def book(sleeve, marks=None):
             opened[f["symbol"]] = et_date(f["time"])
         if not q:
             opened.pop(f["symbol"], None)
-    positions = {s: {"quantity": q, "avg_cost": avg, "opened": opened.get(s)} for s, (q, avg) in pos.items() if q}
+    split_through(et_today())
+    positions ={s: {"quantity": q, "avg_cost": avg, "opened": opened.get(s)} for s, (q, avg) in pos.items() if q}
     dividends = sum(r["amount"] for r in read(DIVIDENDS) if r["sleeve"] == sleeve)   # credited on longs, charged on shorts
     cash += dividends
     realized += dividends
@@ -174,9 +194,15 @@ def book(sleeve, marks=None):
 def positions_at(sleeve, day):
     """{symbol: quantity} the sleeve held at the close before `day` (YYYYMMDD): its fills on earlier ET dates."""
     pos = {}
+    sp = read(SPLITS)
     for f in fills():
-        if f.get("sleeve") == sleeve and et_date(f["time"]) < day:
-            pos[f["symbol"]] = pos.get(f["symbol"], 0) + (f["shares"] if f["side"] == "BOT" else -f["shares"])
+        fd = et_date(f["time"])
+        if f.get("sleeve") == sleeve and fd < day:
+            k = 1
+            for r in sp:                         # a split between the fill and the close before `day`
+                if r["symbol"] == f["symbol"] and fd < r["ex_date"] < day:
+                    k *= r["ratio"]
+            pos[f["symbol"]] = pos.get(f["symbol"], 0) + k * (f["shares"] if f["side"] == "BOT" else -f["shares"])
     return {s: q for s, q in pos.items() if q}
 
 

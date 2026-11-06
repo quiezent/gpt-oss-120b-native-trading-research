@@ -1,7 +1,8 @@
 """Daily bars from IBKR through the framework, cached in data/bars/<SYMBOL>.json.
 
-    python bars.py SPY AAPL ...        # fetch or refresh
+    python bars.py SPY AAPL ...        # refresh a cached symbol (merge recent bars), fetch 3 years for a new one
     python bars.py --file universe.txt
+    python bars.py --duration "3 Y" SPY   # refetch and overwrite
 
 A cache file holds completed sessions only (today's partial bar is dropped while the market is open).
 """
@@ -36,7 +37,7 @@ def completed(rows):
     return rows
 
 
-def fetch(gw, symbol, duration="2 Y", what="ADJUSTED_LAST"):
+def fetch(gw, symbol, duration="3 Y", what="ADJUSTED_LAST"):     # the cache's 3 years (a 2-year default cut 162 files, 30 Oct)
     rows = gw.bars(symbol, duration=duration, bar_size="1 day", what=what, rth=True)
     rows = completed([{"date": str(r["date"])[:8], "open": r["open"], "high": r["high"], "low": r["low"],
                        "close": r["close"], "volume": r["volume"]} for r in rows])
@@ -88,18 +89,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("symbols", nargs="*")
     ap.add_argument("--file")
-    ap.add_argument("--duration", default="2 Y")
+    ap.add_argument("--duration", help="refetch this much and overwrite (default: refresh, which merges)")
     ap.add_argument("--what", default="ADJUSTED_LAST")
     a = ap.parse_args()
     syms = list(a.symbols)
     if a.file:
         syms += [l.split("#")[0].strip() for l in Path(a.file).read_text().splitlines() if l.split("#")[0].strip()]
     from tws import Gateway, GatewayError
-    with Gateway("trader-training", timeout=30) as gw:
+    with Gateway("trader-research", timeout=30) as gw:    # client 11, read-only: 10 is the loop's orders client
         for s in syms:
             for attempt in range(3):
                 try:
-                    doc = fetch(gw, s, a.duration, a.what)
+                    doc = fetch(gw, s, a.duration, a.what) if a.duration else refresh(gw, s, what=a.what)
                     print(s, len(doc["bars"]), doc["bars"][0]["date"] if doc["bars"] else "-", flush=True)
                     break
                 except GatewayError as e:

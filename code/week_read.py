@@ -70,9 +70,10 @@ import re
 import statistics
 import subprocess
 import types
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 
 import forecast
 import intrasim
@@ -111,7 +112,7 @@ GAP_RE = re.compile(
 PACE_RE = re.compile(r"(?<![\d.])\+?2\.14\s?%|\$?30,?642\b", re.I)
 DOLLAR_RE = re.compile(r"move\$|sleeve%", re.I)
 QUOTE_LINE = re.compile(r"^([A-Z][A-Z0-9 .]*): last ([\d.]+)")
-BLIND = re.compile(r"\btt-[A-Za-z0-9-]+?-([0-9a-f]{10})\b")     # paper.new_ref's tt-<sleeve>-<hex>, the sleeve dropped
+BLIND = re.compile(r"\btt-[A-Za-z0-9-]+?-([0-9a-f]+)\b")   # paper.new_ref's tt-<sleeve>-<hex> or a model's truncated copy
 
 # ---------------------------------------------------------------- train4.py at 0f645b2, verbatim (--check-port)
 RESEARCH_TOOLS = ("quote", "news", "stats", "forecast")
@@ -373,10 +374,15 @@ def et(iso):
     return datetime.fromisoformat(iso).astimezone(ZoneInfo("America/New_York"))
 
 
+def week_monday(meta):
+    """The Monday of a sleeve's first week (a weekend start counts for the next Monday)."""
+    d = et(meta["start"]).date()
+    return d + timedelta(days=7 - d.weekday()) if d.weekday() >= 5 else d - timedelta(days=d.weekday())
+
+
 def week_days(sleeves):
-    """Monday to Friday of the week the sleeves started for (a weekend start counts for the next Monday)."""
-    d = min(et(m["start"]).date() for m in sleeves.values())
-    monday = d + timedelta(days=(7 - d.weekday()) % 7)
+    """Monday to Friday of the newest sleeves' week: a sleeve carried from an earlier week (base-ml, 26 Oct) doesn't move it."""
+    monday = max(week_monday(m) for m in sleeves.values())
     return [monday + timedelta(days=i) for i in range(5)]
 
 
@@ -583,7 +589,7 @@ def look_row(lk, day, slot, started, times, r1, sleeve_meta, sessions_before):
             row["fri_behind_line"] = round(line_, 2)
             row["fri_behind_entries"] = os_.get("entries", 0)
             row["fri_behind_notional"] = round(os_.get("entry_notional_nav", 0) * st["value"], 2)
-    if lk["sleeve"].endswith("-ml") and call is not None:   # the forecast's dollar line
+    if sleeve_meta.get("ml") and call is not None:          # the forecast's dollar line
         costed, returned = {}, set()
         for t in trace:
             if t.get("tool") == "forecast":
@@ -664,7 +670,7 @@ def main():
     for sl, meta in sleeves.items():
         first = None
         for i, day in enumerate(days):
-            if day > date.today():
+            if day > datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York")).date():   # ET, not the machine's MYT
                 break
             r1 = r1_for(day)
             mine = []
@@ -700,12 +706,16 @@ def main():
             continue
         first = date.fromisoformat(min(r["date"] for r in my_looks)) if my_looks else date.fromisoformat(mine[0]["date"])
         base = spy_baseline(days[0], first, daily)
-        prev_nav, prev_spy = meta["start_cash"], base
+        before = [r for r in daily if r["sleeve"] == sl and r["date"] < days[0].isoformat()]
+        carried = week_monday(meta) < days[0] and bool(before)      # the week's figures start from its last record before it
+        opening = max(before, key=lambda r: r["date"])["nav"] if carried else meta["start_cash"]
+        prev_nav, prev_spy = opening, base
         for r in mine:
             day = date.fromisoformat(r["date"])
             row = {"date": r["date"], "sleeve": sl, "nav": round(r["nav"], 2),
+                   **({"open_nav": round(opening, 2)} if carried else {}),
                    "day_pct": round(100 * (r["nav"] / prev_nav - 1), 3),
-                   "cum_pct": round(100 * (r["nav"] / meta["start_cash"] - 1), 3),
+                   "cum_pct": round(100 * (r["nav"] / opening - 1), 3),
                    "realized": round(r["realized"], 2), "commissions": round(r["commissions"], 2), "fills": r["fills"],
                    "spy_day_pct": round(100 * (r["spy"] / prev_spy - 1), 3) if r.get("spy") and prev_spy else None,
                    "spy_cum_pct": round(100 * (r["spy"] / base - 1), 3) if r.get("spy") and base else None,
@@ -772,7 +782,8 @@ def summary(name, sleeves, looks, rows):
         if not rs:
             continue
         held = tot(rs, "held")
-        cells = [sl, len(rs), f"{tot(rs, 'no_decision')} ({tot(rs, 'framework_failure')})", tot(rs, "forced"),
+        label = sleeves[sl].get("label")
+        cells = [f"{sl} ({label})" if label else sl, len(rs), f"{tot(rs, 'no_decision')} ({tot(rs, 'framework_failure')})", tot(rs, "forced"),
                  tot(rs, "retried"), tot(rs, "empty"), tot(rs, "inactive"), tot(rs, "orders"), tot(rs, "entries"),
                  tot(rs, "entries_no_stop"),
                  f"{tot(rs, 'protective')}/{held} = {tot(rs, 'protective') / held if held else 0:.2f}",
@@ -782,7 +793,7 @@ def summary(name, sleeves, looks, rows):
                  f"{sum(len(r.get('m3') or []) for r in rs)} / {sum(len(r.get('m3n') or []) for r in rs)} / {tot(rs, 'm3q')}",
                  f"{sum(1 for r in rs if r.get('gap'))} ({tot(rs, 'gap')})", tot(rs, "gap_notes"), tot(rs, "pace_restated"),
                  f"{tot(rs, 'fri_behind')} / {tot(rs, 'fri_behind_entries')} / ${tot(rs, 'fri_behind_notional'):,.0f}"]
-        if sl.endswith("-ml"):
+        if sleeves[sl].get("ml"):
             cells += [f"{tot(rs, 'costed_entries')} / {tot(rs, 'ml_entries')}", tot(rs, "line_cited_entries"),
                       sum(1 for r in rs if r.get("dollar_cited"))]
         else:
@@ -800,6 +811,14 @@ def summary(name, sleeves, looks, rows):
         spy = "" if r["spy_cum_pct"] is None else format(r["spy_cum_pct"], "+.2f")
         L.append(f"| {r['date']} | {r['sleeve']} | {r['nav']:,.2f} | {r['day_pct']:+.2f} | {r['cum_pct']:+.2f} | "
                  f"{spy} | {r['realized']:+,.2f} | {r['commissions']:,.2f} | {r['fills']} | {top} | {move} |")
+    carried = {r["sleeve"]: r["open_nav"] for r in rows if r.get("open_nav")}
+    if carried:
+        L += ["", "Carried from an earlier week; day % and cum % start from its last record before this week, and realized, "
+              "commissions and fills run from its start: " + ", ".join(f"{s} {n:,.2f}" for s, n in carried.items()) + "."]
+    firsts = {s: min((r["date"], r["slot"]) for r in looks if r["sleeve"] == s) for s in {r["sleeve"] for r in looks}}
+    late = {s: f for s, f in sorted(firsts.items()) if f > min(firsts.values())}
+    if late:
+        L += ["", "Joined after the week's first look, so not a full week: " + ", ".join(f"{s} from {d} {t}" for s, (d, t) in late.items()) + "."]
     L += ["", "Paired by scheduled slot (each cell: orders/entries/no-stop entries; acts_min in looks.jsonl says when each "
           "sleeve's orders went out):", ""]
     slots = sorted({(r["date"], r["slot"]) for r in looks})

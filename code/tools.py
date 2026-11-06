@@ -51,6 +51,7 @@ SCANS = {
                                 "HIGH_DIVIDEND_YIELD_IB": "highest dividend yield"},
 }
 SCAN_CODES = [c for group in SCANS.values() for c in group]
+SCAN_EXACT = {c.upper(): c for c in SCAN_CODES}   # IBKR's codes are case-sensitive, and some are mixed case
 INDUSTRIES = ["Basic Materials", "Communications", "Consumer, Cyclical", "Consumer, Non-cyclical", "Energy", "Financial",
               "Industrial", "Technology", "Utilities"]   # IBKR's industry classes (health care is in Consumer, Non-cyclical)
 
@@ -193,8 +194,9 @@ def _headline(r):
     return f"{t} [{r.get('provider')} {r.get('article_id')}] {r.get('headline')}"
 
 
-def run(gw, name, args):
-    """Execute one research tool; returns text. Errors come back as text, verbatim."""
+def run(gw, name, args, ml_tool=None):
+    """Execute one research tool; returns text. Errors come back as text, verbatim. ml_tool: the sleeve's forecast tool
+    version (ml_tools.py)."""
     try:
         if not isinstance(args, dict):
             return "error: arguments must be a JSON object"
@@ -259,9 +261,9 @@ def run(gw, name, args):
             edgar = str(args.get("provider")).upper() == "EDGAR"     # 8-K text is stored only up to 6,000 characters
             return text[:4000] + (f"\n[cut at 4,000 characters; our copy of the filing stops at {len(text):,}, and the "
                                   "filing may be longer]" if edgar else f"\n[cut at 4,000 of {len(text):,} characters]")
-        if name == "forecast":                     # the ML arm's tool (forecast.py); only -ml sleeves are offered it
-            import forecast
-            return forecast.run(gw, args)
+        if name == "forecast":                     # the ML arm's tool (ml_tools.py); only -ml sleeves are offered it
+            import ml_tools
+            return ml_tools.module(ml_tool).run(gw, args)
         if name == "stats":
             syms = [str(s).upper().strip() for s in (args.get("symbols") or [])][:MAX_STATS]
             if not syms:
@@ -283,7 +285,8 @@ def run(gw, name, args):
             filters = {"priceAbove": args.get("price_above", 5), "avgVolumeAbove": args.get("avg_volume_above", 1_000_000),
                        "marketCapAbove1e6": args.get("market_cap_above"),
                        "stkTypes": None if args.get("types") == "all" else "inc:CORP,ADR", "industryLike": args.get("industry")}
-            hits = gw.scan(str(args.get("scan", "")).upper().strip(), rows=n, **{k: v for k, v in filters.items() if v is not None})
+            code = str(args.get("scan", "")).upper().strip()
+            hits = gw.scan(SCAN_EXACT.get(code, code), rows=n, **{k: v for k, v in filters.items() if v is not None})
             if not hits:
                 return "no results"
             q = {x["symbol"]: x for x in gw.quotes([r["symbol"] for r in hits]) if not x.get("error")}
@@ -304,10 +307,9 @@ def symbols_in(name, args):
     """Symbols a research call looked at (for the research log)."""
     if not isinstance(args, dict):
         return []
-    if name == "quote":
-        return [str(s).upper().strip() for s in (args.get("symbols") or [])]
     if name in ("bars", "news"):
         return [str(args.get("symbol", "")).upper().strip()]
-    if name in ("stats", "forecast"):
-        return [str(s).upper().strip() for s in (args.get("symbols") or [])]
+    if name in ("quote", "stats", "forecast"):
+        syms = args.get("symbols") or []
+        return [] if isinstance(syms, (int, float)) else [str(s).upper().strip() for s in syms]   # the model can send {"symbols": 5}
     return []

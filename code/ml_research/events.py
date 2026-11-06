@@ -19,6 +19,7 @@ the simulator, 09:30 / 10:00 ET for the intraday looks.
 
 import json
 import math
+import os
 import pickle
 import re
 import sys
@@ -921,7 +922,10 @@ TRACK_RECORD = (
     "year's same-quarter report + 52 weeks (last + 91 days with under a year of history): the next item-2.02 filing came "
     "in the estimated session 47% of the time (3,445 reports, Jan 2025-Oct 2026), within 1 session 60%, within 3 sessions "
     "72%; misses include extra 2.02 filings such as preannouncements. No probability of reporting is given: ours was not calibrated within 5 "
-    "points. Earnings drift (PEAD) was not tested: no point-in-time consensus EPS history.")
+    "points. Earnings drift was tested on the direction of the first reaction (not on the earnings surprise: no "
+    "point-in-time consensus EPS history) and did not beat trading costs: over 1,821 earnings releases (Oct 2025-Oct "
+    "2026), the move from 10:30 ET on the reaction day to the close two sessions later averaged -9 bps against SPY, "
+    "against round-trip costs of 14-18 bps.")
 
 SPEC = {
     "name": "events",
@@ -1030,8 +1034,9 @@ def _earn_info(earn_t, earn_sess, tau):
 
 
 def note(row):
-    """forecast's per-symbol event note, the same in live and in the simulator: the range1 correction, the latest 8-K
-    of the last 7 days, and the next earnings estimate when it falls within 10 sessions (or is overdue)."""
+    """forecast's per-symbol event note: the range1 correction, the latest 8-K of the last 7 days, and the next earnings
+    date when it falls within 10 sessions (the E1 estimate, or overdue). Live only, from 2 Nov: a dated Alpha Vantage
+    calendar row replaces the E1 estimate (the simulator has no point-in-time calendar; an accepted F11 difference)."""
     parts = []
     if row.get("range1_event_pct") is not None:
         parts.append(f"range1 corrected for {row.get('range1_event_reason') or 'an 8-K'} (uncorrected "     # ± half-span,
@@ -1042,7 +1047,11 @@ def note(row):
         parts.append(f"8-K {e['accepted_et'][5:]} ET ({e['when']}): {e['items']}"
                      + ("; EARNINGS since the previous close" if row.get("earnings_since_prev_close") else ""))
     n = row.get("next_earn_sessions")
-    if row.get("next_earn_overdue"):
+    if row.get("calendar_day"):       # live: the calendar's date over the E1 estimate (2 Nov: INTC read "overdue" on
+        k = row["calendar_sessions"]  # 29 Oct, its calendar date; TSLA's delivery 8-Ks (item 2.02) hid its 21 Oct report)
+        if 0 <= k < 10 and not row.get("calendar_reported"):
+            parts.append(f"next earnings {row['calendar_day']} ({row['calendar_when']}; Alpha Vantage calendar)")
+    elif row.get("next_earn_overdue"):
         parts.append(f"next earnings est. {row['next_earn_day']} (overdue)")
     elif n is not None and 0 <= n < 10:
         parts.append(f"next earnings est. {row['next_earn_day']} ({row['next_earn_when']})")
@@ -1068,7 +1077,8 @@ def sim_provider(data):
     g = {}
     if OOS.exists():
         z = np.load(OOS, allow_pickle=True)
-        if [str(s) for s in z["symbols"]] == data.sym and [str(x) for x in z["dates"]] == data.dates and "ship_range1" in z.files:
+        zd = [str(x) for x in z["dates"]]           # the grid ends at its fit's last close; data/ may run later
+        if [str(s) for s in z["symbols"]] == data.sym and zd == data.dates[:len(zd)] and "ship_range1" in z.files:
             g = {k: z[k] for k in ("ship_range1", "ship_range1_lo", "ship_range1_hi")}
             v2 = np.load(OUT / "vol2_oos.npz", allow_pickle=True)
             g["shipped"] = v2["range1"]
@@ -1098,7 +1108,7 @@ def sim_provider(data):
             j = data.k[s]
             inw = any(ws <= t < tau for t, _ in rec)
             applies = inw or (bool(hl) and g.get("rule", {}).get("rows_rule") == "ev_any or hl_any") if g else False
-            if applies and np.isfinite(g["ship_range1"][j, d - 1]):
+            if applies and d - 1 < g["ship_range1"].shape[1] and np.isfinite(g["ship_range1"][j, d - 1]):
                 row["range1_event_reason"] = _cause(bool(_count(f["earn"], np.array([ws]), np.array([tau]))[0]), inw)
                 row["range1_shipped_pct"] = round(100 * float(g["shipped"][j, d - 1]), 2)
                 row["range1_event_pct"] = round(100 * float(g["ship_range1"][j, d - 1]), 2)
@@ -1132,15 +1142,27 @@ def _submissions_live(cik, now, notes, sym):
     day = now.astimezone(ET).strftime("%Y%m%d")
     p = LIVE_DIR / day / f"CIK{int(cik):010d}.json"
     if p.exists() and time.time() - p.stat().st_mtime < LIVE_MIN_AGE_S:
-        return json.loads(p.read_text(encoding="utf-8")), "cache"
+        try:
+            return json.loads(p.read_text(encoding="utf-8")), "cache"
+        except (OSError, ValueError):                   # unreadable just now: fetch instead
+            pass
     t = ef.get(f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json")
     if t is not None:
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(t, encoding="utf-8")
+        tmp = p.with_name(f"{p.stem}.{os.getpid()}.tmp")      # up to five processes share this folder: no reader sees part of a file
+        try:
+            tmp.write_text(t, encoding="utf-8")
+            os.replace(tmp, p)
+        except OSError:
+            tmp.unlink(missing_ok=True)
         return json.loads(t), "fetched"
     for q in sorted(LIVE_DIR.glob(f"*/CIK{int(cik):010d}.json"), reverse=True):
+        try:
+            got = json.loads(q.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
         notes.append(f"{sym}: EDGAR unreachable, using {q.parent.name}'s copy")
-        return json.loads(q.read_text(encoding="utf-8")), "stale"
+        return got, "stale"
     notes.append(f"{sym}: EDGAR unreachable; only the archive through 2026-10-16")
     return None, "none"
 
@@ -1170,6 +1192,24 @@ def _confirmed_dates():
         for r in csv.DictReader(f):
             out.setdefault(r["symbol"].replace("-", " ").replace(".", " "), (r["reportDate"], r.get("timeOfTheDay", "")))
     return out, files[-1].stem
+
+
+AV_WHEN = {"post-market": "after close", "pre-market": "before open"}   # the calendar's timeOfTheDay in note()'s words
+
+
+def calendar_fields(day, when, today, earn_t):
+    """note()'s calendar fields for an Alpha Vantage row dated `day` (YYYY-MM-DD) with timeOfTheDay `when`, at `today`.
+    A row without a time of day is AV's own projection (SW and OMC were days off in Oct), so it gives none and E1 stays.
+    calendar_reported: an earnings 8-K accepted since 00:00 ET of the session before `day`, which the filers' acceptance
+    time convention (wrong by 4-5 h for some filings) can't move across; then the note gives no next date."""
+    if when not in AV_WHEN:
+        return {}
+    sess = calendar()[0]
+    i = int(np.searchsorted(sess, day, "left"))
+    since = et_epoch(sess[i - 1], 0, 0) if i > 0 else None
+    return {"calendar_day": day, "calendar_when": AV_WHEN[when],
+            "calendar_sessions": i - int(np.searchsorted(sess, today, "left")),               # 0: today
+            "calendar_reported": since is not None and any(int(t) >= since for t in earn_t)}
 
 
 _FINAL = None
@@ -1226,12 +1266,13 @@ def live(gw=None, symbols=None, now=None, base=None, **kw):
         conv = c.get("raw_convention")
         if j is not None:
             rc = j.get("filings", {}).get("recent", {})
+            conv = ef.fetch_convention(rc) or conv        # this fetch's own convention (EDGAR changed it from 20 Oct 2026)
             for k in range(len(rc.get("accessionNumber", []))):
                 if rc["form"][k] not in ("8-K", "8-K/A") or rc["accessionNumber"][k] in seen:
                     continue
                 if rc["filingDate"][k] < "2026-09-01":
                     continue
-                t = int(ef.raw_to_utc(rc["acceptanceDateTime"][k], conv or "shifted").timestamp())
+                t = int(ef.accepted_utc(rc, k, conv).timestamp())
                 its = {x.strip() for x in (rc.get("items", [""] * (k + 1))[k] or "").split(",") if x.strip()}
                 rows8k.append((t, its))
                 if "2.02" in its:
@@ -1249,8 +1290,10 @@ def live(gw=None, symbols=None, now=None, base=None, **kw):
         row["new_since_prev_close"] = any(pc <= t <= nt for t, _ in rows8k)
         row["earnings_since_prev_close"] = any(pc <= t <= nt for t in earn_t)
         row.update(_earn_info(np.array(earn_t, np.int64), {}, nt))
-        if s in conf and conf[s][0] >= now.astimezone(ET).strftime("%Y-%m-%d"):
+        today = now.astimezone(ET).strftime("%Y-%m-%d")
+        if s in conf and conf[s][0] >= today:
             row["calendar"] = f"{conf[s][0]} {conf[s][1]}".strip() + f" (Alpha Vantage calendar of {conf_day}; may itself be an estimate)"
+            row.update(calendar_fields(conf[s][0], conf[s][1], today, earn_t))
         row["analyst"] = {k: sum(k in x[2] for x in hl if ws_r <= x[0] < tau_r) for k in ("up", "down", "init")}
         fr = (fc.get("forecasts") or {}).get(s, {})
         ev = _range_event(final, feats, any8k, anyhl, fr.get("range1_pct"), fr.get("range1_lo"), fr.get("range1_hi"))

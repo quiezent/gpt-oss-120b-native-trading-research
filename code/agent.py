@@ -31,8 +31,37 @@ CLAUDE_TIMEOUT = 1200
 SEG = trader.SEG
 
 
+def is_submit(val):
+    """A decision in form: place a list, cancel a list or absent, and no literal "..." left from a template (28 Oct, base-ml's forced
+    turn: {"symbol": "...", "quantity": "..."} and notes "...", with a real ref among its cancels, cancelled that order and wiped the notes)."""
+    if not isinstance(val, dict) or not isinstance(val.get("place"), list) or not isinstance(val.get("cancel", []), list):
+        return False
+    return "..." not in val.get("cancel", []) + [val.get("notes")] + [v for o in val["place"] if isinstance(o, dict) for v in o.values()]
+
+
+def submit_in(text):
+    """The submit's JSON if it is the whole text, give or take a short label and a code fence, else None: with words around it or a
+    second object, a draft or a choice can't be told from a decision, so those turns are re-asked."""
+    found, dec, i = [], json.JSONDecoder(), text.find("{")
+    while i >= 0:
+        try:
+            val, end = dec.raw_decode(text, i)
+        except (ValueError, RecursionError):
+            end = i + 1
+        else:
+            if isinstance(val, dict) and ("place" in val or "cancel" in val):
+                found.append((val, i, end))
+        i = text.find("{", end)
+    if len(found) != 1:
+        return None
+    val, start, end = found[0]
+    return val if len(text[:start].strip()) <= 20 and not text[end:].strip(" \t\r\n`") and is_submit(val) else None
+
+
 def parse_any(tokens, stop_reason, names):
-    """('TOOL', name, args) | ('FINAL', None, text) | ('MALFORMED', None, reason)."""
+    """('TOOL', name, args) | ('FINAL', None, text) | ('MALFORMED', None, reason). A closing turn that holds the model's decision is
+    that decision, however it ended: of the 8 prose turns from 26 Oct to 2 Nov, 3 were whole calls ending in <|return|> and 4
+    answers holding the submit's JSON (3 of them little else). Rewriting them with no reasoning turn changed 4 of those 7 decisions."""
     tok = trader.tokenizer()
     if str(stop_reason).split(".")[-1].lower() != "stop" or not tokens or tokens[-1] not in (trader.CALL, trader.RET):
         return "MALFORMED", None, "output ended without a tool call"
@@ -46,16 +75,19 @@ def parse_any(tokens, stop_reason, names):
             if m["term"] != "<|end|>" or rc:
                 return "MALFORMED", None, "a call before the end"
             continue
-        if m["term"] == "<|call|>":
+        if m["term"] == "<|call|>" or rc:
             name = (rc or "").removeprefix("functions.")
             if name not in names:
                 return "MALFORMED", None, f"call to undeclared tool {rc!r}"
             try:
                 args = json.loads(m["body"])
-            except ValueError as e:
+            except (ValueError, RecursionError) as e:
                 return "MALFORMED", None, f"bad JSON: {e}"
+            if name == "submit" and not is_submit(args):   # e.g. orders under another key (21 Oct, rl3-ml): told nothing, it would be an empty hold
+                return "MALFORMED", None, "submit arguments malformed"
             return "TOOL", name, args
-        return "FINAL", None, m["body"]
+        decision = submit_in(m["body"]) if m["ch"] != "analysis" and "submit" in names else None
+        return ("TOOL", "submit", decision) if decision else ("FINAL", None, m["body"])
     return "MALFORMED", None, "empty"
 
 
@@ -93,7 +125,7 @@ def sample_once(sc, renew, model_input, params, trace, step):
         return sc.sample(model_input, 1, params).result(timeout=SAMPLE_TIMEOUT), sc
 
 
-def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort, seed=None, renew=None):
+def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort, seed=None, renew=None, ml_tool=None):
     from tinker_cookbook.renderers.gpt_oss import GptOssRenderer
     r = GptOssRenderer(trader.tokenizer(), use_system_prompt=True, reasoning_effort=effort, current_date=current_date)
     specs = research_specs + [trader.TOOL_LIVE]
@@ -101,8 +133,8 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
     msgs = r.create_conversation_prefix_with_tools(harmony_specs(specs), system)
     msgs.append({"role": "user", "content": state_text})
     prompt = list(r.build_generation_prompt(msgs).to_ints())
-    trace, calls, sampled, prefill, bad, force = [], 0, 0, 0, 0, []
-    for step in range(tools.MAX_CALLS + 4):
+    trace, calls, sampled, prefill, bad, force, told = [], 0, 0, 0, 0, [], False
+    for step in range(tools.MAX_CALLS + 5):
         room = CONTEXT - len(prompt) - len(force)
         if room < MIN_ROOM:
             trace.append({"step": step, "error": f"context full ({len(prompt)} tokens)"})
@@ -121,24 +153,23 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
             trace.append({"step": step, "error": f"{kind}: {str(val)[:200]}", "tokens": len(seq.tokens), "said": said})
             if bad >= 3:
                 return None, trace, prefill, sampled
-            if kind == "FINAL" or bad == 2:        # prose, or a second malformed try: open the submit call; the model writes its orders
+            if bad == 2:                           # a second try with no decision in it: open the submit call; the model writes its orders
                 force = SUBMIT_OPEN()
-            continue                               # re-ask at the same point (as the daily loop re-asks malformed output)
+            continue                               # re-ask at the same point, with a reasoning turn (as the daily loop re-asks malformed output)
         if name == "submit":
-            if not isinstance(val, dict) or not isinstance(val.get("place", []), list) or not isinstance(val.get("cancel", []), list):
-                return None, trace + [{"step": step, "error": "submit arguments malformed"}], prefill, sampled
-            val.setdefault("place", [])
             val.setdefault("cancel", [])
             trace.append({"step": step, "tool": "submit", "tokens": len(seq.tokens), "said": said})
             return val, trace, prefill, sampled
-        if calls >= tools.MAX_CALLS:      # open the submit call, as for prose: at high effort it kept researching
-            out = f"research limit reached ({tools.MAX_CALLS} calls): call submit now"
-            force = SUBMIT_OPEN()
+        if calls >= tools.MAX_CALLS:      # one free turn to reason and submit, as the Claude sleeves have (2 Nov: opening the
+            out = f"research limit reached ({tools.MAX_CALLS} calls): call submit now"   # submit at once left no reasoning turn);
+            if told:                      # another call after that: open the submit call, as for prose
+                force = SUBMIT_OPEN()
+            told = True
         else:                             # the count: week 2, 135 of 276 gpt-oss looks reached the cap, never told it
             calls += 1
-            out = tools.run(gw, name, val) + f"\n(research call {calls} of {tools.MAX_CALLS})"
+            out = tools.run(gw, name, val, ml_tool=ml_tool) + f"\n(research call {calls} of {tools.MAX_CALLS})"
         trace.append({"step": step, "tool": name, "args": val, "result": out, "tokens": len(seq.tokens), "said": said})
-        prompt = prompt + toks + tool_result_tokens(name, out)
+        prompt = prompt + toks[:-1] + [trader.CALL] + tool_result_tokens(name, out)   # a call that ended in <|return|> reads as a call from here on
     return None, trace + [{"error": "no submit within the step limit"}], prefill, sampled
 
 
@@ -158,10 +189,11 @@ def claude_exe():
     return str(exes[-1])
 
 
-def claude_look(model, system, state_text, research_specs, workdir, effort, timeout=CLAUDE_TIMEOUT, client="trader-mcp-a"):
+def claude_look(model, system, state_text, research_specs, workdir, effort, timeout=CLAUDE_TIMEOUT, client="trader-mcp-a",
+                ml_tool=None):
     """Run one look with the Claude CLI at reasoning effort low|medium|high|xhigh|max. The MCP server researches on
-    the read-only client named by `client` (trader-mcp-a = 12, trader-mcp-b = 13), so the caller may hold client 10. A submit made
-    before the CLI times out still counts."""
+    the research client named by `client` (trader-mcp-a to -d = 12 to 15), so the caller may hold client 10. ml_tool: the
+    sleeve's forecast tool version (ml_tools.py). A submit made before the CLI times out still counts."""
     workdir = Path(workdir)
     workdir.mkdir(parents=True, exist_ok=True)
     submit_file, log_file = workdir / "submit.json", workdir / "research.jsonl"
@@ -172,11 +204,11 @@ def claude_look(model, system, state_text, research_specs, workdir, effort, time
     env = dict(os.environ, TRADER_SUBMIT_FILE=str(submit_file), TRADER_LOG_FILE=str(log_file),
                TRADER_HAS_NEWS="1" if "news" in have else "0", TRADER_HAS_SCANNER="1" if "scanner" in have else "0",
                TRADER_HAS_STATS="1" if "stats" in have else "0", TRADER_HAS_FORECAST="1" if "forecast" in have else "0",
-               TRADER_MCP_CLIENT=client, CLAUDE_CODE_DISABLE_AUTO_MEMORY="1")
+               TRADER_MCP_CLIENT=client, TRADER_ML_TOOL=ml_tool or "", CLAUDE_CODE_DISABLE_AUTO_MEMORY="1")
     cfg = {"mcpServers": {"trader": {"command": sys.executable,
                                      "args": [str(ROOT / "mcp_server.py")], "env": {k: env[k] for k in
                                      ("TRADER_SUBMIT_FILE", "TRADER_LOG_FILE", "TRADER_HAS_NEWS", "TRADER_HAS_SCANNER",
-                                      "TRADER_HAS_STATS", "TRADER_HAS_FORECAST", "TRADER_MCP_CLIENT")}}}}
+                                      "TRADER_HAS_STATS", "TRADER_HAS_FORECAST", "TRADER_MCP_CLIENT", "TRADER_ML_TOOL")}}}}
     cfg_file = workdir / "mcp.json"
     cfg_file.write_text(json.dumps(cfg), encoding="utf-8")
     allowed = ",".join(f"mcp__trader__{n}" for n in sorted(have | {"submit"}))

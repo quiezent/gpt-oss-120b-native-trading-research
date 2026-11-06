@@ -40,6 +40,7 @@ from ml_research import bondfx
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "runs" / "ml" / "forecast"
 RES = ROOT / "runs" / "ml" / "research"
+VERSION = "ML2.1"               # this tool's version (runs/ml/research/ml_tool_versions.md): recorded on looks, not shown to models
 MAX_SYMBOLS = 20
 DEFAULT_NOTIONAL = 3000.0
 DEFAULT_SLEEVE = 30000.0        # the sleeves' start: the sleeve% base unless the model passes its sleeve's value
@@ -80,7 +81,7 @@ DESCRIPTION = """Risk and cost forecasts from our machine-learning models, plus 
 - cost: round-trip cost at notional_usd, bps, with its 10-90% range. It covers the spread, impact on entry and exit, and commissions ($0.005 a share, $1 minimum per order, so small orders pay more).
 - tier: liquidity tier, A best to D thinnest.
 - adv: average daily dollar volume, $ millions.
-- note: the latest 8-K of the last 7 days, with its acceptance time (ET) and item codes (2.02 earnings, 1.01 material agreement, 2.01 acquisition done, 5.02 officer change, 3.02 unregistered equity sale, 7.01/8.01 press releases), and the next earnings date estimate when it falls within 10 sessions. The estimate is last year's same-quarter report plus 52 weeks.
+- note: the latest 8-K of the last 7 days, with its acceptance time (ET) and item codes (2.02 earnings, 1.01 material agreement, 2.01 acquisition done, 5.02 officer change, 3.02 unregistered equity sale, 7.01/8.01 press releases), and the next earnings date estimate when it falls within 10 sessions. The estimate is last year's same-quarter report plus 52 weeks. In live looks, when the Alpha Vantage earnings calendar gives the company a date and a time of day, the note gives that date instead and names the calendar; its accuracy was not measured.
 
 **Session columns (09:30-16:00 ET), from today's 30-minute bars:**
 - next60 ±: the expected high-low range over the next 60 minutes, shown as ± half of it, % of the current price, with its 10-90% range.
@@ -92,7 +93,7 @@ DESCRIPTION = """Risk and cost forecasts from our machine-learning models, plus 
 - They measure the size of a move, not a result: either direction is as likely. A name without a range1 forecast shows na.
 - Neither is a loss limit. range1 is half the session's high-low span and leaves out the overnight gap, so the dollars understate a move from the close: measured from the last close, the session's largest move, up or down, went past the bracketed figure in about 47% of sessions. absr1 (close to close, gap included) measures a move from the close.
 
-**No return or direction forecast is offered.** Out of sample, none of the models we tested beat trading costs. That covers overnight gaps, intraday momentum, reversal, volume and time-of-day, news sentiment, industry, factor timing, momentum ranking and market timing. Our anomaly flag did not predict drops. Earnings drift was not tested.
+**No return or direction forecast is offered.** Out of sample, none of the models we tested beat trading costs. That covers overnight gaps, intraday momentum, reversal, volume and time-of-day, news sentiment, industry, factor timing, momentum ranking and market timing. Our anomaly flag did not predict drops. Earnings drift was tested and did not beat trading costs: over 1,821 earnings releases (Oct 2025-Oct 2026), the move from 10:30 ET on the reaction day to the close two sessions later, in the direction of the first reaction, averaged -9 bps against SPY, against round-trip costs of 14-18 bps.
 
 **Track record** (out of sample; per-symbol figures cover today's S&P 500 stocks and ETFs, so they are survivor-biased; scored on the full high-low range, of which range1, next60 and rest_of_day show half):
 - **range1:** R2 0.37 vs 0.29 for the 20-day average range (Jan 2025-Oct 2026). A plain recent-range average does nearly as well. Its 10-90% range held 81% of outcomes, but only 76% in the April 2025 shock half-year.

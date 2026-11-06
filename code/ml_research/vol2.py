@@ -13,6 +13,7 @@ Features at t use data through the close of t only; targets start at t + 1.
 
 import json
 import math
+import os
 import pickle
 import sys
 from datetime import datetime, timedelta
@@ -592,10 +593,12 @@ def _load_lc():
 
 
 def _save_lc(lc):
+    tmp = LIVECACHE.with_name(f"{LIVECACHE.stem}.{os.getpid()}.tmp")   # several processes: never a part-written file
     try:
-        LIVECACHE.write_text(json.dumps(lc), encoding="utf-8")
+        tmp.write_text(json.dumps(lc), encoding="utf-8")
+        os.replace(tmp, LIVECACHE)
     except OSError:
-        pass
+        tmp.unlink(missing_ok=True)
 
 
 def _align(row, hist, dates):

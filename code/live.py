@@ -42,7 +42,7 @@ import tinker
 import agent
 import bars as barsmod
 import dividends
-import forecast
+import ml_tools
 import paper
 import rates
 import tools
@@ -53,6 +53,7 @@ LIVE = ROOT / "runs" / "live"
 STOP = LIVE / "STOP"
 HOLD = LIVE / "HOLD"   # while it exists, looks wait (not marked done) and place nothing; refresh/record run
 ET = ZoneInfo("America/New_York")
+MCP_CLIENTS = ("trader-mcp-a", "trader-mcp-b", "trader-mcp-c", "trader-mcp-d")   # research clients 12-15, one Claude look on each
 HOLD_MODEL = "hold"   # sleeves.json model of a sleeve waiting for an approved model: it gets no looks and stays in cash
 PROJECT_ID = "51e502c3-a670-40ad-b14a-c9eb569d4363"
 BASE = "openai/gpt-oss-120b"
@@ -132,8 +133,8 @@ def refresh():
             u = sorted(set(syms))
             bad = fetch_extra.update(gw, ["SPY"] + [x for x in u if x != "SPY"], "iv") + fetch_extra.update(gw, u, "bidask")
         log(f"refreshed implied vol and bid/ask history; {len(bad)} failed {bad[:3]}")
-        as_of, fc = forecast.compute()
-        log(f"forecasts for the ML arm: as of {as_of}, {len(fc)} symbols")
+        compute_versions()
+        ml2_guard()
         try:                                            # earnings calendar + history (wave C); never fails the refresh
             import fetch_av
             r = fetch_av.daily(22)
@@ -141,6 +142,32 @@ def refresh():
                 f"{len(r['errors'])} errors {r['errors'][:2]}")
         except Exception as e:                          # noqa: BLE001
             log(f"Alpha Vantage capture failed: {type(e).__name__}")
+
+
+def compute_versions():
+    """Each version in use writes its own cache. ML2's failure raises, so the refresh retries as it always has; another
+    version's is logged, so it never costs ML2's sleeves their forecasts. An unregistered version has no look anyway."""
+    for v in ml_tools.in_use(paper.sleeves()):
+        if v not in ml_tools.VERSIONS:
+            log(f"no forecasts for {v}: not in ml_tools.VERSIONS")
+            continue
+        try:
+            as_of, fc = ml_tools.module(v).compute()
+            log(f"forecasts for the ML arm ({ml_tools.module(v).VERSION}): as of {as_of}, {len(fc)} symbols")
+        except Exception:                               # noqa: BLE001
+            if v == ml_tools.DEFAULT:
+                raise
+            log(f"{v} forecasts failed: " + traceback.format_exc()[-300:])
+
+
+def ml2_guard():
+    """Logged, never blocking: an upgrade must not reach ML2 (ml_tools.changed_files)."""
+    try:
+        moved = ml_tools.changed_files()
+        if moved:
+            log(f"ML2 CHANGED since its manifest: {moved}")
+    except Exception:                                   # noqa: BLE001
+        log("ML2 guard failed: " + traceback.format_exc()[-300:])
 
 
 def book_dividends(gw=None):
@@ -195,20 +222,31 @@ def effort(meta):
     return meta.get("effort") or ("max" if meta["model"].startswith("claude-") else "high")
 
 
-def finish(now, name, meta, text, st, call, trace, notes, table_rows, dry_run, cost=None, secs=None):
+def finish(now, name, *a, **k):
+    try:                                # a failed record costs that record only: the chain goes on and the Claude orders are placed
+        record_look(now, name, *a, **k)
+    except Exception:                   # noqa: BLE001
+        log(f"{name}: look record failed: " + traceback.format_exc()[-300:])
+
+
+def record_look(now, name, meta, text, st, call, trace, notes, table_rows, dry_run, cost=None, secs=None):
+    if not dry_run:                     # first: later looks read these two, and the rest is only the record
+        save_memo(name, now, call, meta["model"])
+        if not call:                    # no decision, so the next look's "Since your last decision" must repeat what this one was told
+            paper.add_notes(name, st["events"])
     out_dir = LIVE / now.date().isoformat()
     out_dir.mkdir(parents=True, exist_ok=True)
     summ = research_summary(trace, call, table_rows)
     rec = {"time": now.isoformat(timespec="seconds"), "sleeve": name, "model": meta["model"], "effort": effort(meta),
            "seconds": secs, "state_text": text,
            "state": {k: v for k, v in st.items() if k != "events"}, "events": st["events"], "trace": trace, "call": call,
-           "placed_notes": notes, "research": summ, "cost": cost, "dry_run": dry_run}
+           "placed_notes": notes, "research": summ, "cost": cost, "dry_run": dry_run,
+           "ml_tool": ml_tools.version_of(meta)}
     (out_dir / f"{name}-{now:%H%M}.json").write_text(json.dumps(rec, indent=1, default=float), encoding="utf-8")
     if not dry_run:
         paper.append(LIVE / "research.jsonl", {"time": rec["time"], "sleeve": name, **summ,
                                                "orders": len(call["place"]) if call else None,
                                                "notes_chars": len(str((call or {}).get("notes") or ""))})
-        save_memo(name, now, call, meta["model"])
     log(f"{name}: {'DRY RUN ' if dry_run else ''}"
         + (f"{len(call['place'])} orders, {len(call['cancel'])} cancels" if call else "no valid decision")
         + f"; research {summ['research_calls']} {summ['tools'] or ''}; traded {summ['traded']}"
@@ -224,6 +262,11 @@ def look(dry_run=False, only=None):
     if held:                                # Clayton, 24 Oct: a sleeve without an approved model stays in cash, no look
         log(f"no look for {', '.join(held)}: model '{HOLD_MODEL}' (no approved model yet); in cash")
         sleeves = {k: v for k, v in sleeves.items() if k not in held}
+    ml2_guard()
+    no_tool = ml_tools.unknown(sleeves)
+    if no_tool:                             # never another version's tool in its place
+        log(f"NO LOOK for {', '.join(no_tool)}: ml_tool not in ml_tools.VERSIONS {sorted(ml_tools.VERSIONS)}")
+        sleeves = {k: v for k, v in sleeves.items() if k not in no_tool}
     data = trader.Data(last=(today - timedelta(days=1)).strftime("%Y%m%d"))
     data.next_date = today.isoformat()
     d = len(data.dates)
@@ -240,20 +283,20 @@ def look(dry_run=False, only=None):
         rate_line = ""
         log("rate line failed: " + traceback.format_exc()[-300:])
 
-    def run_claude():                       # one at a time; each look's tool server researches on its own client (12, 13)
-        start = time.time()                 # all Claude looks share WINDOW, so their orders aren't placed after the open/close
-        for i, (name, meta, text, st, system, rows, sp) in enumerate(claude_jobs):
+    def run_claude(lane):                   # week 4's four Claude sleeves run side by side, each lane's tool server on its
+        start = time.time()                 # own client, so each decides on a fresh state. WINDOW caps each CLI; placing
+        for name, meta, text, st, system, rows, sp in claude_jobs[lane::len(MCP_CLIENTS)]:   # also waits for the gpt-oss chain
             t0 = time.time()
             try:
                 call, trace = agent.claude_look(meta["model"], system, text, sp, LIVE / today.isoformat() / f"{name}-{now:%H%M}",
                                                 effort(meta), timeout=max(60, min(agent.CLAUDE_TIMEOUT,
                                                                                   start + WINDOW.total_seconds() - t0)),
-                                                client=("trader-mcp-a", "trader-mcp-b")[i % 2])
+                                                client=MCP_CLIENTS[lane], ml_tool=meta.get("ml_tool"))
             except Exception:
                 call, trace = None, [{"error": traceback.format_exc()[-1500:]}]
             claude_out[name] = call, trace, time.time() - t0
 
-    worker = threading.Thread(target=run_claude, daemon=True)
+    workers = [threading.Thread(target=run_claude, args=(lane,), daemon=True) for lane in range(len(MCP_CLIENTS))]
     with gateway() as gw:
         paper.sync_fills(gw)
         reconcile(gw)
@@ -276,7 +319,7 @@ def look(dry_run=False, only=None):
             world.dry_run = dry_run
             text, st, feats = trader.state_text(world, data, d, header=header, live=live)
             ml = bool(meta.get("ml"))           # the ML arm: the same model plus the forecast tool (forecast.py)
-            sp = specs + ([forecast.SPEC] if ml else [])
+            sp = specs + ([ml_tools.module(meta.get("ml_tool")).SPEC] if ml else [])
             # no today: the models aren't told of the Monday close; NAV counts cash and holdings (Clayton, 26 Oct)
             goal = trader.goal_line(meta["start_cash"], st["value"], sessions_left(today))
             goal += f"\n{rate_line}" if rate_line else ""
@@ -287,21 +330,30 @@ def look(dry_run=False, only=None):
 
         for name, meta in sleeves.items():
             if meta["model"].startswith("claude-"):
-                world, text, st, system, rows, sp = build(name, meta)
+                try:                        # an error costs this sleeve's look only
+                    world, text, st, system, rows, sp = build(name, meta)
+                except Exception:
+                    log(f"{name}: no look: " + traceback.format_exc()[-300:])
+                    continue
                 claude_jobs.append((name, meta, text, st, system, rows, sp))
             else:
                 gptoss_jobs.append((name, meta))
-        worker.start()                      # the Claude looks run meanwhile; their orders are placed below, on client 10
+        for w in workers:                   # the Claude looks run meanwhile; their orders are placed below, on client 10
+            w.start()
         for k, (name, meta) in enumerate(gptoss_jobs):
-            if k:                           # each gpt-oss sleeve sees its book as of its own look, not as of the first one
-                paper.sync_fills(gw)        # (the four run one after another, about 8 minutes; at 09:30 the opening
-                if live is not None:        # fills arrived after the state was built and 7 orders were sent again)
-                    missing = sorted(set(paper.book(name)["positions"]) - set(live))
-                    for q in (gw.quotes(missing) if missing else []):
-                        m = None if q.get("error") else paper.mark(q)
-                        if m is not None:
-                            live[q["symbol"]] = m
-            world, text, st, system, rows, sp = build(name, meta)
+            try:                            # an error here costs this sleeve's look only: the chain goes on, and the Claude
+                if k:                       # orders below are still placed. Each gpt-oss sleeve sees its book as of its own
+                    paper.sync_fills(gw)    # look, not as of the first one (at 09:30 the opening fills arrived after the
+                    if live is not None:    # state was built and 7 orders were sent again)
+                        missing = sorted(set(paper.book(name)["positions"]) - set(live))
+                        for q in (gw.quotes(missing) if missing else []):
+                            m = None if q.get("error") else paper.mark(q)
+                            if m is not None:
+                                live[q["symbol"]] = m
+                world, text, st, system, rows, sp = build(name, meta)
+            except Exception:
+                log(f"{name}: no look: " + traceback.format_exc()[-300:])
+                continue
             model, t0 = meta["model"], time.time()
             call, trace, prefill, sampled, notes = None, [], 0, 0, []
             try:                            # an error ends this sleeve's look only; the rest and the Claude orders go on
@@ -309,13 +361,14 @@ def look(dry_run=False, only=None):
                                                 else svc.create_sampling_client(model_path=m))
                 renew = lambda: sampler(tinker.ServiceClient(project_id=PROJECT_ID, user_metadata={"purpose": "live"}))
                 call, trace, prefill, sampled = agent.gptoss_look(sampler(service), gw, system, text, today.isoformat(), sp,
-                                                                  effort(meta), renew=renew)
+                                                                  effort(meta), renew=renew, ml_tool=meta.get("ml_tool"))
                 notes = world.act(call) if call and not dry_run else []
             except Exception:
                 trace = trace + [{"error": traceback.format_exc()[-1500:]}]
             finish(now, name, meta, text, st, call, trace, notes, rows, dry_run,
                    cost={"prefill_tokens": prefill, "sampled_tokens": sampled}, secs=time.time() - t0)
-    worker.join()
+    for w in workers:
+        w.join()
     for name, meta, text, st, system, rows, sp in claude_jobs:
         call, trace, secs = claude_out.get(name) or (None, [{"error": "the Claude look did not finish"}], None)
         notes = []
@@ -345,7 +398,7 @@ def record():
         book_dividends(gw)                            # today's ex-dates are in today's bars by now
         acct = gw.account()
         rows = []
-        for name in paper.sleeves():
+        for name, meta in paper.sleeves().items():
             b0 = paper.book(name)
             syms = sorted(set(b0["positions"]) | {"SPY"})
             quotes = {q["symbol"]: paper.mark(q) for q in gw.quotes(syms) if not q.get("error")}
@@ -354,7 +407,8 @@ def record():
                          "start_cash": b["start_cash"], "realized": b["realized"], "unrealized": b["unrealized"],
                          "commissions": b["commissions"], "fills": b["fills"], "missing_commissions": b["missing_commissions"],
                          "positions": {s: p["quantity"] for s, p in b["positions"].items()}, "spy": quotes.get("SPY"),
-                         "account_net_liquidation": acct.get("NetLiquidation")})
+                         "account_net_liquidation": acct.get("NetLiquidation"),
+                         "ml_tool": ml_tools.version_of(meta)})
     if any(m.get("ml") for m in paper.sleeves().values()):     # today's 30-minute bars for the ML arm's intraday models
         import fetch_extra
         with gateway() as gw:

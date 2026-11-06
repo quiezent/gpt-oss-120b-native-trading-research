@@ -67,6 +67,10 @@ def main():
     assert cols == ("sym close range1±%(10-90) absr1±% vol20% spread_bps(10-90) cost_bps(10-90) tier adv_$m "
                     "next60±%(10-90) rest_of_day±%(10-90) move$±(90) sleeve%±(90) note"), cols
     assert any(ln.startswith("No column forecasts direction") for ln in txt.splitlines())
+    D = forecast.DESCRIPTION                    # F8 (f8_prereg.md): earnings drift tested and failed; F8's fail keeps this line
+    assert "**No return or direction forecast is offered.**" in D and "Earnings drift was not tested" not in D
+    assert "Earnings drift was tested and did not beat trading costs: over 1,821 earnings releases" in D
+    assert "Earnings drift was tested" in events.TRACK_RECORD and "was not tested" not in events.TRACK_RECORD
     a, z = fcr["AAPL"], fcr["NVR"]
     hv = lambda x: f"{round(x / 2, 2):g}"
     for sym, ref in (("ZZIV", a), ("ZZZT", z)):

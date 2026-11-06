@@ -144,6 +144,63 @@ def raw_to_utc(raw, convention):
     return to_utc(raw)
 
 
+# EDGAR changed how it writes acceptanceDateTime after calibrate() ran (archive of 17 Oct 2026): from 20 Oct some companies'
+# field flipped convention each way, and from 26 Oct every company's field was true UTC, so companies.json's per-company
+# raw_convention put new after-close filings of the "shifted" companies four hours early (MSFT's 28 Oct 16:04 ET 2.02 at
+# 12:04, "during session"). A live fetch is therefore calibrated on its own: against the filings in it whose true time is
+# known from a filing index page. Not covered: a fresh row written differently from the rest of its JSON, as on 20-24 Oct,
+# when new rows were true UTC inside JSONs still shifted; every row has been true UTC since 26 Oct.
+_KNOWN = None
+
+
+def _index_utc(s):
+    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ET).astimezone(UTC)
+
+
+def _known():
+    """{accession: true UTC} from the archive's filing index pages (filings.csv's accepted_et_index)."""
+    global _KNOWN
+    if _KNOWN is None:
+        k, p = {}, OUT / "filings.csv"
+        if p.exists():
+            with open(p, newline="", encoding="utf-8") as f:
+                for r in csv.DictReader(f):
+                    if r.get("accepted_et_index"):
+                        k[r["accessionNumber"]] = _index_utc(r["accepted_et_index"])
+        _KNOWN = k
+    return _KNOWN
+
+
+def _live_index(acc):
+    """A newer filing's index time, when live fetched its page for article text (data/edgar/live/index/)."""
+    p = OUT / "live" / "index" / f"{acc}.json"
+    try:
+        a = json.loads(p.read_text(encoding="utf-8")).get("accepted_et_index") if p.exists() else None
+        return _index_utc(a) if a else None
+    except (OSError, ValueError):
+        return None
+
+
+def fetch_convention(rc):
+    """The convention one fetched submissions JSON ('recent' block) writes acceptanceDateTime in, voted on its filings
+    whose index time is known; None when it holds none."""
+    known, votes = _known(), {"utc": 0, "shifted": 0}
+    for acc, raw in zip(rc.get("accessionNumber", []), rc.get("acceptanceDateTime", [])):
+        u = known.get(acc)
+        if u is not None:
+            for c in votes:
+                votes[c] += raw_to_utc(raw, c) == u
+    return max(votes, key=votes.get) if any(votes.values()) else None
+
+
+def accepted_utc(rc, k, conv):
+    """True UTC of row k of a fetched submissions JSON: its index page's time when in hand, else the field under conv
+    (fetch_convention's, else the company's calibrated one)."""
+    acc = rc["accessionNumber"][k]
+    u = _known().get(acc) or _live_index(acc)
+    return u if u is not None else raw_to_utc(rc["acceptanceDateTime"][k], conv or "shifted")
+
+
 def index_time(f):
     """The filing index page's 'Accepted' time (EDGAR's Eastern time), cached in data/edgar/index/."""
     acc, cik = f["accessionNumber"], f.get("cik_filer") or f["cik"]

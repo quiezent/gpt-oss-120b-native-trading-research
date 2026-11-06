@@ -1,8 +1,11 @@
 """Split each sleeve's week into market, chip and selection parts, for the decks' Risk assessment slide.
 
-    python risk_split.py runs/live/daily.jsonl 760.05 2026-10-23
+    python risk_split.py runs/live/daily.jsonl 760.05 2026-10-23 [2026-11-02]
 
-Arguments: the week's daily records, the SPY baseline (the previous Friday's close) and its date.
+Arguments: the daily records, the SPY baseline (the previous Friday's close) and its date, and optionally the first
+date to cover. A sleeve's span starts at the later of that date and its first row; it is measured from its own row on
+the date before (NAV and SPY), else from start_cash and the baseline. So a sleeve that carries on across weeks
+(base-ml from 26 Oct) can be split for the current week only, beside sleeves that started this week.
 For each sleeve and day, the book's net exposure, holdings beta (sum of weight x each name's beta to SPY) and chip
 tilt (loading on SMH beyond its own SPY beta) are averaged over the previous close and this close (day 1: this close),
 with every loading estimated on the WINDOW sessions up to the previous close from data/bars, so it is point in time.
@@ -83,7 +86,7 @@ def book(row, day, prev):
     return {"net": net, "beta": beta + rest, "mkt": mkt + rest, "chip": chip}
 
 
-def main(path, baseline, base_date):
+def main(path, baseline, base_date, start=None):
     rows, spys = {}, collections.defaultdict(list)
     for line in open(path):
         r = json.loads(line)
@@ -95,9 +98,24 @@ def main(path, baseline, base_date):
     sleeves = sorted({s for _, s in rows})
     print("sleeve return net beta chip vs_net vs_beta vs_spy_chips")
     for s in sleeves:
-        prev_nav, prev_spy, prev_day, prev_book = 30000.0, baseline, base_date.replace("-", ""), None
+        mine = [d for d in dates if (d, s) in rows]
+        span = [d for d in mine if not start or d >= start]
+        before = [d for d in mine if d < span[0]] if span else []
+        if not span:
+            continue
+        if before:
+            r0 = rows[(before[-1], s)]
+            prev_nav, prev_spy, prev_day = r0["nav"], spy[before[-1]], before[-1].replace("-", "")
+            prev_book = book(r0, prev_day, max(k for k in DAYS if k < prev_day))
+        else:
+            first = rows[(span[0], s)]
+            i = dates.index(span[0])
+            prev_nav = first["start_cash"]
+            prev_spy, prev_day = (baseline, base_date.replace("-", "")) if i == 0 else (spy[dates[i - 1]], dates[i - 1].replace("-", ""))
+            prev_book = None
+        start_nav = prev_nav
         acc = collections.defaultdict(float)
-        for d in dates:
+        for d in span:
             row = rows[(d, s)]
             day = d.replace("-", "")
             bk = book(row, day, prev_day)
@@ -111,11 +129,11 @@ def main(path, baseline, base_date):
             acc["beta_part"] += avg["beta"] * s_ret
             acc["two_part"] += avg["mkt"] * s_ret + avg["chip"] * chips
             prev_nav, prev_spy, prev_day, prev_book = row["nav"], spy[d], day, bk
-        ret = row["nav"] / row["start_cash"] - 1
-        n = len(dates)
+        ret = row["nav"] / start_nav - 1
+        n = len(span)
         print(f"{s} {ret * 100:+.2f}% {acc['net'] / n:.2f} {acc['beta'] / n:.2f} {acc['chip'] / n:.2f} "
               f"{(ret - acc['net_part']) * 100:+.2f} {(ret - acc['beta_part']) * 100:+.2f} {(ret - acc['two_part']) * 100:+.2f}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], float(sys.argv[2]), sys.argv[3])
+    main(sys.argv[1], float(sys.argv[2]), sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else None)
