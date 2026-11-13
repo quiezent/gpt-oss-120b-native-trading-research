@@ -6,6 +6,7 @@ claude_look  runs a Claude model through the Claude CLI, headless, with every bu
 Both return (call or None, trace), where trace records every research call for the research log.
 """
 
+import contextlib
 import json
 import os
 import re
@@ -125,8 +126,12 @@ def sample_once(sc, renew, model_input, params, trace, step):
         return sc.sample(model_input, 1, params).result(timeout=SAMPLE_TIMEOUT), sc
 
 
-def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort, seed=None, renew=None, ml_tool=None):
+def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort, seed=None, renew=None, ml_tool=None,
+                lock=None):
+    """lock: held around each research call (live.py runs the gpt-oss sleeves side by side on one client-10
+    connection, and the tool modules keep caches); None runs them as before."""
     from tinker_cookbook.renderers.gpt_oss import GptOssRenderer
+    held = lock if lock is not None else contextlib.nullcontext()
     r = GptOssRenderer(trader.tokenizer(), use_system_prompt=True, reasoning_effort=effort, current_date=current_date)
     specs = research_specs + [trader.TOOL_LIVE]
     names = {s["name"] for s in specs}
@@ -167,7 +172,9 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
             told = True
         else:                             # the count: week 2, 135 of 276 gpt-oss looks reached the cap, never told it
             calls += 1
-            out = tools.run(gw, name, val, ml_tool=ml_tool) + f"\n(research call {calls} of {tools.MAX_CALLS})"
+            with held:
+                out = tools.run(gw, name, val, ml_tool=ml_tool)
+            out += f"\n(research call {calls} of {tools.MAX_CALLS})"
         trace.append({"step": step, "tool": name, "args": val, "result": out, "tokens": len(seq.tokens), "said": said})
         prompt = prompt + toks[:-1] + [trader.CALL] + tool_result_tokens(name, out)   # a call that ended in <|return|> reads as a call from here on
     return None, trace + [{"error": "no submit within the step limit"}], prefill, sampled
@@ -204,7 +211,10 @@ def claude_look(model, system, state_text, research_specs, workdir, effort, time
     env = dict(os.environ, TRADER_SUBMIT_FILE=str(submit_file), TRADER_LOG_FILE=str(log_file),
                TRADER_HAS_NEWS="1" if "news" in have else "0", TRADER_HAS_SCANNER="1" if "scanner" in have else "0",
                TRADER_HAS_STATS="1" if "stats" in have else "0", TRADER_HAS_FORECAST="1" if "forecast" in have else "0",
-               TRADER_MCP_CLIENT=client, TRADER_ML_TOOL=ml_tool or "", CLAUDE_CODE_DISABLE_AUTO_MEMORY="1")
+               TRADER_MCP_CLIENT=client, TRADER_ML_TOOL=ml_tool or "", CLAUDE_CODE_DISABLE_AUTO_MEMORY="1",
+               # the CLI cuts every MCP tool description to 4,096 characters by default; the forecast tool's runs to
+               # about 13,000 (ML3), so Claude ML looks saw only its first 4,096 from week 2 to week 4 (review, 9 Nov)
+               CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH="20000")
     cfg = {"mcpServers": {"trader": {"command": sys.executable,
                                      "args": [str(ROOT / "mcp_server.py")], "env": {k: env[k] for k in
                                      ("TRADER_SUBMIT_FILE", "TRADER_LOG_FILE", "TRADER_HAS_NEWS", "TRADER_HAS_SCANNER",

@@ -5,7 +5,9 @@
     python live.py --look --only opus       # one look now for one sleeve
     python live.py --job refresh|record|macro
 
-Schedule (US Eastern, so DST is automatic): 07:30 refresh daily bars (it takes about 40 minutes); a fill sync 3 minutes
+Schedule (US Eastern, so DST is automatic): 07:30 refresh daily bars (it takes about 40 minutes; with an ML sleeve it then
+starts warm_outside.py, which scores the forecast tool's outside names in the background until 08:55 and whose summary
+the loop logs when it ends); a fill sync 3 minutes
 before the Gateway's day ends (midnight UTC+8, its login time zone: 12:00 ET, 11:00 ET in winter); looks at 09:00 (before the
 open) and every 30 minutes until 15:30; 16:15 record fills and each sleeve's day. At each look a model sees its
 sleeve and the market table (with delayed last prices during the session), may research with the
@@ -26,7 +28,9 @@ closing that window stops the loop; 26 Oct), e.g. from PowerShell:
 
 import argparse
 import collections
+import concurrent.futures
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -63,6 +67,9 @@ HALF_DAYS = {"2026-11-27", "2026-12-24", "2027-11-26"}   # NYSE closes at 13:00 
 LOOK_TIMES = [(h, m) for h in range(9, 16) for m in (0, 30)]   # every 30 minutes, 09:00-15:30 (Clayton, 16 Oct)
 JOBS = [("refresh", (7, 30))] +[(f"look-{h:02d}{m:02d}", (h, m)) for h, m in LOOK_TIMES] + [("record", (16, 15))]
 WINDOW = timedelta(minutes=25)      # a look that can't start within 25 minutes of its time is skipped (looks are 30 minutes apart)
+GPTOSS_LANES = 10                   # gpt-oss sleeves sampled side by side (Clayton, 11 Nov 2026: "they need to be [parallel]
+                                    # because trading is time sensitive"; one after another, the 09:00 look's last sleeve
+                                    # decided 21 minutes after its first)
 
 
 def log(msg):
@@ -134,6 +141,7 @@ def refresh():
             bad = fetch_extra.update(gw, ["SPY"] + [x for x in u if x != "SPY"], "iv") + fetch_extra.update(gw, u, "bidask")
         log(f"refreshed implied vol and bid/ask history; {len(bad)} failed {bad[:3]}")
         compute_versions()
+        warm_outside()                                  # in the background; never fails the refresh
         ml2_guard()
         try:                                            # earnings calendar + history (wave C); never fails the refresh
             import fetch_av
@@ -158,6 +166,68 @@ def compute_versions():
             if v == ml_tools.DEFAULT:
                 raise
             log(f"{v} forecasts failed: " + traceback.format_exc()[-300:])
+
+
+WARM = None     # the outside-name warm-up's process (warm_outside.py), so two never run at once
+WARM_T = ""     # when it started, ET, as warm_outside.jsonl's "t": its own summary line is the one at or after it
+
+
+def warm_outside(now=None, popen=subprocess.Popen):
+    """Start warm_outside.py in the background once the forecasts are computed: before the first look it scores the
+    names outside ML2's cached universe (recently asked, then the broad universe) with the look's own functions, so a
+    look reads them at once instead of scoring them inside its time cap (Clayton, 9 Nov: "a major issue"; a fix for
+    every ML sleeve, Base + ML2.2 included, 9 Nov 13:00 UTC+8). Only on a trading day with a sleeve that has the tool,
+    never two at once; never blocks or raises."""
+    global WARM, WARM_T
+    try:
+        now = now or datetime.now(ET)
+        if not trading_day(now.date()) or not any(m.get("ml") and m.get("model") != HOLD_MODEL
+                                                  for m in paper.sleeves().values()):
+            return
+        warm_poll()                                     # a run that has ended is logged first
+        if WARM is not None:
+            log(f"outside-name warm-up still running (pid {WARM.pid}); not started again")
+            return
+        LIVE.mkdir(parents=True, exist_ok=True)
+        with open(LIVE / "warm_outside.out.log", "a", encoding="utf-8") as out:     # the child has its own handle
+            out.write(f"=== {now:%Y-%m-%d %H:%M:%S} ET\n")
+            out.flush()
+            WARM_T = f"{now:%Y-%m-%d %H:%M:%S}"
+            WARM = popen([sys.executable, str(ROOT / "warm_outside.py")], cwd=ROOT, stdout=out, stderr=subprocess.STDOUT,
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        log(f"outside-name warm-up started (pid {WARM.pid}); per name in runs/live/warm_outside.jsonl")
+    except Exception as e:                              # noqa: BLE001
+        try:
+            log(f"outside-name warm-up not started: {type(e).__name__}: {str(e)[:200]}")
+        except Exception:                               # noqa: BLE001
+            pass
+
+
+def warm_poll():
+    """Each loop pass, as macro_intraday polls its build: once the warm-up has ended, log its exit code and its summary
+    line (stopped, names, ML2 rows kept). Never raises."""
+    global WARM
+    try:
+        code = None if WARM is None else WARM.poll()
+        if code is None:
+            return
+        WARM, s = None, None
+        try:
+            for ln in reversed((LIVE / "warm_outside.jsonl").read_text(encoding="utf-8").splitlines()):
+                d = json.loads(ln) if '"summary"' in ln else {}
+                if d.get("summary"):
+                    s = d if str(d.get("t", "")) >= WARM_T else None
+                    break
+        except (OSError, ValueError, AttributeError):
+            s = None
+        log(f"outside-name warm-up ended (exit {code}): "
+            + (f"stopped {s.get('stopped')}, {s.get('names')} names, {s.get('ml2_kept')} ML2 rows kept" if s
+               else "no summary line from this run in runs/live/warm_outside.jsonl"))
+    except Exception as e:                              # noqa: BLE001
+        try:
+            log(f"outside-name warm-up poll failed: {type(e).__name__}: {str(e)[:200]}")
+        except Exception:                               # noqa: BLE001
+            pass
 
 
 def ml2_guard():
@@ -241,7 +311,8 @@ def record_look(now, name, meta, text, st, call, trace, notes, table_rows, dry_r
            "seconds": secs, "state_text": text,
            "state": {k: v for k, v in st.items() if k != "events"}, "events": st["events"], "trace": trace, "call": call,
            "placed_notes": notes, "research": summ, "cost": cost, "dry_run": dry_run,
-           "ml_tool": ml_tools.version_of(meta)}
+           "ml_tool": ml_tools.version_of(meta), "kelly_prompt": bool(meta.get("kelly_prompt")),
+           "shock_cap": trader.shock_cap_of(meta)}
     (out_dir / f"{name}-{now:%H%M}.json").write_text(json.dumps(rec, indent=1, default=float), encoding="utf-8")
     if not dry_run:
         paper.append(LIVE / "research.jsonl", {"time": rec["time"], "sleeve": name, **summ,
@@ -263,6 +334,9 @@ def look(dry_run=False, only=None):
         log(f"no look for {', '.join(held)}: model '{HOLD_MODEL}' (no approved model yet); in cash")
         sleeves = {k: v for k, v in sleeves.items() if k not in held}
     ml2_guard()
+    for k, v in sleeves.items():            # a malformed sleeve term is ignored by trader.shock_cap_of: say so at every look
+        if "shock_cap" in v and trader.shock_cap_of(v) is None:
+            log(f"{k}: shock_cap {v['shock_cap']!r} is not a number between 0 and 1, so no single-shock limit applies")
     no_tool = ml_tools.unknown(sleeves)
     if no_tool:                             # never another version's tool in its place
         log(f"NO LOOK for {', '.join(no_tool)}: ml_tool not in ml_tools.VERSIONS {sorted(ml_tools.VERSIONS)}")
@@ -275,7 +349,6 @@ def look(dry_run=False, only=None):
     day = f"Date: {today.isoformat()} ({today.strftime('%A')}), {now:%H:%M} ET."
     header = (f"{day} The market is open until {close:%H:%M} ET; prices are delayed about 15 minutes. Orders you submit now work immediately."
               if session else f"{day} Before the open. Orders you submit now work from the 09:30 open.")
-    service = tinker.ServiceClient(project_id=PROJECT_ID, user_metadata={"purpose": "live"})
     claude_jobs, gptoss_jobs, claude_out = [], [], {}
     try:
         rate_line = rates.line(now)                 # the same facts for every sleeve at this look
@@ -297,6 +370,10 @@ def look(dry_run=False, only=None):
             claude_out[name] = call, trace, time.time() - t0
 
     workers = [threading.Thread(target=run_claude, args=(lane,), daemon=True) for lane in range(len(MCP_CLIENTS))]
+    if session and now.time() < dtime(9, 31):   # the opening auction's fills are reported 09:30:05-09:30:20. On 6 Nov
+        wait = (datetime.combine(today, dtime(9, 30, 45), tzinfo=ET) - datetime.now(ET)).total_seconds()   # base-ml's state
+        if wait > 0:                            # was built at 09:30:11, its AMD stop filled at 09:30:19, and it bought 20 to
+            time.sleep(wait)                    # cover a short already closed. A fact's timing, not a delay of a decision.
     with gateway() as gw:
         paper.sync_fills(gw)
         reconcile(gw)
@@ -317,7 +394,7 @@ def look(dry_run=False, only=None):
         def build(name, meta):
             world = trader.PaperWorld(gw, name, data)
             world.dry_run = dry_run
-            text, st, feats = trader.state_text(world, data, d, header=header, live=live)
+            text, st, feats = trader.state_text(world, data, d, header=header, live=live, book=bool(meta.get("risk_line")))
             ml = bool(meta.get("ml"))           # the ML arm: the same model plus the forecast tool (forecast.py)
             sp = specs + ([ml_tools.module(meta.get("ml_tool")).SPEC] if ml else [])
             # no today: the models aren't told of the Monday close; NAV counts cash and holdings (Clayton, 26 Oct)
@@ -325,7 +402,7 @@ def look(dry_run=False, only=None):
             goal += f"\n{rate_line}" if rate_line else ""
             text = trader.live_user(text, goal, load_memo(name), steps=trader.live_steps(ml))
             rows, _ = data.table_rows(d, extra=world.symbols_in_play())
-            system = trader.live_system(meta["start_cash"], today, ml=ml)
+            system = trader.live_system(meta["start_cash"], today, ml=ml, kelly=bool(meta.get("kelly_prompt")))
             return world, text, st, system, rows, sp
 
         for name, meta in sleeves.items():
@@ -340,20 +417,36 @@ def look(dry_run=False, only=None):
                 gptoss_jobs.append((name, meta))
         for w in workers:                   # the Claude looks run meanwhile; their orders are placed below, on client 10
             w.start()
-        for k, (name, meta) in enumerate(gptoss_jobs):
-            try:                            # an error here costs this sleeve's look only: the chain goes on, and the Claude
-                if k:                       # orders below are still placed. Each gpt-oss sleeve sees its book as of its own
-                    paper.sync_fills(gw)    # look, not as of the first one (at 09:30 the opening fills arrived after the
-                    if live is not None:    # state was built and 7 orders were sent again)
-                        missing = sorted(set(paper.book(name)["positions"]) - set(live))
-                        for q in (gw.quotes(missing) if missing else []):
-                            m = None if q.get("error") else paper.mark(q)
-                            if m is not None:
-                                live[q["symbol"]] = m
-                world, text, st, system, rows, sp = build(name, meta)
+        # The gpt-oss sleeves run side by side, one thread each (GPTOSS_LANES). They share client 10's connection (the tws
+        # Gateway serializes each call itself) and the ledgers, which are read and rewritten whole (looks.json, notes.json,
+        # memo.json) or appended (fills.jsonl, orders.jsonl). `ledger` is held to build a state, to place and to record.
+        # `research` is held for each research call: it guards the tool modules' caches (tools, forecast, livenews,
+        # events) and writes no ledger, so a slow call (an SEC retry can wait about 20 minutes) delays only other
+        # research, never a placement. The sampling overlaps. Order: never take `ledger` while holding `research`.
+        ledger, research = threading.RLock(), threading.Lock()
+        service = None
+        if gptoss_jobs:
+            try:                            # one Tinker session per look, shared, as before: each ServiceClient keeps a
+                trader.tokenizer()          # session (heartbeat, pools) that is never closed. The tokenizer is loaded
+            except Exception:               # once, before the threads share it; a failure costs only the gpt-oss looks
+                log("tokenizer load failed: " + traceback.format_exc()[-300:])
+            service = tinker.ServiceClient(project_id=PROJECT_ID, user_metadata={"purpose": "live"})
+
+        def run_gptoss(k, name, meta):
+            try:                            # an error here costs this sleeve's look only: the rest go on, and the Claude
+                with ledger:                # orders below are still placed. Each gpt-oss sleeve sees its book as of its
+                    if k:                   # own state (at 09:30 the opening fills arrived after the state was built and
+                        paper.sync_fills(gw)    # 7 orders were sent again)
+                        if live is not None:
+                            missing = sorted(set(paper.book(name)["positions"]) - set(live))
+                            for q in (gw.quotes(missing) if missing else []):
+                                m = None if q.get("error") else paper.mark(q)
+                                if m is not None:
+                                    live[q["symbol"]] = m
+                    world, text, st, system, rows, sp = build(name, meta)
             except Exception:
                 log(f"{name}: no look: " + traceback.format_exc()[-300:])
-                continue
+                return
             model, t0 = meta["model"], time.time()
             call, trace, prefill, sampled, notes = None, [], 0, 0, []
             try:                            # an error ends this sleeve's look only; the rest and the Claude orders go on
@@ -361,12 +454,26 @@ def look(dry_run=False, only=None):
                                                 else svc.create_sampling_client(model_path=m))
                 renew = lambda: sampler(tinker.ServiceClient(project_id=PROJECT_ID, user_metadata={"purpose": "live"}))
                 call, trace, prefill, sampled = agent.gptoss_look(sampler(service), gw, system, text, today.isoformat(), sp,
-                                                                  effort(meta), renew=renew, ml_tool=meta.get("ml_tool"))
-                notes = world.act(call) if call and not dry_run else []
+                                                                  effort(meta), renew=renew, ml_tool=meta.get("ml_tool"),
+                                                                  lock=research)
+                if call and not dry_run:
+                    with ledger:
+                        notes = world.act(call)
             except Exception:
                 trace = trace + [{"error": traceback.format_exc()[-1500:]}]
-            finish(now, name, meta, text, st, call, trace, notes, rows, dry_run,
-                   cost={"prefill_tokens": prefill, "sampled_tokens": sampled}, secs=time.time() - t0)
+            with ledger:
+                finish(now, name, meta, text, st, call, trace, notes, rows, dry_run,
+                       cost={"prefill_tokens": prefill, "sampled_tokens": sampled}, secs=time.time() - t0)
+
+        if gptoss_jobs:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, min(GPTOSS_LANES, len(gptoss_jobs))),
+                                                       thread_name_prefix="gptoss") as pool:
+                futs = [pool.submit(run_gptoss, k, name, meta) for k, (name, meta) in enumerate(gptoss_jobs)]
+                for (name, _), f in zip(gptoss_jobs, futs):
+                    try:
+                        f.result()
+                    except Exception:       # noqa: BLE001 - run_gptoss catches its own; this is the last net
+                        log(f"{name}: gpt-oss look thread failed: " + traceback.format_exc()[-300:])
     for w in workers:
         w.join()
     for name, meta, text, st, system, rows, sp in claude_jobs:
@@ -422,14 +529,14 @@ def record():
 
 
 def macro_rebuild():
-    """Rebuild data/macro/calendar.json (ml_research/macro_fetch.py, about 10 minutes) after the record, so the next
+    """Rebuild data/macro/calendar.json (ml_research/macro_fetch.py, a few minutes) after the record, so the next
     day's forecast macro line and tape have today's first-release values and any schedule change, and keep tonight's
     scheduled rows as data/macro/schedule/<YYYYMMDD>.json (the schedule as known then; it can't be rebuilt later).
     Logs and never raises: the old calendar stays if the build fails."""
     t0 = time.time()
     try:
         r = subprocess.run([sys.executable, str(ROOT / "ml_research" / "macro_fetch.py")], cwd=ROOT, capture_output=True,
-                           text=True, encoding="utf-8", errors="replace", timeout=40 * 60)
+                           text=True, encoding="utf-8", errors="replace", timeout=80 * 60)   # up to 35 of them waiting on build.lock
         if r.returncode:
             raise RuntimeError(f"exit {r.returncode}: {(r.stderr or r.stdout).strip()[-300:]}")
         cal = json.loads((ROOT / "data" / "macro" / "calendar.json").read_text(encoding="utf-8"))
@@ -441,6 +548,97 @@ def macro_rebuild():
             f"saved to {out.name}")
     except Exception as e:                              # noqa: BLE001
         log(f"macro calendar rebuild failed after {time.time() - t0:.0f}s: {type(e).__name__}: {str(e)[:300]}")
+
+
+MACRO_CAL = ROOT / "data" / "macro" / "calendar.json"
+FRED_KEYS = {"cpi", "nfp", "gdp", "pce", "ppi", "retail", "jolts", "claims", "eci"}   # tier 1-2 releases valued from FRED
+
+
+def macro_missing(now, cal=MACRO_CAL):
+    """Today's FRED-valued releases at least 40 minutes past their time that calendar.json still has no value for."""
+    try:
+        ev = json.loads(cal.read_text(encoding="utf-8"))["events"]
+    except (OSError, ValueError, KeyError):
+        return []
+    day = now.date().isoformat()
+    out = set()
+    for e in ev:
+        try:
+            if (e.get("date") == day and e.get("key") in FRED_KEYS and not e.get("first_release")
+                    and now >= datetime.fromisoformat(e["datetime_et"]).astimezone(ET) + timedelta(minutes=40)):
+                out.add(e["key"])
+        except (KeyError, TypeError, ValueError):
+            continue
+    return sorted(out)
+
+
+def macro_busy(lock=ROOT / "data" / "macro" / "build.lock"):
+    """Whether a macro build (ml_research/macro_fetch.build_lock) holds its lock now."""
+    if not lock.exists():
+        return False
+    try:
+        with open(lock, "a+") as f:
+            f.seek(0)
+            if os.name == "nt":
+                import msvcrt
+                msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+                f.seek(0)
+                msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        return False
+    except OSError:
+        return True
+
+
+def macro_intraday(st, now=None, popen=subprocess.Popen):
+    """ML2.2: on a release day, rebuild the calendar in the background once FRED has had time to post (from 40 minutes
+    after the release, at most every 30 minutes, 6 tries, none started after 15:00 ET or while another build runs), so
+    the forecast's macro line shows today's values that day, as the simulator does (value_delay_min=60). Before, a
+    release's values reached the calendar only in an evening build. Never blocks a look and never raises; the evening
+    rebuild is unchanged."""
+    try:
+        now = now or datetime.now(ET)
+        p = st.get("proc")
+        if p is not None and p.poll() is None:           # running: killed after 30 minutes, whatever the day
+            if time.time() - st["t0"] > 30 * 60 and not st.get("killed"):
+                p.kill()
+                st["killed"] = True
+                log("intraday macro rebuild killed after 30 minutes")
+            return
+        if p is not None:
+            st["proc"] = None
+            st["out"].close()
+            still = macro_missing(now)
+            log(f"intraday macro rebuild {st['n']} ended (exit {p.returncode}, {time.time() - st['t0']:.0f}s): "
+                + (f"still no value for {', '.join(still)}" if still else "today's released values are in"))
+        if st.get("day") != now.date():
+            st.clear()
+            st.update(day=now.date(), n=0, proc=None, last=None)
+        if st["n"] >= 6 or now.time() >= dtime(15, 0) or (st["last"] and now - st["last"] < timedelta(minutes=30)):
+            return
+        keys = macro_missing(now)
+        if not keys or macro_busy():
+            return
+        st.update(n=st["n"] + 1, last=now, t0=time.time(), killed=False)
+        out = open(LIVE / "macro_intraday.log", "a", encoding="utf-8")
+        try:
+            out.write(f"=== {now:%Y-%m-%d %H:%M:%S} ET, try {st['n']}, for {', '.join(keys)}\n")
+            out.flush()
+            proc = popen([sys.executable, str(ROOT / "ml_research" / "macro_fetch.py")], cwd=ROOT, stdout=out,
+                         stderr=subprocess.STDOUT, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except Exception:
+            out.close()
+            raise
+        st.update(proc=proc, out=out)
+        log(f"intraday macro rebuild {st['n']} started for {', '.join(keys)}")
+    except Exception as e:                              # noqa: BLE001
+        try:
+            log(f"intraday macro rebuild error: {type(e).__name__}: {str(e)[:200]}")
+        except Exception:                               # noqa: BLE001
+            pass
 
 
 def run_job(name, fn, *a):
@@ -464,11 +662,30 @@ def mark_done(done, key):
     DONE.write_text(json.dumps(sorted([list(k) for k in done])[-400:]), encoding="utf-8")
 
 
+def code_line(run=subprocess.run):
+    """The code this loop runs, so a loop left on old code shows in live.log: git describe (with "-dirty" when the tree
+    has uncommitted changes) and each registered ML tool's own VERSION."""
+    try:
+        r = run(["git", "describe", "--always", "--dirty"], cwd=ROOT, capture_output=True, text=True, timeout=15,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        head = (r.stdout or "").strip() if r.returncode == 0 else ""
+    except Exception:                                   # noqa: BLE001
+        head = ""
+    vs = []
+    for name in sorted(ml_tools.VERSIONS):
+        try:
+            vs.append(f"{name} {ml_tools.module(name).VERSION}")
+        except Exception as e:                          # noqa: BLE001
+            vs.append(f"{name} unavailable ({type(e).__name__})")
+    return f"code {head or 'unknown'}; ML tools: {', '.join(vs)}"
+
+
 def loop():
-    log("live loop started")
+    log(f"live loop started: {code_line()}")
     done = load_done()
     tried = {}                                        # refresh/record: last attempt, for retries
     held = set()
+    mac = {}                                          # the intraday macro rebuild's state (ML2.2)
     while not STOP.exists():
         now = datetime.now(ET)
         if trading_day(now.date()):
@@ -494,6 +711,8 @@ def loop():
                     log(f"{name} starting")
                     mark_done(done, key)          # marked before running: a crash mid-look must not re-place orders
                     run_job(name, look)
+            macro_intraday(mac)
+        warm_poll()                                   # logs the outside-name warm-up's summary once it ends
         time.sleep(20)
     log("STOP file found; live loop exiting")
 

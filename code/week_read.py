@@ -670,7 +670,7 @@ def main():
     for sl, meta in sleeves.items():
         first = None
         for i, day in enumerate(days):
-            if day > datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York")).date():   # ET, not the machine's MYT
+            if day > datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York")).date():   # ET, not the machine's UTC+8
                 break
             r1 = r1_for(day)
             mine = []

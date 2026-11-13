@@ -75,7 +75,8 @@ def load_calendar(path=CAL, refresh=False):
     """Events from calendar.json with derived fields: ymd (YYYYMMDD), tmin (minutes after midnight ET), dt (aware ET).
     Cached until the file changes (live.py rebuilds it each evening)."""
     global _CAL, _CAL_MTIME
-    if _CAL is not None and not refresh and path == CAL and CAL.stat().st_mtime == _CAL_MTIME:
+    mt = CAL.stat().st_mtime if path == CAL else None    # before reading: a build swapping it in meanwhile isn't missed
+    if _CAL is not None and not refresh and path == CAL and mt == _CAL_MTIME:
         return _CAL
     ev = json.loads(Path(path).read_text(encoding="utf-8"))["events"]
     out = []
@@ -91,7 +92,7 @@ def load_calendar(path=CAL, refresh=False):
     out.sort(key=lambda e: (e["dt"], e["key"]))
     attach_surprises(out)
     if path == CAL:
-        _CAL, _CAL_MTIME = out, CAL.stat().st_mtime
+        _CAL, _CAL_MTIME = out, mt
     return out
 
 

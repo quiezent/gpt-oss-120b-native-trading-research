@@ -11,6 +11,7 @@ page, Kalshi's event lists, and the markets of Kalshi events not yet settled. li
 """
 
 import json
+import os
 import re
 import sys
 import time
@@ -33,7 +34,8 @@ CACHE = OUT / "cache"
 ET = ZoneInfo("America/New_York")
 UA = "Trader Training research contact via github.com/quiezent"
 START, END = "2023-10-01", "2027-12-31"
-TODAY = datetime.now(ET).date()
+NOW = datetime.now(ET)                  # reset once the build holds its lock (main), so one build uses one clock
+TODAY = NOW.date()
 
 # key, name, FRED release id, conventional time ET, agency, tier, headline series that must update on a real release day,
 # value specs (field, series, transform, frequency)
@@ -183,6 +185,65 @@ MONTHS = {m: i for i, m in enumerate(["January", "February", "March", "April", "
 MON3 = {k[:3]: v for k, v in MONTHS.items()}
 
 
+def _out(d, hour):
+    """A non-FRED release (FOMC statement and minutes at 14:00, ISM at 10:00) is out if dated before today, or today
+    from its hour ET (ML2.2: ISM and the minutes stayed "scheduled" in their own day's evening build)."""
+    return d < TODAY or (d == TODAY and NOW.hour >= hour)
+
+
+LOCK = OUT / "build.lock"
+
+
+def build_lock(wait_s=35 * 60):
+    """An exclusive OS lock on data/macro/build.lock, held for the whole build and freed when the process ends, even
+    if killed: the loop's intraday build, the evening build and a manual `live.py --job macro` never overlap (ML2.2)."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    f = open(LOCK, "a+")
+    t0 = time.time()
+    while True:
+        try:
+            f.seek(0)
+            if os.name == "nt":
+                import msvcrt
+                msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return f
+        except OSError:
+            if time.time() - t0 > wait_s:
+                f.close()
+                raise RuntimeError(f"another macro build held {LOCK.name} for {wait_s // 60} minutes") from None
+            time.sleep(5)
+
+
+def write_calendar(doc, out=None):
+    """calendar.json, written whole and swapped in: a look may read it while a build runs (ML2.2)."""
+    out = out or OUT
+    tmp = out / f"calendar.json.{os.getpid()}.tmp"
+    try:
+        tmp.write_text(json.dumps(doc, indent=1), encoding="utf-8")
+        for i in range(20):
+            try:
+                os.replace(tmp, out / "calendar.json")
+                return
+            except PermissionError:      # Windows: a reader has it open for a moment
+                if i == 19:
+                    raise
+                time.sleep(0.5)
+    finally:
+        tmp.unlink(missing_ok=True)      # this build's own temp file, if the swap failed
+
+
+def sweep_temps(out=None):
+    """Remove temp calendars left by a build killed mid-write; call only while holding build.lock."""
+    for p in (out or OUT).glob("calendar.json.*.tmp"):
+        try:
+            p.unlink()
+        except OSError:
+            pass
+
+
 def fomc_events():
     page = _cached_get("https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm", "fed/fomccalendars.htm",
                        refresh=True)
@@ -227,7 +288,7 @@ def fomc_events():
                 hh, mm = map(int, t[:-2].split(":"))
                 hh = hh + 12 if t.endswith("pm") and hh != 12 else hh
                 check["consistent"] = f"{hh:02d}:{mm:02d}" == "14:00"
-        released = r["date"] < TODAY or (r["date"] == TODAY and datetime.now(ET).hour >= 14)
+        released = _out(r["date"], 14)
         events.append(dict(key="fomc", name="FOMC statement", tier=1, date=r["date"].isoformat(), time_et="14:00",
                            datetime_et=et_iso(r["date"], "14:00"), status="released" if released else "scheduled",
                            reference_period=r["label"], first_release={"sep_meeting": r["sep"], "press_conference_et": "14:30"},
@@ -236,7 +297,7 @@ def fomc_events():
         if r["minutes"]:
             events.append(dict(key="fomc_minutes", name="FOMC minutes", tier=2, date=r["minutes"].isoformat(), time_et="14:00",
                                datetime_et=et_iso(r["minutes"], "14:00"),
-                               status="released" if r["minutes"] < TODAY else "scheduled", reference_period=r["label"],
+                               status="released" if _out(r["minutes"], 14) else "scheduled", reference_period=r["label"],
                                first_release=None, expectation=None, time_check={"method": "conventional 14:00 ET"},
                                source={"dates": "federalreserve.gov/monetarypolicy/fomccalendars.htm"}))
     return events
@@ -297,12 +358,17 @@ def fred_events():
         dates = sorted({x["date"] for x in rd if START <= x["date"] <= END})
         checks = check if isinstance(check, tuple) else (check,)
         check = checks[0]
-        vd = set()
+        vd, vd0 = set(), set()
         for c in checks:   # a release day must change at least one of these (an unchanged GDP growth rate makes no vintage)
-            vd |= set(fred.get("series/vintagedates", series_id=c, realtime_start="2023-09-01")["vintage_dates"])
+            got = set(fred.get("series/vintagedates", series_id=c, realtime_start="2023-09-01")["vintage_dates"])
+            vd |= got
+            vd0 = got if c == check else vd0
         rep = dict(fred_release_id=rid, fred_dates=len(dates), dropped_no_headline_update=[], added_from_vintages=[])
-        past = [d for d in dates if date.fromisoformat(d) < TODAY]
-        fut = [d for d in dates if date.fromisoformat(d) >= TODAY]
+        # a release dated today counts once FRED has posted its headline series itself today (ML2.2: before, today's
+        # release stayed "scheduled" in the evening build, so its values reached the tape two sessions late, not one).
+        # GDP: a vintage of GDPC1 or GDP alone doesn't count, or the build could show the last quarter's growth rate.
+        past = [d for d in dates if date.fromisoformat(d) < TODAY or (date.fromisoformat(d) == TODAY and d in vd0)]
+        fut = [d for d in dates if d not in past]
         keep = []
         for d in past:
             (keep if d in vd else rep["dropped_no_headline_update"]).append(d)
@@ -326,6 +392,11 @@ def fred_events():
                         vals[field + "_ref"] = r
                 else:
                     vals[field] = transform(vv, ref, how, freq) if ref else None
+            if d == TODAY.isoformat() and (ref is None or (key != "gdp" and not new_period)
+                                           or any(k.endswith("_ref") for k in vals)):
+                fut.append(d)           # FRED has posted only part of today's release (or a revision): still scheduled
+                rep.setdefault("today_incomplete", []).append(d)
+                continue
             seen_ref[ref] += 1
             kind = "new_period" if new_period else "revision_only"
             if key == "gdp":
@@ -351,7 +422,7 @@ def fred_events():
                 lag = (lu_et - datetime.fromisoformat(e["datetime_et"])).total_seconds() / 60
                 e["time_check"]["fred_posted_et"] = lu_et.strftime("%H:%M")
                 e["time_check"]["fred_posted_consistent"] = 0 <= lag <= 120
-        rep.update(released=len(keep), scheduled=len(fut), latest_fred_post_et=lu_et.isoformat())
+        rep.update(released=len(keep) - len(rep.get("today_incomplete", [])), scheduled=len(fut), latest_fred_post_et=lu_et.isoformat())
         report[key] = rep
         print(f"  {key}: {len(keep)} released, {len(fut)} scheduled, dropped {len(rep['dropped_no_headline_update'])},"
               f" added {len(rep['added_from_vintages'])}", flush=True)
@@ -370,7 +441,7 @@ def ism_events():
         for key, name, k in (("ism_mfg", "ISM Manufacturing PMI", 0), ("ism_services", "ISM Services PMI", 2)):
             d = bdays[k]
             out.append(dict(key=key, name=name, tier=2, date=d.isoformat(), time_et="10:00", datetime_et=et_iso(d, "10:00"),
-                            status="released" if d < TODAY else "scheduled", reference_period=None, first_release=None,
+                            status="released" if _out(d, 10) else "scheduled", reference_period=None, first_release=None,
                             expectation=None, time_check={"method": "conventional 10:00 ET (ISM)"},
                             source={"dates": "rule: ISM Manufacturing 1st, Services 3rd business day (federal holidays skipped);"
                                              " not on FRED"}))
@@ -660,6 +731,11 @@ def empirical_time_check(events):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    global NOW, TODAY
+    lock = build_lock()                  # noqa: F841  (held until the process ends)
+    NOW = datetime.now(ET)
+    TODAY = NOW.date()
+    sweep_temps()
     print("FOMC", flush=True)
     events = fomc_events()
     print("FRED/ALFRED", flush=True)
@@ -703,7 +779,7 @@ def main():
                 notes="first_release values are computed from the ALFRED vintage in force on the release date (index levels ->"
                       " % change to 3 dp); the agency's published 1-dp figure can differ by rounding. Expectations are Kalshi"
                       " pre-release prices (last hourly candle before the market's close / the release).")
-    (OUT / "calendar.json").write_text(json.dumps(dict(meta=meta, events=events), indent=1), encoding="utf-8")
+    write_calendar(dict(meta=meta, events=events))
     print(f"wrote {OUT / 'calendar.json'}: {len(events)} events", flush=True)
 
 

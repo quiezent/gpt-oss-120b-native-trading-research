@@ -7248,5 +7248,1275 @@
   "industry": "",
   "stock_type": "ETF",
   "long_name": "ISHARES MSCI SOUTH KOREA ETF"
+ },
+ "IMVT": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "IMMUNOVANT INC"
+ },
+ "SYNA": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "SYNAPTICS INC"
+ },
+ "FERG": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "FERGUSON ENTERPRISES INC"
+ },
+ "IAG": {
+  "industry": "Basic Materials",
+  "stock_type": "COMMON",
+  "long_name": "IAMGOLD CORP"
+ },
+ "HBM": {
+  "industry": "Basic Materials",
+  "stock_type": "COMMON",
+  "long_name": "HUDBAY MINERALS INC"
+ },
+ "GRRR": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "GORILLA TECHNOLOGY GROUP INC"
+ },
+ "BIL": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR BB 1-3M T-BILL ETF"
+ },
+ "UTI": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "UNIVERSAL TECHNICAL INSTITUT"
+ },
+ "TIC": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "TIC SOLUTIONS INC"
+ },
+ "CLOV": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "CLOVER HEALTH INVESTMENTS CO"
+ },
+ "GRND": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "GRINDR INC"
+ },
+ "CECO": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "CECO ENVIRONMENTAL CORP"
+ },
+ "PHR": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "PHREESIA INC"
+ },
+ "AURA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "AURA BIOSCIENCES INC"
+ },
+ "EVMN": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "EVOMMUNE INC"
+ },
+ "TLS": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "TELOS CORPORATION"
+ },
+ "SMWB": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "SIMILARWEB LTD"
+ },
+ "CRNC": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "CERENCE INC"
+ },
+ "LINC": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "LINCOLN EDUCATIONAL SERVICES"
+ },
+ "CTRI": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "CENTURI HOLDINGS INC"
+ },
+ "WIX": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "WIX.COM LTD"
+ },
+ "OSS": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "ONE STOP SYSTEMS INC"
+ },
+ "DSGX": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "DESCARTES SYSTEMS GRP/THE"
+ },
+ "HTHT": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "ADR",
+  "long_name": "H WORLD GROUP LTD-ADR"
+ },
+ "JDZG": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "JIADE LTD CL-A"
+ },
+ "SWMR": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "SWARMER INC"
+ },
+ "SUPX": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "SUPERX AI TECHNOLOGY LTD"
+ },
+ "GCTS": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "GCT SEMICONDUCTOR HOLDING IN"
+ },
+ "BTTC": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "BLACK TITAN CORP"
+ },
+ "NTCL": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "NETCLASS TECHNOLOGY INC"
+ },
+ "WORX": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "SCWORX CORP"
+ },
+ "BOXX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "ALPHA ARCHITECT 1-3 MNTH BOX"
+ },
+ "AMDL": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GRANITESHARES 2XLONG AMD ETF"
+ },
+ "RGTX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DEFIANCE DAILY T2XL RGTI ETF"
+ },
+ "IONX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DEFIANCE DLY T 2X L IONQ ETF"
+ },
+ "WDCX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "TRADR 2X LONG WDC DAILY ETF"
+ },
+ "DOLE": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "DOLE PLC"
+ },
+ "NVDQ": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "T-REX 2X INVERSE NVIDIA DLY"
+ },
+ "NVD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GRANITESH 2XSHT NVDA ETF-USD"
+ },
+ "APLE": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "APPLE HOSPITALITY REIT INC"
+ },
+ "ASTL": {
+  "industry": "Basic Materials",
+  "stock_type": "COMMON",
+  "long_name": "ALGOMA STEEL GROUP INC"
+ },
+ "NVDY": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "YIELDMAX NVDA OPTION INC ETF"
+ },
+ "NVDX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "T-REX 2X LNG NVIDIA DLY TRGT"
+ },
+ "NVDL": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GRANITESH 2X LNG NVDA ETF"
+ },
+ "SFL": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "SFL CORP LTD"
+ },
+ "MFA": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "MFA FINANCIAL INC"
+ },
+ "DAMD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DEFIANCE DT 2X SHT AMD ETF"
+ },
+ "ETHU": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "2X ETHER ETF"
+ },
+ "ETHT": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "PROSHARES ULTRA ETHER ETF"
+ },
+ "MVLL": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GRANITE 2X LONG MRVL ETF"
+ },
+ "LMND": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "LEMONADE INC"
+ },
+ "QDEL": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "QUIDELORTHO CORP"
+ },
+ "GLWG": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "LEVERAGE SHARES 2X GLW"
+ },
+ "CRI": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "CARTER'S INC"
+ },
+ "HNST": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "HONEST CO INC/THE"
+ },
+ "PTRN": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "PATTERN GROUP INC-CL A"
+ },
+ "VIXM": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "PROSHARES VIX MID-TERM FUT"
+ },
+ "NEOG": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "NEOGEN CORP"
+ },
+ "BMNU": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "T-REX 2X LG BMNR DT ETF"
+ },
+ "SNDU": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "T-REX 2X LG SNDK DT ETF"
+ },
+ "MUX": {
+  "industry": "Basic Materials",
+  "stock_type": "COMMON",
+  "long_name": "MCEWEN INC"
+ },
+ "GILT": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "GILAT SATELLITE NETWORKS LTD"
+ },
+ "WGS": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "GENEDX HOLDINGS CORP "
+ },
+ "SMX": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "SMX SECURITY MATTERS PLC"
+ },
+ "REET": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES GLOBAL REIT ETF"
+ },
+ "AMH": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "AMERICAN HOMES 4 RENT- A"
+ },
+ "CGMU": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "CAP GROUP MUNICIPAL INCOME"
+ },
+ "SRPT": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "SAREPTA THERAPEUTICS INC"
+ },
+ "SVM": {
+  "industry": "Basic Materials",
+  "stock_type": "COMMON",
+  "long_name": "SILVERCORP METALS INC"
+ },
+ "ETOR": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "ETORO GROUP LTD-A"
+ },
+ "ZYME": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "ZYMEWORKS INC"
+ },
+ "CXT": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "CRANE NXT CO"
+ },
+ "OXM": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "OXFORD INDUSTRIES INC"
+ },
+ "KYTX": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "KYVERNA THERAPEUTICS INC"
+ },
+ "WEX": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "WEX INC"
+ },
+ "SIG": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "SIGNET JEWELERS LTD"
+ },
+ "DUOT": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "DUOS TECHNOLOGIES GROUP INC"
+ },
+ "VTI": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "VG MORNINGSTAR TS MKT ETF-US"
+ },
+ "ABVX": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "ADR",
+  "long_name": "ABIVAX SA-ADR"
+ },
+ "XRPN": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "EVERNORTH HOLDINGS INC-A"
+ },
+ "BFAM": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "BRIGHT HORIZONS FAMILY SOLUT"
+ },
+ "JANX": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "JANUX THERAPEUTICS INC"
+ },
+ "AORT": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "ARTIVION INC"
+ },
+ "STAK": {
+  "industry": "Energy",
+  "stock_type": "COMMON",
+  "long_name": "STAK INC-A"
+ },
+ "RYAM": {
+  "industry": "Basic Materials",
+  "stock_type": "COMMON",
+  "long_name": "RAYONIER ADVANCED MATERIALS"
+ },
+ "XIFR": {
+  "industry": "Energy",
+  "stock_type": "COMMON",
+  "long_name": "XPLR INFRASTRUCTURE LP"
+ },
+ "ZROZ": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "PIMCO 25+ YR ZERO CPN US TIF"
+ },
+ "PAYS": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "PAYSIGN INC"
+ },
+ "CGNT": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "COGNYTE SOFTWARE LTD"
+ },
+ "DTM": {
+  "industry": "Energy",
+  "stock_type": "COMMON",
+  "long_name": "DT MIDSTREAM INC"
+ },
+ "SOBO": {
+  "industry": "Energy",
+  "stock_type": "COMMON",
+  "long_name": "SOUTH BOW CORP"
+ },
+ "MGK": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "VNGRD MRGSTR MG CP GR ETF-UI"
+ },
+ "BRBR": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "BELLRING BRANDS INC"
+ },
+ "CIB": {
+  "industry": "Financial",
+  "stock_type": "ADR",
+  "long_name": "GRUPO CIBEST SA-ADR"
+ },
+ "IX": {
+  "industry": "Financial",
+  "stock_type": "ADR",
+  "long_name": "ORIX - SPONSORED ADR"
+ },
+ "BAP": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "CREDICORP LTD"
+ },
+ "LEA": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "LEAR CORP"
+ },
+ "IALT": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "ISHRS SYS ALT ACT ETF"
+ },
+ "NXST": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "NEXSTAR MEDIA GROUP INC"
+ },
+ "RGA": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "REINSURANCE GROUP OF AMERICA"
+ },
+ "RHP": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "RYMAN HOSPITALITY PROPERTIES"
+ },
+ "AMG": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "AFFILIATED MANAGERS GROUP"
+ },
+ "TRAX": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "FIRST TRACKS BIOTHERAPEUTICS"
+ },
+ "HG": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "HAMILTON INSURANCE GROU-CL B"
+ },
+ "SEPN": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "SEPTERNA INC"
+ },
+ "CHRD": {
+  "industry": "Energy",
+  "stock_type": "COMMON",
+  "long_name": "CHORD ENERGY CORP"
+ },
+ "LAZ": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "LAZARD INC"
+ },
+ "COWZ": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "PACER US CASH COWS 100 ETF"
+ },
+ "DRAM": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "ROUNDHILL MEMORY ETF"
+ },
+ "FOSL": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "FOSSIL GROUP INC"
+ },
+ "ELVR": {
+  "industry": "Basic Materials",
+  "stock_type": "ADR",
+  "long_name": "ELEVRA LITHIUM LTD"
+ },
+ "IMOS": {
+  "industry": "Technology",
+  "stock_type": "ADR",
+  "long_name": "CHIPMOS TECHNOLOGIES INC-ADR"
+ },
+ "PEPG": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "PEPGEN INC"
+ },
+ "NCNO": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "NCINO INC"
+ },
+ "GO": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "GROCERY OUTLET HOLDING CORP"
+ },
+ "MKTX": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "MARKETAXESS HOLDINGS INC"
+ },
+ "NJR": {
+  "industry": "Utilities",
+  "stock_type": "COMMON",
+  "long_name": "NEW JERSEY RESOURCES CORP"
+ },
+ "STUB": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "STUBHUB HOLDINGS INC-CLASS A"
+ },
+ "AMPX": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "AMPRIUS TECHNOLOGIES INC"
+ },
+ "CWVX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "TRADR 2X LONG CRWV DAILY ETF"
+ },
+ "CRWG": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "LEVERAGE SHARES 2X CRWV"
+ },
+ "DLLL": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GRANITE 2X LONG DELL ETF"
+ },
+ "MUU": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DIREXION DAILY MU BULL 2X ET"
+ },
+ "MULL": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GRANITESHARES 2X LONG MU ETF"
+ },
+ "DRH": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "DIAMONDROCK HOSPITALITY CO"
+ },
+ "RLJ": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "RLJ LODGING TRUST"
+ },
+ "AZTA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "AZENTA INC"
+ },
+ "BW": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "BABCOCK & WILCOX ENTERPR"
+ },
+ "LMRI": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "LUMEXA IMAGING HOLDINGS INC"
+ },
+ "HPK": {
+  "industry": "Energy",
+  "stock_type": "COMMON",
+  "long_name": "HIGHPEAK ENERGY INC"
+ },
+ "ELMT": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "ELMET GROUP CO/THE"
+ },
+ "ASPN": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "ASPEN AEROGELS INC"
+ },
+ "NYAX": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "NAYAX LTD"
+ },
+ "HGTY": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "HAGERTY INC-A"
+ },
+ "COF PRJ": {
+  "industry": "Financial",
+  "stock_type": "PREFERRED",
+  "long_name": "CAPITAL ONE FINANCIAL CO"
+ },
+ "ATRO": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "ASTRONICS CORP"
+ },
+ "AAPG": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "ADR",
+  "long_name": "ASCENTAGE PHARMA GR-ADR"
+ },
+ "WBTN": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "WEBTOON ENTERTAINMENT INC"
+ },
+ "NOVT": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "NOVANTA INC"
+ },
+ "DCTH": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "DELCATH SYSTEMS INC"
+ },
+ "DRTS": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "ALPHA TAU MEDICAL LTD"
+ },
+ "MRCY": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "MERCURY SYSTEMS INC"
+ },
+ "MUZ": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DEFNC DT 2X SHT MU ETF"
+ },
+ "SKDD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GRANTSHR 2X SHRT SK HYNX ETF"
+ },
+ "SMCZ": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DEFIANCE DT 2X SHRT SMCI ETF"
+ },
+ "MUD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DIREXION DAILY MU BEAR 1X ET"
+ },
+ "STWD": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "STARWOOD PROPERTY TRUST INC"
+ },
+ "NMRK": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "NEWMARK GROUP INC-CLASS A"
+ },
+ "CIM": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "CHIMERA INVESTMENT CORP"
+ },
+ "GNL": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "GLOBAL NET LEASE INC"
+ },
+ "ADAM": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "ADAMAS TRUST INC"
+ },
+ "IAGG": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES INTL AGGREGATE BOND"
+ },
+ "FPE": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "FT-PREFERRED SECUR & INC ETF"
+ },
+ "SPHY": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR PORT HY BD IN ETF-UI"
+ },
+ "SKHZ": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "LEVERAGE SHARES 1X SHRT SKHY"
+ },
+ "AAPD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DIREXION DAILY AAPL BEAR 1X"
+ },
+ "PLAB": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "PHOTRONICS INC"
+ },
+ "HOPE": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "HOPE BANCORP INC"
+ },
+ "ARMG": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "LEVERAGE SHARES 2X ARM"
+ },
+ "SMCX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DEFIANCE DLY TRG 2X LNG SMCI"
+ },
+ "SVRA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "SAVARA INC"
+ },
+ "GMRS": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "GMR SOLUTIONS INC-A"
+ },
+ "EIKN": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "EIKON THERAPEUTICS INC"
+ },
+ "STAA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "STAAR SURGICAL CO"
+ },
+ "VREX": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "VAREX IMAGING CORP"
+ },
+ "KLAR": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "KLARNA GROUP PLC"
+ },
+ "ADNT": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "ADIENT PLC"
+ },
+ "HUBG": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "HUB GROUP INC-CL A"
+ },
+ "NAT": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "NORDIC AMERICAN TANKERS LTD"
+ },
+ "FHB": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "FIRST HAWAIIAN INC"
+ },
+ "EDV": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "VANGUARD EXTENDED DUR TREAS"
+ },
+ "CHA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "ADR",
+  "long_name": "CHAGEE HOLDINGS LTD-ADR"
+ },
+ "FIP": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "FTAI INFRASTRUCTURE INC"
+ },
+ "OVID": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "OVID THERAPEUTICS INC"
+ },
+ "TSHA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "TAYSHA GENE THERAPIES INC"
+ },
+ "IDYA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "IDEAYA BIOSCIENCES INC"
+ },
+ "ASND": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "ASCENDIS PHARMA A/S"
+ },
+ "HAWK": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "HAWKEYE 360 INC"
+ },
+ "CTVA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "CORTEVA INC"
+ },
+ "ORI": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "OLD REPUBLIC INTL CORP"
+ },
+ "YEXT": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "YEXT INC"
+ },
+ "CCC": {
+  "industry": "Technology",
+  "stock_type": "COMMON",
+  "long_name": "CCC INTELLIGENT SOLUTIONS HO"
+ },
+ "HWC": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "HANCOCK WHITNEY CORP"
+ },
+ "TIGO": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "MILLICOM INTL CELLULAR S.A."
+ },
+ "QYLD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GLOBAL X NASD 100 COV CALL"
+ },
+ "GOF": {
+  "industry": "",
+  "stock_type": "CLOSED-END FUND",
+  "long_name": "GUGGENHEIM STRATEGIC OPPORT"
+ },
+ "PLBL": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "POLIBELI GROUP LTD-A"
+ },
+ "ATEX": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "ANTERIX INC"
+ },
+ "NEXN": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "NEXXEN INTERNATIONAL LTD"
+ },
+ "AIFU": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "AIFU INC - CL A"
+ },
+ "CTY": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "CITY THERAPEUTICS INC"
+ },
+ "PANL": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "PANGAEA LOGISTICS SOLUTIONS"
+ },
+ "BLTE": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "ADR",
+  "long_name": "BELITE BIO INC - ADR"
+ },
+ "TRMK": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "TRUSTMARK CORP"
+ },
+ "XYLD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GLOBAL X S&P 500 COVE CALL E"
+ },
+ "DX": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "DYNEX CAPITAL INC"
+ },
+ "TLH": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES 10-20 YEAR TREASURY"
+ },
+ "GOVT": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES US TREASURY BOND ETF"
+ },
+ "RCI": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "ROGERS COMMUNICATIONS INC-B"
+ },
+ "MSDL": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "MORGAN STANLEY DIRECT LENDIN"
+ },
+ "MOG B": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "MOOG INC-CLASS B"
+ },
+ "HDL": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "ADR",
+  "long_name": "SUPER HI INTERNATIONAL HOLDI"
+ },
+ "PLGO": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "PELAGOS INSURANCE CAPITAL LT"
+ },
+ "CAE": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "CAE INC"
+ },
+ "PXED": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "PHOENIX EDUCATION PARTNERS I"
+ },
+ "AVL": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "DIREX DAI AV BULL 2X ETF-USD"
+ },
+ "SBIT": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "PROSHARES ULTRASHORT BITCOIN"
+ },
+ "SIX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GLOBAL X MAGNIFICENT SIX ETF"
+ },
+ "ENB": {
+  "industry": "Energy",
+  "stock_type": "COMMON",
+  "long_name": "ENBRIDGE INC"
+ },
+ "YSS": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "YORK SPACE SYSTEMS INC"
+ },
+ "COLB": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "COLUMBIA BANKING SYSTEM INC"
+ },
+ "CDNL": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "CARDINAL INFRASTRUCTURE GR-A"
+ },
+ "SPXC": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "SPX TECHNOLOGIES INC"
+ },
+ "IQMM": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "PROSHARES GENIUS MNY MKT ETF"
+ },
+ "HTGC": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "HERCULES CAPITAL INC"
+ },
+ "WMG": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "WARNER MUSIC GROUP CORP-CL A"
+ },
+ "IE": {
+  "industry": "Basic Materials",
+  "stock_type": "COMMON",
+  "long_name": "IVANHOE ELECTRIC INC / US"
+ },
+ "RMIX": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "SUNCRETE INC-A"
+ },
+ "ADIG": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "ADI GLOBAL DISTRIB"
+ },
+ "NTLA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "INTELLIA THERAPEUTICS INC"
+ },
+ "ZVRA": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "ZEVRA THERAPEUTICS INC"
+ },
+ "QUIT": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "ACHIEVE LIFE SCIENCES INC"
+ },
+ "PCRX": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "PACIRA BIOSCIENCES INC"
+ },
+ "GME": {
+  "industry": "Consumer, Cyclical",
+  "stock_type": "COMMON",
+  "long_name": "GAMESTOP CORP-CLASS A"
+ },
+ "JEF": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "JEFFERIES FINANCIAL GROUP IN"
+ },
+ "XSD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "SS SPDR S&P SEMICONDUCTOR"
+ },
+ "SBC": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "SBC MEDICAL GROUP HOLDINGS I"
+ },
+ "NMAX": {
+  "industry": "Communications",
+  "stock_type": "COMMON",
+  "long_name": "NEWSMAX INC"
+ },
+ "STN": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "STANTEC INC"
+ },
+ "AKO B": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "ADR",
+  "long_name": "EMBOTELLADORA ANDINA-ADR B"
+ },
+ "HROW": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "HARROW INC"
+ },
+ "GRVY": {
+  "industry": "Technology",
+  "stock_type": "ADR",
+  "long_name": "GRAVITY CO LTD-SPONSORED ADR"
+ },
+ "TOP": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "TOP FINANCIAL GROUP LTD A"
+ },
+ "OBIO": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "ORCHESTRA BIOMED HOLDINGS IN"
+ },
+ "JBSS": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "JOHN B. SANFILIPPO & SON INC"
+ },
+ "GHRS": {
+  "industry": "Consumer, Non-cyclical",
+  "stock_type": "COMMON",
+  "long_name": "GH RESEARCH PLC"
+ },
+ "SOMN": {
+  "industry": "Utilities",
+  "stock_type": "CONVPREFERRED",
+  "long_name": "SOUTHERN CO CORP UNIT"
+ },
+ "WCCB": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "WEST COAST COMMUNITY BANCORP"
+ },
+ "STRD": {
+  "industry": "Technology",
+  "stock_type": "PREFERRED",
+  "long_name": "MICROSTRATEGY INC 10% PERP STRIDE P"
+ },
+ "GEF B": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "GREIF INC-CL B"
+ },
+ "GS PRA": {
+  "industry": "Financial",
+  "stock_type": "PREFERRED",
+  "long_name": "GOLDMAN SACHS GROUP INC DEP SH REPS"
+ },
+ "VDC": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "VANGUARD CONSUMER STAPLE ETF"
+ },
+ "BULL": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "WEBULL CORP"
+ },
+ "VTV": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "VANGUARD MRNGSTR VAL ETF-AUI"
+ },
+ "VYM": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "VANGUARD HIGH DVD YIELD ETF"
+ },
+ "PGX": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "INVESCO PREFERRED ETF"
+ },
+ "LADR": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "LADDER CAPITAL CORP-REIT"
+ },
+ "ARR": {
+  "industry": "Financial",
+  "stock_type": "REIT",
+  "long_name": "ARMOUR RESIDENTIAL REIT INC"
+ },
+ "PFF": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "ISHARES PREFERRED & INCOME S"
+ },
+ "RETO": {
+  "industry": "Industrial",
+  "stock_type": "COMMON",
+  "long_name": "RETO ECO-SOLUTIONS INC-A"
+ },
+ "BHF": {
+  "industry": "Financial",
+  "stock_type": "COMMON",
+  "long_name": "BRIGHTHOUSE FINANCIAL INC"
+ },
+ "PFFD": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "GLOBAL X US PREFERRED ETF"
+ },
+ "LVHI": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "FRANKLIN INTERNATIONAL LOW V"
+ },
+ "BND": {
+  "industry": "",
+  "stock_type": "ETF",
+  "long_name": "VANGUARD TOTAL BOND MARKET"
  }
 }

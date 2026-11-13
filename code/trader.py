@@ -60,6 +60,16 @@ def goal_date(today):
     return today + timedelta(days=4 - today.weekday()) if today.weekday() <= 4 else today
 
 
+KELLY = """Sizing by the Kelly rule: size each position from your edge and its risk, not from conviction alone. If you expect a position to earn mu over the time you plan to hold it (after costs), and its typical move over that time is sigma, the fraction of the sleeve that grows it fastest is about mu / sigma^2. The market table's vol is a daily figure: multiply it by the square root of the sessions you plan to hold. The stats tool's hist_vol and implied_vol are annualized: divide them by about 16 (the square root of 252) for a daily figure. For example, +0.2% expected over 5 sessions with a 5-session sigma of 5% gives 0.002/0.0025 = 0.8x the sleeve, and +0.4% gives 1.6x: a small error in mu is a large error in size. Betting more than twice the Kelly fraction loses money even when the edge is real, and half of it keeps about three quarters of the growth at half the risk. So:
+- No edge, no position: if you can't say why mu is above zero after costs, the Kelly size is zero.
+- Use a quarter to a half of the Kelly fraction, because your mu is an estimate.
+- The sleeve's limits (2x gross, and the single-shock limit if your state shows one) cap the Kelly size too.
+- Positions that move together are one bet: size a group of similar names (several chip stocks, or a sector ETF and its members) as one position, from the group's sigma.
+- What you hold overnight carries the gap too: the table's vol is close to close, so it already includes gaps, but a stop doesn't limit a gap, so don't shrink sigma for a stop on a position you hold overnight.
+- For each new position, write mu, sigma and the fraction you chose in your notes."""
+PACE_END = "Missing an opportunity is as much an error as a bad trade.\n\nOrder types:"
+
+
 S1_NEWS, S1_NONE = "1. Read today's market news (tape) and look at your positions.", "1. Look at your positions and the market table."
 S3_SCAN = "3. Test it with the scanner: choose the scan and, if useful, the industry that would find stocks fitting your hypothesis."
 S3_ML = ("3. Test it with the scanner and the forecast tool (machine-learning forecasts; its description gives each model's "
@@ -68,10 +78,15 @@ S3_ML = ("3. Test it with the scanner and the forecast tool (machine-learning fo
 S4_NEWS, S4_NONE = "4. Check every candidate with news and quote;", "4. Check every candidate with quote;"
 
 
-def live_system(size, today, ml=False, news=True):
+def live_system(size, today, ml=False, news=True, kelly=False):
     """SYSTEM_LIVE for a sleeve of this size, with the target pace (Clayton, 24 Oct: a pace, not a weekly dollar goal
-    with a deadline). ml: the sleeve has the forecast tool; news=False: the training simulator, which has no news."""
+    with a deadline). ml: the sleeve has the forecast tool; news=False: the training simulator, which has no news;
+    kelly: the Kelly sizing paragraph after the pace (Clayton, 9 Nov: "a kelly improved prompt"; sleeves.json
+    "kelly_prompt"). It is guidance the model may weigh; nothing enforces it."""
     text = SYSTEM_LIVE
+    if kelly:
+        assert text.count(PACE_END) == 1
+        text = text.replace(PACE_END, PACE_END.replace("\n\nOrder types:", "\n\n" + KELLY + "\n\nOrder types:"))
     if ml:
         text = text.replace(S3_SCAN, S3_ML)
     if not news:
@@ -383,16 +398,164 @@ def fmt_money(x):
     return f"${x:,.0f}" if abs(x) >= 100 else f"${x:,.2f}"
 
 
-def account_text(world, data, d, feats, header=None, live=None):
+BARS_DIR = Path(__file__).resolve().parent / "data" / "bars"
+_daily_cache = {}
+STOP_TYPES = ("STP", "STP LMT", "TRAIL", "TRAIL LIMIT")
+
+
+def _daily(sym):
+    """{YYYYMMDD: (open, close)} from data/bars (ADJUSTED_LAST, so splits are already in), cached by the file's mtime."""
+    p = BARS_DIR / f"{sym.replace(' ', '_')}.json"
+    try:
+        mt = p.stat().st_mtime
+    except OSError:
+        return {}
+    hit = _daily_cache.get(sym)
+    if hit and hit[0] == mt:
+        return hit[1]
+    doc = json.loads(p.read_text(encoding="utf-8"))
+    out = {str(b.get("date", ""))[:8]: (b.get("open"), b.get("close")) for b in doc.get("bars") or []
+           if b.get("close") and b.get("volume", 1)}       # SHAZ's zero-volume placeholders jumped 92.50 -> 1.85 -> 31.70
+    _daily_cache[sym] = (mt, out)
+    return out
+
+
+def book_risk(st, before, sessions=250):
+    """One line of facts on the whole book (Clayton, 8 Nov: week 4 was lost on one overnight gap, into 6 Nov, by books
+    net short one sector at 1.7-2.1x gross and mostly without stops, which the per-position lines didn't add up). The
+    positions as they are now are held fixed over the last `sessions` sessions before `before` (YYYYMMDD) and priced with
+    each day's close-to-close and close-to-open moves, so the names' correlation counts. Plus the share of gross with no
+    working stop. A fact, not advice: None with no positions. Callable on a stored look's "state" for replays."""
+    pos = [p for p in st["positions"] if p["quantity"] and p.get("close")]
+    if not pos or st["value"] <= 0:
+        return None
+    cal = sorted(x for x in _daily("SPY") if x < before)[-(sessions + 1):]
+    if len(cal) < 21:
+        return None
+    day, gap, thin, stale, priced = np.zeros(len(cal) - 1), np.zeros(len(cal) - 1), [], [], 0
+    for p in pos:
+        b, n, have = _daily(p["symbol"]), p["quantity"] * p["close"], 0
+        for i in range(1, len(cal)):
+            prev, cur = b.get(cal[i - 1]), b.get(cal[i])
+            if prev and cur and prev[1] and cur[0] and cur[1]:
+                day[i - 1] += n * (cur[1] / prev[1] - 1)
+                gap[i - 1] += n * (cur[0] / prev[1] - 1)
+                have += 1
+        priced += have > 0
+        if b and have and cal[-1] not in b:     # bars that stop early count the latest sessions as no move (TQQQ ends 19 Oct)
+            stale.append(f"{p['symbol']} (no bars after {max(x for x in b if x < cal[-1])})")
+        elif have < 0.8 * (len(cal) - 1):
+            thin.append(p["symbol"])
+    if not priced:                              # no held name has any history: no figures rather than "$0"
+        return None
+    stops = {}
+    for o in st.get("orders") or []:
+        if o.get("type") in STOP_TYPES and not o.get("cancel_pending"):
+            stops[(o["symbol"], o["action"])] = stops.get((o["symbol"], o["action"]), 0) + abs(o["quantity"])
+    gross = bare = 0.0
+    for p in pos:
+        q, v = abs(p["quantity"]), abs(p["quantity"]) * p["close"]
+        cover = min(stops.get((p["symbol"], "SELL" if p["quantity"] > 0 else "BUY"), 0), q)
+        gross, bare = gross + v, bare + v * (1 - cover / q)
+    val = st["value"]
+    lost = lambda x: f"{fmt_money(abs(min(x, 0.0)))} ({100 * abs(min(x, 0.0)) / val:.1f}% of the sleeve)"
+    line = (f"The whole book, if held as it is: over the last {len(cal) - 1} sessions it would have lost {lost(day.min())} on its "
+            f"worst day and {lost(gap.min())} on its worst overnight gap (close to next open); on 1 day in 20 it lost more than "
+            f"{lost(float(np.percentile(day, 5)))}. {100 * bare / gross:.0f}% of its gross has no working stop, and a stop doesn't "
+            f"limit a gap: it fills at the open price.")
+    if thin:
+        line += (f" ({', '.join(thin[:5])}{' and others' if len(thin) > 5 else ''} "
+                 f"{'has' if len(thin) == 1 else 'have'} less history and count{'s' if len(thin) == 1 else ''} only where there is some.)")
+    if stale:
+        line += f" (Counted as unmoved since their last bar: {', '.join(stale[:5])}{' and others' if len(stale) > 5 else ''}.)"
+    return line
+
+
+_rets_cache = {}
+
+
+def _rets(sym):
+    """{YYYYMMDD: close-to-close return} on the name's own bars (data/bars), as the Kelly audit's b2_books.rets."""
+    b = _daily(sym)
+    hit = _rets_cache.get(sym)
+    if hit and hit[0] is b:
+        return hit[1]
+    ds = sorted(b)
+    out = {ds[i]: b[ds[i]][1] / b[ds[i - 1]][1] - 1 for i in range(1, len(ds)) if b[ds[i - 1]][1]}
+    _rets_cache[sym] = (b, out)
+    return out
+
+
+def _betas(sym, before):
+    """(beta to SPY, beta to SMH) on the last 120 daily returns before `before` (YYYYMMDD) that SPY and SMH also have,
+    as b2_books.betas; under 60 such returns, (1, 1) as its fallback."""
+    r, m, s = _rets(sym), _rets("SPY"), _rets("SMH")
+    days = sorted(x for x in r if x < before and x in m and x in s)[-120:]
+    if len(days) < 60:
+        return 1.0, 1.0
+    i, mm, ss = (np.array([d[x] for x in days]) for d in (r, m, s))
+    return float(np.cov(i, mm)[0, 1] / np.var(mm, ddof=1)), float(np.cov(i, ss)[0, 1] / np.var(ss, ddof=1))
+
+
+def shock_losses(notional, nav, before):
+    """The Kelly audit's six single shocks (b2_books.py; B1's 15% cap used them) as a loss share of NAV, positive = loss,
+    for a book of signed dollar positions {symbol: dollars}: SPY -10%/+10% and SMH -11%/+11% through each name's
+    120-session beta, the largest short +30% and the largest long -30%."""
+    w = {s: v / nav for s, v in notional.items() if v}
+    bm = bs = 0.0
+    for s, x in w.items():
+        b1, b2 = _betas(s, before)
+        bm, bs = bm + x * b1, bs + x * b2
+    longs, shorts = [x for x in w.values() if x > 0], [-x for x in w.values() if x < 0]
+    return {"SPY falls 10%": 0.10 * bm, "SPY rises 10%": -0.10 * bm, "SMH falls 11%": 0.11 * bs, "SMH rises 11%": -0.11 * bs,
+            "its largest short rises 30%": 0.30 * max(shorts, default=0.0), "its largest long falls 30%": 0.30 * max(longs, default=0.0)}
+
+
+def shock_cap_of(meta):
+    """A sleeve's "shock_cap" if it is a number in (0, 1), else None (a string or 15 would break act() or mean 1500%;
+    live.py logs a malformed one at each look)."""
+    v = meta.get("shock_cap")
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v < 1 else None
+
+
+def shock_rule(cap, st, before):
+    """The state's line for a sleeve with a single-shock limit ("shock_cap" in sleeves.json, a sleeve term only Clayton
+    sets): the rule, as PaperWorld.act applies it, and the book's worst shock now."""
+    rule = (f"Single-shock limit ({100 * cap:g}% of the sleeve): an order that adds exposure is also rejected if the book after "
+            f"it would lose more than {100 * cap:g}% of the sleeve in any one of these shocks, and more than it would before the "
+            f"order: SPY falling or rising 10%, SMH falling or rising 11% (each name moving by its 120-session beta), its largest "
+            f"short rising 30%, its largest long falling 30%. An order that only shrinks a position (without crossing zero) is "
+            f"never rejected; one that crosses zero is checked.")
+    if st["value"] <= 0 or not st["positions"]:
+        return rule + " The book has no positions now." if st["value"] > 0 else rule
+    loss = shock_losses({p["symbol"]: p["quantity"] * p["close"] for p in st["positions"]}, st["value"], before)
+    name, worst = max(loss.items(), key=lambda kv: kv[1])
+    return rule + f" Now the worst is {100 * max(worst, 0.0):.1f}% of the sleeve, if {name}."
+
+
+def account_text(world, data, d, feats, header=None, live=None, book=False):
     st = world.state(d, feats, live) if live else world.state(d, feats)
     header = header or (f"Date: {data.iso(d)} ({date.fromisoformat(data.iso(d)).strftime('%A')}). "
                         f"Orders you submit now work from today's open.")
-    return render_account(st, feats, header, live, getattr(world, "MAX_GROSS", None)), st
+    line = shock = None
+    if book:                                # a sleeve with "risk_line" in sleeves.json; a failure costs the line, not the look
+        try:
+            line = book_risk(st, data.iso(d).replace("-", ""))
+        except Exception:                   # noqa: BLE001
+            line = None
+    cap = getattr(world, "SHOCK_CAP", None)
+    if cap:                                 # the sleeve term is told whenever it applies; its figure may fail, the rule not
+        try:
+            shock = shock_rule(cap, st, data.iso(d).replace("-", ""))
+        except Exception:                   # noqa: BLE001 - the rule alone, with no claim about the book
+            shock = shock_rule(cap, dict(st, value=0.0), "")
+    return render_account(st, feats, header, live, getattr(world, "MAX_GROSS", None), book=line, shock=shock), st
 
 
-def render_account(st, feats, header, live=None, max_gross=2.0):
+def render_account(st, feats, header, live=None, max_gross=2.0, book=None, shock=None):
     """The account part of a look's state text from a state dict (world.state(): value, cash, gross, net, beta_net,
-    positions, orders with cancel_pending, events). Callable on a stored look file's "state" for replays."""
+    positions, orders with cancel_pending, events). Callable on a stored look file's "state" for replays. book: the
+    book_risk() line, shown after the per-position risk lines. shock: shock_rule()'s line, after the margin line."""
     class _W:
         MAX_GROSS = max_gross
     world = _W
@@ -412,6 +575,8 @@ def render_account(st, feats, header, live=None, max_gross=2.0):
         else:
             lines.append(f"Buying power: ${cap - used:,.0f} of gross exposure left before the {world.MAX_GROSS:g}x limit "
                          f"(${used:,.0f} used of ${cap:,.0f}). {rule}")
+    if shock:
+        lines.append(shock)
     if st["positions"]:
         lines.append(f"Positions (sym side shares avg_cost {'last' if live else 'close'} unrealized days_held):")
         for p in st["positions"]:
@@ -431,6 +596,8 @@ def render_account(st, feats, header, live=None, max_gross=2.0):
             else:
                 risk = "volatility unknown"
             lines.append(f"  {p['symbol']} {'LONG' if p['quantity'] > 0 else 'SHORT'}: {share}; {risk}")
+        if book:
+            lines.append(book)
     else:
         lines.append("Positions: none.")
     if st["orders"]:
@@ -450,12 +617,12 @@ def render_account(st, feats, header, live=None, max_gross=2.0):
     return "\n".join(lines)
 
 
-def state_text(world, data, d, header=None, live=None):
+def state_text(world, data, d, header=None, live=None, book=False):
     held = world.symbols_in_play()
     table, feats = data.table(d, extra=held, live=live)
     if hasattr(data, "outside_features"):
         feats = feats | data.outside_features(d, [s for s in held if s not in feats])
-    acct, st = account_text(world, data, d, feats, header, live)
+    acct, st = account_text(world, data, d, feats, header, live, book=book)
     label = (f"daily bars through the close of {data.iso(d - 1)}" +
              ("; last = delayed last price, today = % change from the previous close" if live else ""))
     return acct + f"\n\nMarket table ({label}):\n" + table, st, feats
@@ -601,6 +768,7 @@ class PaperWorld:
         import paper
         self.paper, self.gw, self.sleeve, self.data = paper, gw, sleeve, data
         self.dry_run = False
+        self.SHOCK_CAP = shock_cap_of(paper.sleeves().get(sleeve) or {})   # a sleeve term, set only by Clayton
 
     def symbols_in_play(self):
         b = self.paper.book(self.sleeve)
@@ -682,6 +850,24 @@ class PaperWorld:
                 if gross > self.MAX_GROSS * max(nav, 0.0):
                     notes.append(f"{o['action']} {o['quantity']} {s} {o['type']} rejected: insufficient margin (gross exposure "
                                  f"would be {gross / nav if nav > 0 else float('inf'):.2f}x the sleeve, above the {self.MAX_GROSS:g}x limit)")
+                    continue
+            cap = getattr(self, "SHOCK_CAP", None)
+            # The single-shock term, as the state's line states it: an add, or a flip through zero of any size, is checked;
+            # a hedge that doesn't raise the worst shock passes however large the book's. The order's own name is priced
+            # at the order's price on both sides, so a limit away from the mark can't make a hedge look worse.
+            if p and cap and nav > 0 and (abs(q1) > abs(q0) or q0 * q1 < 0):
+                try:
+                    was = {k: q * (p if k == s else mark.get(k, p)) for k, q in pos.items()}
+                    now = dict(was, **{s: q1 * p})
+                    day = self.paper.et_today()
+                    before = max(shock_losses(was, nav, day).values(), default=0.0)
+                    name, after = max(shock_losses(now, nav, day).items(), key=lambda kv: kv[1])
+                except Exception:                 # noqa: BLE001 - the check failing never blocks an order; the 2x term still holds
+                    after = None
+                    notes.append(f"{o['action']} {o['quantity']} {s}: the single-shock check failed, so it was not applied")
+                if after is not None and after > cap and after > before + 1e-9:
+                    notes.append(f"{o['action']} {o['quantity']} {s} {o['type']} rejected: the single-shock limit (if {name}, "
+                                 f"the book after it would lose {100 * after:.1f}% of the sleeve, above the {100 * cap:g}% limit)")
                     continue
             pos[s] = q1
             if p:

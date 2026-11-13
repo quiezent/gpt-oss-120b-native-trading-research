@@ -14,7 +14,7 @@ import importlib
 import json
 from pathlib import Path
 
-VERSIONS = {"ML2": "forecast"}        # version -> module
+VERSIONS = {"ML2": "forecast", "ML3": "forecast3"}   # version -> module; ML3 from week 5 (Clayton, 9 Nov)
 DEFAULT = "ML2"                       # a sleeve with the tool and no ml_tool
 
 ROOT = Path(__file__).resolve().parent

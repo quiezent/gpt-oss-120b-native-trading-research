@@ -84,6 +84,10 @@ def main():
         for o in live:
             r = gw.cancel(order_id=o["order_id"])
             print("  cancel", o.get("ref"), o.get("symbol"), "->", (r or {}).get("status", r))
+        left = [o for o in gw.orders() if o.get("status") not in ("Filled", "Cancelled", "ApiCancelled", "Inactive")
+                and paper.sleeve_of(o.get("ref")) not in carry]
+        if left:                            # a week-4 order still working would map into its sleeve's fresh book
+            raise SystemExit(f"not archived: {len(left)} orders still open after the cancels: {show(left)}; rerun --go")
     dest.mkdir(parents=True)
     for f in LEDGERS:
         if f.exists():

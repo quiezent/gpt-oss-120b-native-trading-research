@@ -40,7 +40,7 @@ from ml_research import bondfx
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "runs" / "ml" / "forecast"
 RES = ROOT / "runs" / "ml" / "research"
-VERSION = "ML2.1"               # this tool's version (runs/ml/research/ml_tool_versions.md): recorded on looks, not shown to models
+VERSION = "ML2.2"               # this tool's version (runs/ml/research/ml_tool_versions.md): recorded on looks, not shown to models
 MAX_SYMBOLS = 20
 DEFAULT_NOTIONAL = 3000.0
 DEFAULT_SLEEVE = 30000.0        # the sleeves' start: the sleeve% base unless the model passes its sleeve's value
@@ -556,7 +556,7 @@ def run(gw, args):
         except Exception as e:                          # noqa: BLE001 - range1 stays uncorrected
             head += f"; events unavailable ({type(e).__name__}: {str(e)[:80]})"
         try:
-            m = dict(m, macro=macro_feats.macro_today())
+            m = dict(m, macro=macro_feats.macro_today(value_delay_min=60))   # as the simulator shows it (ML2.2)
         except Exception:                               # noqa: BLE001
             m = dict(m, macro=None)
     if not m.get("macro"):
