@@ -8,8 +8,11 @@ sampling fails costs only its own look.
 
     python parallel_look_test.py
 """
+import atexit
 import contextlib
 import json
+import os
+import shutil
 import sys
 import tempfile
 import threading
@@ -119,7 +122,22 @@ def fake_finish(now, name, meta, text, st, call, trace, notes, rows, dry_run, co
         recorded[name] = (call, trace)
 
 
+MARKER = Path(tempfile.mkdtemp()) / "LOOKING"     # live.LOOKING, patched (16 Nov 2026): the real one is never touched
+atexit.register(shutil.rmtree, MARKER.parent, True)
+OWN = MARKER.with_name(f"LOOKING.{os.getpid()}")   # this process's own marker (each process its own file)
+OTHER_FILE = MARKER.with_name("LOOKING.99999")     # another process's
+ALIVE = {99999}                                    # a dry-run look in another process; pid 1234 is dead
+
+
+class FakeDT(live.datetime):                       # loop()'s clock: Mon 16 Nov 2026, 10:05 ET, inside the 10:00 look's window
+    @classmethod
+    def now(cls, tz=None):
+        return live.datetime(2026, 11, 16, 10, 5, tzinfo=live.ET)
+marker_seen = []
+
+
 def fake_sync(gw):
+    marker_seen.append(OWN.exists())               # the look's first sync, each sleeve's re-sync and the post-look sync
     with sync_busy.inside(0.005):
         gw.executions()
 
@@ -158,7 +176,7 @@ def fake_sample_once(sc, renew, model_input, params, trace, step):
 SLOW_S = 2.0
 
 
-def fake_tool(gw, name, args, ml_tool=None):
+def fake_tool(gw, name, args, ml_tool=None, sleeve_value=None, look=None):    # 16 Nov 2026: the forecast keywords
     hold = TOOL_S
     if getattr(who, "sleeve", "") == "m-s0" and not getattr(who, "first_done", False):
         who.first_done = True
@@ -177,14 +195,18 @@ sleeves = {f"s{i}": {"model": f"m-s{i}", "start_cash": 30000} for i in range(N)}
 patches = [
     (paper, "sleeves", lambda: sleeves), (paper, "sync_fills", fake_sync), (paper, "book", lambda *a, **k: {"positions": {}}),
     (live, "gateway", fake_gateway), (live, "reconcile", lambda gw: {}), (live, "ml2_guard", lambda: None),
+    (live, "open_whatif", lambda: (None, False)),     # 16 Nov 2026: no what-if connection (check_orders_test covers it)
+    (live, "LOOKING", MARKER), (live, "LOOP", MARKER.parent / "LOOP.json"),     # loop() below writes it: never the real one
+    (live, "pid_alive", lambda pid: pid in ALIVE),    # 16 Nov 2026: which pids count as alive, for the marker's owner
     (live, "finish", fake_finish), (live, "log", lambda m: lines.append(m)), (live, "load_memo", lambda n: {}),
     (live, "sessions_left", lambda t: 5), (live.ml_tools, "unknown", lambda s: []), (live.rates, "line", lambda now: ""),
     (live.tinker, "ServiceClient", FakeService), (tools, "available", lambda gw: SPEC), (tools, "run", fake_tool),
     (agent, "sample_once", fake_sample_once),
     (trader, "Data", FakeData), (trader, "PaperWorld", FakeWorld),
-    (trader, "state_text", lambda world, data, d, header=None, live=None, book=False: ("state", {"value": 30000, "events": []}, None)),
+    (trader, "state_text", lambda world, data, d, header=None, live=None, book=False, cash_clause=False:
+        ("state", {"value": 30000, "events": []}, None)),
     (trader, "goal_line", lambda *a, **k: "goal"), (trader, "live_user", lambda *a, **k: "user"),
-    (trader, "live_steps", lambda ml: ""), (trader, "live_system", lambda *a, **k: "system"),
+    (trader, "live_steps", lambda ml, **k: ""), (trader, "live_system", lambda *a, **k: "system"),
 ]
 saved = [(m, a, getattr(m, a)) for m, a, _ in patches]
 for m, a, v in patches:
@@ -193,9 +215,166 @@ try:
     t0 = time.time()
     live.look(dry_run=False)
     wall = time.time() - t0
+    marker_after = OWN.exists() or MARKER.exists()
+    # the marker after a look that raises (its first fill sync fails), and the loop's stale-marker removal at start
+    real_sync, paper.sync_fills = paper.sync_fills, lambda gw: (_ for _ in ()).throw(RuntimeError("sync failed (test)"))
+    try:
+        live.look(dry_run=False)
+        raised = False
+    except RuntimeError:
+        raised = True
+    finally:
+        paper.sync_fills = real_sync
+    marker_after_raise = OWN.exists()
+    MARKER.write_text("2026-11-16T09:00:00-05:00 1234\n", encoding="utf-8")   # the plain file a 23a7075 loop left, pid dead
+    MARKER.with_name("LOOKING.1234").write_text("2026-11-16T09:00:00-05:00 1234\n", encoding="utf-8")   # dead
+    OWN.write_text(f"2026-11-16T08:00:00-05:00 {os.getpid()}\n", encoding="utf-8")   # this pid's, from before a reboot
+    MARKER.with_name("LOOKING.777").write_text("garbled\n", encoding="utf-8")            # names no pid, an hour old
+    os.utime(MARKER.with_name("LOOKING.777"), (time.time() - 3600, time.time() - 3600))
+    stop = MARKER.parent / "STOP"
+    stop.write_text("", encoding="utf-8")
+    real_stop, real_code = live.STOP, live.code_line
+    live.STOP, live.code_line = stop, lambda: "code test"
+    try:
+        live.loop()
+        removed = [m for m in lines if m.startswith("stale LOOKING marker removed (")]
+        stale_gone = (not live.marker_files() and len(removed) == 4
+                      and any(m.startswith("stale LOOKING marker removed (2026-11-16T09:00:00-05:00 1234; LOOKING)")
+                              for m in removed))
+        loop_json = json.loads((MARKER.parent / "LOOP.json").read_text(encoding="utf-8"))
+        # a marker that names no pid but is under a minute old may be a begin_marker's write in progress: left; one that
+        # can't be read is removed like one that names no pid, and logged
+        FRESH, UNREAD = MARKER.with_name("LOOKING.778"), MARKER.with_name("LOOKING.888")
+        FRESH.write_text("", encoding="utf-8")
+        UNREAD.write_text("2026-11-16T09:00:00-05:00 888\n", encoding="utf-8")
+        os.utime(UNREAD, (time.time() - 3600, time.time() - 3600))
+        real_mpid = live.marker_pid
+        live.marker_pid = lambda path=None: (None, None) if path == UNREAD else real_mpid(path)   # as on an OSError
+        lines.clear()
+        try:
+            live.loop()
+        finally:
+            live.marker_pid = real_mpid
+        fresh_kept = (FRESH.exists() and not UNREAD.exists()
+                      and any(m.startswith("LOOKING left in place: it names no pid but was written under a minute ago "
+                                           "(LOOKING.778") for m in lines)
+                      and "stale LOOKING marker removed (not readable; LOOKING.888)" in lines)
+        fresh_lines = list(lines)
+        FRESH.unlink(missing_ok=True)
+        UNREAD.unlink(missing_ok=True)
+        # each process its own marker (the TWS Gateway Owner's review, 16 Nov): another live process's markers
+        OTHER = "2026-11-16T10:00:00-05:00 99999"
+        OTHER_FILE.write_text(OTHER + "\n", encoding="utf-8")
+        MARKER.write_text(OTHER + "\n", encoding="utf-8")               # the plain file, naming the same live process
+        lines.clear()
+        live.loop()
+        alive_kept = (OTHER_FILE.read_text(encoding="utf-8").strip() == OTHER
+                      and MARKER.read_text(encoding="utf-8").strip() == OTHER
+                      and len([m for m in lines if m.startswith("LOOKING left in place: process 99999 is alive and looking")]) == 2)
+        OTHER_FILE.unlink()
+        MARKER.unlink()
+        real_look = live._look
+        real_getpid = os.getpid
+
+        def other_process(step):                    # the other process's own begin_marker() or end_marker(), as pid 99999
+            os.getpid = lambda: 99999
+            try:
+                step()
+            finally:
+                os.getpid = real_getpid
+        # the reviewer's example: a hand-started dry-run look (another process) starts and ends during this one's look
+        during = []
+
+        def overlapped(d, o):
+            during.append(OWN.exists())
+            other_process(live.begin_marker)
+            during.append(OWN.exists() and OTHER_FILE.exists())
+            other_process(live.end_marker)
+            during.append(OWN.exists() and not OTHER_FILE.exists())
+        lines.clear()
+        live._look = overlapped
+        live.look(dry_run=True)
+        overlap_kept = during == [True, True, True] and not OWN.exists() and not live.marker_files()
+        # another process's marker written mid-look is left at this look's end; this look removes only its own
+        lines.clear()
+        live._look = lambda d, o: other_process(live.begin_marker)
+        live.look(dry_run=True)
+        others_left = OTHER_FILE.exists() and not OWN.exists() and OTHER_FILE.read_text(encoding="utf-8").split()[-1] == "99999"
+        inside = []
+        live._look = lambda d, o: inside.append((OWN.read_text(encoding="utf-8").split()[-1],
+                                                 OTHER_FILE.read_text(encoding="utf-8").split()[-1]))
+        live.look(dry_run=True)                                       # starts with the other's marker there: writes its own
+        own_beside = inside == [(str(os.getpid()), "99999")] and not OWN.exists() and OTHER_FILE.exists()
+        OTHER_FILE.unlink()
+        # loop(): the marker is written before the look is marked done; a look that never runs leaves none
+        at_mark, ran = [], []
+        live._look = lambda d, o: ran.append(OWN.read_text(encoding="utf-8").split()[-1])
+        stop.unlink()
+        sched = [(live, "JOBS", [("look-1000", (10, 0))]), (live, "datetime", FakeDT), (live, "load_done", lambda: set()),
+                 (live, "HOLD", MARKER.parent / "HOLD"), (live, "macro_intraday", lambda st: None), (live, "warm_poll", lambda: None),
+                 (live, "mark_done", lambda done, key: at_mark.append(OWN.exists() and OWN.read_text(
+                     encoding="utf-8").split()[-1] == str(os.getpid()))),
+                 (live.time, "sleep", lambda s: stop.write_text("", encoding="utf-8"))]
+        kept = [(m, a, getattr(m, a)) for m, a, _ in sched]
+        for m, a, v in sched:
+            setattr(m, a, v)
+        try:
+            live.loop()
+            order_ok = at_mark == [True] and ran == [str(os.getpid())] and not OWN.exists()
+            stop.unlink()
+            live.mark_done = lambda done, key: (_ for _ in ()).throw(OSError("done.json not written (test)"))
+            ran.clear()
+            try:
+                live.loop()
+            except OSError:
+                pass
+            never_ran = not ran and not OWN.exists()
+            # the look's own end_marker can't remove the file (on Windows a file another handle holds open, such as
+            # reopen_week6.py reading it, can't be deleted): the loop removes it once the handle is gone, before it sleeps
+            held_open = []
+            live.mark_done = sched[6][2]
+            live._look = lambda d, o: held_open.append(open(OWN, encoding="utf-8"))
+            live.warm_poll = lambda: [f.close() for f in held_open]
+            stop.unlink(missing_ok=True)
+            lines.clear()
+            try:
+                live.loop()
+            finally:
+                for f in held_open:
+                    f.close()
+            unlink_failed = any(m.startswith("LOOKING marker not removed") for m in lines)
+            swept = bool(held_open) and not OWN.exists()
+        finally:
+            for m, a, v in kept:
+                setattr(m, a, v)
+            live._look = real_look
+            os.getpid = real_getpid
+    finally:
+        live.STOP, live.code_line = real_stop, real_code
 finally:
     for m, a, v in saved:
         setattr(m, a, v)
+check("LOOKING (b): another live process's markers (its LOOKING.<pid> and the plain file) are left at loop start, each logged",
+      alive_kept)
+check("LOOKING (N1): another process's look starting and ending during this look leaves this look's marker the whole time",
+      overlap_kept, during)
+check("LOOKING: another process's marker written mid-look is left at this look's end; this look removes only its own",
+      others_left)
+check("LOOKING: a look that starts beside another live process's marker writes its own file and leaves the other's",
+      own_beside, inside)
+check("LOOKING (d): in loop(), the marker exists, naming this process, when the look is marked done; gone after the look", order_ok,
+      (at_mark, ran))
+check("LOOKING: a look that never runs (marking it done fails) leaves no marker", never_ran)
+check("LOOKING: present through the look, from its first fill sync to its post-look sync, and gone after it",
+      marker_seen and all(marker_seen) and len(marker_seen) == N + 1 and not marker_after, (marker_seen, marker_after))
+check("LOOKING: gone after a look that raises (the exception still reaches the caller)", raised and not marker_after_raise)
+check("LOOKING (c): at loop start a dead pid's marker (plain and LOOKING.<pid>), this pid's own leftover and one naming no "
+      "pid are removed, each logged", stale_gone, removed)
+check("LOOP.json says \"looking\": 2 (per-process markers)", loop_json.get("looking") == 2, loop_json)
+check("LOOKING: at loop start a marker naming no pid but under a minute old (being written) is left, and one that can't be "
+      "read is removed, each logged", fresh_kept, fresh_lines)
+check("LOOKING: this process's marker that its look's end could not remove (held open) is removed by the loop before it "
+      "sleeps", swept and (unlink_failed or os.name != "nt"), (held_open, OWN.exists(), unlink_failed))
 
 good = [n for n in sleeves if n != FAIL]
 seq = N * len(TURNS) * SAMPLE_S

@@ -34,13 +34,13 @@ ML3_SPEC = {"name": "forecast", "description": "the ML3 tool's own text",
             "parameters": {"type": "object", "properties": {k: {"description": k} for k in ("symbols", "notional_usd", "sleeve_usd")}}}
 fake = types.ModuleType("forecast_ml3_fake")
 fake.VERSION, fake.SPEC, fake.calls = "ML3.0", ML3_SPEC, []
-fake.run = lambda gw, args: (fake.calls.append(args), "ML3 ROW")[1]
+fake.run = lambda gw, args, **kw: (fake.calls.append(args), "ML3 ROW")[1]    # **kw: ML2.3's sleeve_value and look
 fake.compute = lambda: ("20261030", {})
 sys.modules["forecast_ml3_fake"] = fake
 ml_tools.VERSIONS["ML3"] = "forecast_ml3_fake"
 
 ml2_calls, real_run = [], forecast.run
-forecast.run = lambda gw, args: (ml2_calls.append(args), "ML2 ROW")[1]
+forecast.run = lambda gw, args, **kw: (ml2_calls.append(args), "ML2 ROW")[1]
 
 # ---------------------------------------------------------------- the registry
 check("no version means ML2", ml_tools.module() is forecast and ml_tools.module("ML2") is forecast)
@@ -87,6 +87,76 @@ try:
     check("compute_versions: ML2's failure raises, so the refresh retries", False)
 except RuntimeError:
     check("compute_versions: ML2's failure raises, so the refresh retries", True)
+
+# ML2 is computed whenever any version is in use, and a failed other version is tried again alone (16 Nov 2026: from Week 6
+# no sleeve is on ML2, whose file ML3 and ML4 read; with every sleeve on one version its failed compute had no second try)
+from datetime import datetime as _dt, timedelta as _td      # noqa: E402
+ran = []
+forecast.compute = lambda: (ran.append("ML2"), ("20261030", {"A": {}}))[1]
+fake.compute = lambda: (ran.append("ML3"), ("20261030", {}))[1]
+live.paper.sleeves = lambda: {"c": {"ml": True, "ml_tool": "ML3"}, "d": {"ml": False}}
+del said[:]
+check("compute_versions: with no sleeve on ML2, ML2 is still computed, first; nothing failed",
+      live.compute_versions() == [] and ran == ["ML2", "ML3"] and live.COMPUTE_RETRY["versions"] == [], str(ran))
+live.paper.sleeves = lambda: {"d": {"ml": False}}
+del ran[:]
+check("compute_versions: no sleeve with the tool, nothing is computed", live.compute_versions() == [] and ran == [], str(ran))
+live.paper.sleeves = lambda: {"c": {"ml": True, "ml_tool": "ML3"}, "e": {"ml": True, "ml_tool": "ML9"}}
+state = {"ok": False}
+
+
+def flaky3():
+    ran.append("ML3")
+    if not state["ok"]:
+        raise RuntimeError("ML3 broke")
+    return "20261030", {}
+
+
+fake.compute = flaky3
+del ran[:], said[:]
+failed = live.compute_versions()
+t0 = live.COMPUTE_RETRY["last"]
+check("compute_versions: a failed ML3 is returned and kept for the retry; ML2 ran and did not raise; the unknown ML9 is "
+      "not a retry", failed == ["ML3"] and ran == ["ML2", "ML3"] and live.COMPUTE_RETRY["versions"] == ["ML3"]
+      and live.COMPUTE_RETRY["day"] == t0.date(), str((failed, ran, live.COMPUTE_RETRY)))
+day = t0.replace(hour=10, minute=0, second=0, microsecond=0)
+live.COMPUTE_RETRY["last"] = day
+del ran[:]
+live.compute_retry(day + _td(minutes=4))
+check("compute_retry: nothing within 5 minutes of the last try", ran == [] and live.COMPUTE_RETRY["versions"] == ["ML3"])
+live.compute_retry(day + _td(minutes=5))
+check("compute_retry: after 5 minutes the failed version is tried again, alone (ML2 is not recomputed); still failing, kept",
+      ran == ["ML3"] and live.COMPUTE_RETRY["versions"] == ["ML3"] and live.COMPUTE_RETRY["last"] == day + _td(minutes=5)
+      and any("trying ML3 again" in x for x in said) and any("ML3 still failing" in x for x in said), str((ran, said[-3:])))
+state["ok"] = True
+del ran[:]
+live.compute_retry(day + _td(minutes=10))
+check("compute_retry: once it succeeds the version is off the list and it is logged",
+      ran == ["ML3"] and live.COMPUTE_RETRY["versions"] == [] and any("the retry succeeded" in x for x in said), str(said[-2:]))
+del ran[:]
+live.compute_retry(day + _td(minutes=30))
+check("compute_retry: nothing left to retry, nothing runs", ran == [])
+state["ok"] = False
+live.COMPUTE_RETRY.update(day=day.date(), versions=["ML3"], last=day)
+live.compute_retry(day.replace(hour=15, minute=30))
+live.compute_retry(day + _td(days=1, minutes=30))
+check("compute_retry: not at or after 15:30, and not on another day", ran == [] and live.COMPUTE_RETRY["versions"] == ["ML3"])
+
+
+def no_sleeves():
+    raise OSError("sleeves.json unreadable")
+
+
+live.paper.sleeves = no_sleeves
+try:
+    live.compute_retry(day + _td(minutes=20))
+    check("compute_retry: never raises (the ledger unreadable: logged)", any("the retry failed" in x for x in said), str(said[-1:]))
+except Exception as e:                                       # noqa: BLE001
+    check("compute_retry: never raises (the ledger unreadable: logged)", False, repr(e))
+live.COMPUTE_RETRY.update(day=None, versions=[], last=None)
+src = open(live.__file__, encoding="utf-8").read()
+check("the loop calls compute_retry between jobs, and refresh still calls compute_versions before the warm-up",
+      "            compute_retry()" in src and src.index("        compute_versions()\n        warm_outside()") > 0)
 live.paper.sleeves, live.log, forecast.compute = real_sleeves, real_log, real_compute
 fake.compute = lambda: ("20261030", {})
 
@@ -168,6 +238,64 @@ print(mcp_server.ML_TOOL, mcp_server._forecast.VERSION, mcp_server._forecast.SPE
     check("mcp_server with ML3: ML3's tool and text", got.startswith("ML3 ML3.0 the ML3 tool"), got)
     got = server("")
     check("mcp_server with none: ML2's", got.startswith(f"None {forecast.VERSION} "), got)
+
+    # ML4 (forecast4.py, real modules, no fake): the Claude path declares track_record only for ML4; ML2's and ML3's tool is
+    # declared exactly as before; a record call through the server returns the record and counts as one research call
+    PROBE4 = """
+import asyncio, json, sys
+sys.path.insert(0, sys.argv[1])
+import mcp_server
+async def go():
+    t = next(x for x in await mcp_server.server.list_tools() if x.name == "forecast")
+    sch = getattr(t, "input_schema", None) or getattr(t, "inputSchema", None)
+    out = {"version": mcp_server._forecast.VERSION, "props": sorted(sch["properties"]),
+           "required": sch.get("required"), "desc_same": t.description == mcp_server._forecast.SPEC["description"]}
+    if "track_record" in out["props"]:
+        mcp_server.gw = lambda: object()            # no gateway: a record-only call does not use it
+        r = await mcp_server.server.call_tool("forecast", {"symbols": [], "track_record": True})
+        text = "".join(getattr(c, "text", "") for c in (r.content if hasattr(r, "content") else r))
+        out["record"] = text == mcp_server._forecast.TRACK_RECORD + "\\n(research call 1 of 12)"
+        out["calls"] = mcp_server._calls
+    print(json.dumps(out))
+asyncio.run(go())
+"""
+
+    def server4(version):
+        e = {**__import__("os").environ, "TRADER_SUBMIT_FILE": str(Path(d) / "s4.json"), "TRADER_LOG_FILE": str(Path(d) / "l4.jsonl"),
+             "TRADER_HAS_FORECAST": "1", "TRADER_MCP_CLIENT": "trader-mcp-a", "TRADER_ML_TOOL": version}
+        r = subprocess.run([sys.executable, "-c", PROBE4, str(ROOT)], capture_output=True, text=True, encoding="utf-8", errors="replace", env=e, cwd=d, timeout=180)
+        try:
+            return json.loads((r.stdout.strip().splitlines() or ["{}"])[-1])
+        except ValueError:
+            return {"rc": r.returncode, "err": r.stderr[-300:]}
+
+    three = ["notional_usd", "sleeve_usd", "symbols"]
+    for v, want in (("", "ML2.4"), ("ML2", "ML2.4"), ("ML3", "ML3.2")):
+        got = server4(v)
+        check(f"mcp_server, real {v or 'default'}: {want}'s text, the three parameters as before",
+              got.get("version") == want and got.get("props") == three and got.get("required") == ["symbols"] and got.get("desc_same"), str(got))
+    got = server4("ML4")
+    check("mcp_server, ML4: ML4.0's text, track_record declared; a record call returns the record and is research call 1 of 12",
+          got.get("version") == "ML4.1" and got.get("props") == sorted(three + ["track_record"]) and got.get("required") == ["symbols"]
+          and got.get("desc_same") and got.get("record") and got.get("calls") == 1, str(got))
+    logged = [json.loads(x) for x in (Path(d) / "l4.jsonl").read_text(encoding="utf-8").splitlines()] if (Path(d) / "l4.jsonl").exists() else []
+    check("mcp_server, ML4: the record call is logged with its track_record argument",
+          len(logged) == 1 and logged[0]["args"].get("track_record") is True, str([x.get("args") for x in logged]))
+
+# ---------------------------------------------------------------- ML4 on the gpt-oss path (forecast4.py; ML2's run is faked above)
+import forecast4  # noqa: E402
+check("ML4 is forecast4.py, with its own SPEC", ml_tools.module("ML4") is forecast4 and ml_tools.module("ML4").SPEC is forecast4.SPEC
+      and ml_tools.version_of({"ml": True, "ml_tool": "ML4"}) == "ML4.1")
+check("tools.run, ML4: ML2's text comes through forecast4 (no ML2 header here, so nothing is added)",
+      tools.run(gw, "forecast", {"symbols": ["A"]}, ml_tool="ML4") == "ML2 ROW")
+REC = '<|channel|>analysis<|message|>Read the record.<|end|><|start|>assistant<|channel|>commentary to=functions.forecast json<|message|>{"symbols": [], "track_record": true}<|call|>'
+agent.sample_once = fake_sampler([CALL, REC, SUBMIT])
+call, trace, _, _ = agent.gptoss_look(None, gw, "system", "state", "2026-11-16", [forecast4.SPEC], "high", ml_tool="ML4")
+agent.sample_once = real_sample
+got = [t.get("result", "") for t in trace if t.get("tool") == "forecast"]
+check("gptoss_look on ML4: rows, then a record call that is research call 2 of 12",
+      call is not None and len(got) == 2 and got[0].startswith("ML2 ROW") and got[0].endswith("(research call 1 of 12)")
+      and got[1] == forecast4.TRACK_RECORD + f"\n(research call 2 of {tools.MAX_CALLS})", str([g[:40] + " ... " + g[-30:] for g in got]))
 
 # ---------------------------------------------------------------- four Claude lanes
 ids = json.loads(Path(r"C:\Claude\TWS-Gateway\clients.json").read_text(encoding="utf-8"))

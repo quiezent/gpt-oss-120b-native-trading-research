@@ -232,7 +232,7 @@ def order_stats(call, st, world, trace=(), r1=None):
     place = [o for o in (call or {}).get("place", []) if isinstance(o, dict)]
     ordered, adding = set(), set()
     stops = {(str(o.get("symbol", "")).upper().strip(), str(o.get("action", "")).upper()) for o in place
-             if str(o.get("type", "")).upper().replace("_", " ") in ("STP", "STP LMT", "TRAIL")}
+             if tools.order_type(o.get("type", "")) in ("STP", "STP LMT", "TRAIL")}   # as clean_order reads it
     for o in place:
         c, err = trader.clean_order(o)
         if err:

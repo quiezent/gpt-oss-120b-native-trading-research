@@ -47,6 +47,7 @@ def check(name, got, want=(), absent=()):
 def act_notes(status, messages=None, error=None):
     world = object.__new__(trader.PaperWorld)
     world.paper, world.gw, world.sleeve, world.data, world.dry_run = FakePaper(status, messages, error), FakeGW(), "s", None, False
+    world.TEXT = "A"        # the refusal notes alone: text B's order echo (16 Nov 2026) is tested in text_ab_test.py
     notes = world.act({"place": [{"symbol": "AAPL", "action": "BUY", "quantity": 5, "type": "LMT", "limit": 99.0, "tif": "DAY"}],
                        "cancel": []})
     assert world.paper.placed == ["AAPL"] and world.paper.kept == notes     # the order is sent as asked; the note goes to the next look
@@ -85,4 +86,22 @@ with tempfile.TemporaryDirectory() as d:
     live.finish(now, "bad-kept", meta, "text", st, dict(call, notes="still my plan"), [{"tool": "quote", "not_json": object()}], [], [], False, secs=1.0)
     ok.append(check("a failed record keeps the model's notes", str(live.load_memo("bad-kept")), ["still my plan"]))
     ok.append(check("and says so", logged[-1], ["bad-kept: look record failed"]))
+
+# research_summary (16 Nov 2026): a call the loop did not run for lack of room and a dropped turn are no research and no check
+tr = [{"step": 0, "tool": "tape", "args": {}, "result": "news"},
+      {"step": 1, "tool": "quote", "args": {"symbols": ["NVDA", "AMD"]}, "result": "NVDA 1\nAMD 2\n(research call 2 of 12)"},
+      {"step": 2, "tool": "check_orders", "args": {"place": []}, "result": "ok\n(order check 1 of 3)", "ibkr": {}},
+      {"step": 3, "tool": "stats", "args": {"symbols": ["TSLA"]}, "result": "context nearly full (3000 tokens left); no research call is run"},
+      {"step": 4, "tool": "check_orders", "args": {"place": []}, "result": "context nearly full (2900 tokens left); no check is run"},
+      {"step": 5, "room": 2600, "left": 900, "dropped": "quote", "args": {"symbols": ["MSFT"]}, "tokens": 1700, "said": "x",
+       "note": "turn left too little room for the decision: dropped, submit opened"},
+      {"step": 6, "tool": "quote", "args": {"symbols": ["XLE"]}, "result": "research limit reached (12 calls): call submit now"},
+      {"step": 7, "tool": "submit", "tokens": 50, "said": "y"}]
+s = live.research_summary(tr, {"place": [{"symbol": "NVDA"}, {"symbol": "TSLA"}, {"symbol": "MSFT"}]}, {"NVDA": 1})
+ok.append(check("research_summary: calls not run and a dropped turn are not research; a limit-told call counts as before",
+                json.dumps(s, sort_keys=True),
+                ['"research_calls": 3', '"order_checks": 1', '"calls_not_run": 2', '"turns_dropped": 1',
+                 '"researched": ["AMD", "NVDA", "XLE"]', '"traded_researched": ["NVDA"]', '"quote": 2', '"tape": 1']))
+ok.append(check("research_summary: nothing of the not-run or dropped calls", str("TSLA" in s["researched"] or "MSFT" in s["researched"]
+                                                                               or "stats" in s["tools"]), ["False"]))
 print("ALL OK" if all(ok) else "FAILED")

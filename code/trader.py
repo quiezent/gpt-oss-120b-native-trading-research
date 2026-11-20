@@ -9,13 +9,17 @@ writes. SimWorld runs it on sim.Market; PaperWorld runs it on a sleeve of the IB
 import json
 import math
 import re
-from datetime import date, timedelta
+import sys
+import time as _time
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 
 import bars as barsmod
 import sim
+import tools
 
 ROOT = Path(__file__).resolve().parent
 UNIVERSE_FILE = ROOT / "lists" / "universe523.txt"   # today's S&P members that were added by 2024-10-14 (survivor-biased) + ETFs, no leveraged/inverse/volatility ETFs
@@ -68,6 +72,13 @@ KELLY = """Sizing by the Kelly rule: size each position from your edge and its r
 - What you hold overnight carries the gap too: the table's vol is close to close, so it already includes gaps, but a stop doesn't limit a gap, so don't shrink sigma for a stop on a position you hold overnight.
 - For each new position, write mu, sigma and the fraction you chose in your notes."""
 PACE_END = "Missing an opportunity is as much an error as a bad trade.\n\nOrder types:"
+KELLY_LIMITS = "- The sleeve's limits (2x gross, and the single-shock limit if your state shows one) cap the Kelly size too.\n"
+# The gross-exposure term as the system prompt states it, and what replaces it for a sleeve with no software limit
+# ("max_gross": null in sleeves.json; Clayton, 14 Nov 2026: "I prefer less intervention from the software framework or a
+# hard limit unless IBKR restricts it").
+GROSS_RULE = "Gross exposure may not exceed 2x the sleeve."
+NO_GROSS_RULE = ("Software sets no limit on your exposure: IBKR's own margin rules apply, to the whole paper account that your "
+                 "sleeve is part of, and an order IBKR refuses is reported at your next look.")
 
 
 S1_NEWS, S1_NONE = "1. Read today's market news (tape) and look at your positions.", "1. Look at your positions and the market table."
@@ -76,19 +87,42 @@ S3_ML = ("3. Test it with the scanner and the forecast tool (machine-learning fo
          "out-of-sample track record, so weigh it accordingly): choose the scan and, if useful, the industry that would find "
          "stocks fitting your hypothesis.")
 S4_NEWS, S4_NONE = "4. Check every candidate with news and quote;", "4. Check every candidate with quote;"
+# ML4 (15 Nov 2026): its description gives one accuracy line a column and the full record only on request
+# (forecast(track_record=true)), so S3_ML's "its description gives each model's out-of-sample track record" would be false
+# for a sleeve on it. S3_ML itself is what ML2's and ML3's sleeves read and is in ML2's manifest: it does not change.
+S3_ML4 = ("3. Test it with the scanner and the forecast tool (machine-learning forecasts): choose the scan and, if useful, the "
+          "industry that would find stocks fitting your hypothesis.")
+S3_BY_TOOL = {"ML4": S3_ML4}          # a sleeve's ml_tool -> its step 3; any other version reads S3_ML
 
 
-def live_system(size, today, ml=False, news=True, kelly=False):
+def live_system(size, today, ml=False, news=True, kelly=False, max_gross=2.0, ml_tool=None, own_limit=None):
     """SYSTEM_LIVE for a sleeve of this size, with the target pace (Clayton, 24 Oct: a pace, not a weekly dollar goal
     with a deadline). ml: the sleeve has the forecast tool; news=False: the training simulator, which has no news;
     kelly: the Kelly sizing paragraph after the pace (Clayton, 9 Nov: "a kelly improved prompt"; sleeves.json
-    "kelly_prompt"). It is guidance the model may weigh; nothing enforces it."""
+    "kelly_prompt"). It is guidance the model may weigh; nothing enforces it. max_gross: the sleeve's gross-exposure
+    term (max_gross_of): 2.0 is the text as it always was, another number changes the figure, None says there is no
+    software limit. ml_tool: the sleeve's forecast tool version (sleeves.json "ml_tool"); only ML4 changes step 3
+    (S3_ML4), every other value reads S3_ML as before. own_limit: the sleeve's own exposure limit (own_limit_of; only with
+    max_gross None): its term (own_limit.term) in place of NO_GROSS_RULE; None, the default, is the text as before."""
     text = SYSTEM_LIVE
     if kelly:
         assert text.count(PACE_END) == 1
         text = text.replace(PACE_END, PACE_END.replace("\n\nOrder types:", "\n\n" + KELLY + "\n\nOrder types:"))
+    if max_gross != 2.0:
+        assert text.count(GROSS_RULE) == 1
+        text = text.replace(GROSS_RULE, NO_GROSS_RULE if max_gross is None
+                            else GROSS_RULE.replace("2x", f"{max_gross:g}x"))
+        if kelly:                           # the Kelly paragraph names the 2x limit too
+            assert text.count(KELLY_LIMITS) == 1
+            text = text.replace(KELLY_LIMITS, "" if max_gross is None
+                                else KELLY_LIMITS.replace("2x", f"{max_gross:g}x"))
+    if max_gross is None and own_limit:     # 18 Nov 2026 (Clayton: "Yes, text only"): the sleeve's own limit, told, not enforced
+        import own_limit as _ol
+        assert text.count(NO_GROSS_RULE) == 1
+        text = text.replace(NO_GROSS_RULE, _ol.term(own_limit))
     if ml:
-        text = text.replace(S3_SCAN, S3_ML)
+        assert text.count(S3_SCAN) == 1
+        text = text.replace(S3_SCAN, S3_BY_TOOL.get(ml_tool, S3_ML))
     if not news:
         text = text.replace(S1_NEWS, S1_NONE).replace(S4_NEWS, S4_NONE)
     return text.replace("${size:,}", f"${size:,.0f}").replace("{goal_pct}", f"{GOAL_PCT:g}")
@@ -107,8 +141,10 @@ def goal_line(size, value, sessions_left=None, today=None):
     return line
 
 
-def live_steps(ml=False, news=True):
-    s = LIVE_STEPS
+def live_steps(ml=False, news=True, probs=False):
+    """The steps line of a live look. probs=True is the text through Fri 13 Nov 2026, which also asked for p_fill and
+    p_win on every order (for replays of those looks)."""
+    s = LIVE_STEPS_PROBS if probs else LIVE_STEPS
     if ml:
         s = s.replace("with the scanner (choose", "with the forecast tool (machine-learning forecasts), the scanner (choose")
     if not news:
@@ -129,10 +165,12 @@ def live_user(text, goal, memo=None, steps=None):
 # with it and 0 of 10 without; rl1 10 of 10 vs 0 of 10).
 LIVE_STEPS = ("Before you submit: (1) call tape for market news; (2) decide your hypothesis: what should move, which way, and why; "
               "(3) find candidates that fit it with the scanner (choose the scan and industry that test it), the table and your positions; "
-              "(4) call news, quote and stats for your candidates; (5) call submit, with notes for your next look and your "
-              "honest p_fill and p_win on every order.\n\n")
+              "(4) call news, quote and stats for your candidates; (5) call submit, with notes for your next look.\n\n")
+# Through Fri 13 Nov 2026 step 5 also asked for the order probabilities (Clayton, 14 Nov, on p_fill and p_win: "Remove").
+LIVE_STEPS_PROBS = LIVE_STEPS.replace("with notes for your next look.", "with notes for your next look and your honest p_fill and "
+                                      "p_win on every order.")
 
-from tools import NOTES_DESC, P_FILL_DESC, P_WIN_DESC, PROBS_DESC   # shared with mcp_server.py
+from tools import CLOSE_DESC, NOTES_DESC, P_FILL_DESC, P_WIN_DESC, PROBS_DESC, TRAIL_DESC   # shared with mcp_server.py
 
 TOOL = {
     "name": "submit",
@@ -163,10 +201,30 @@ TOOL = {
 }
 
 # Live looks are stateless: only the sleeve, its orders and these notes carry over to the next look.
-TOOL_LIVE = {**TOOL, "description": "Submit this look's decision: orders to place, open orders to cancel, and notes for your next "
-                                    "look. Call it exactly once. Empty lists mean no change. " + PROBS_DESC,
-             "parameters": {**TOOL["parameters"], "properties": {**TOOL["parameters"]["properties"],
-                                                                 "notes": {"type": "string", "description": NOTES_DESC}}}}
+def tool_live(probs=False):
+    """The live submit form. From Mon 16 Nov 2026 it does not ask for p_fill and p_win (Clayton, 14 Nov: "Remove"; stated
+    p_win was no better than a coin, Brier 0.275 against 0.248). probs=True is the form through Fri 13 Nov, for replays of
+    those looks. An order that still carries the two fields is accepted as before: clean_order keeps them, they are
+    logged, and they never reach the broker (models trained on the old form write them). The new form also states the
+    trailing-stop unit (TRAIL_DESC), in the field and in the tool's own description, since the gpt-oss renderer drops an
+    array item field's description (Clayton, 14 Nov: text B only; probs=True stays the form of fd95e2a)."""
+    order = TOOL["parameters"]["properties"]["place"]
+    fields = {k: v for k, v in order["items"]["properties"].items() if probs or k not in ("p_fill", "p_win")}
+    if not probs:
+        fields["trail_percent"] = {**fields["trail_percent"], "description": TRAIL_DESC}
+        # close-only (Clayton, 17 Nov), text B only: in the field and in the tool's own description (the renderer drops
+        # an array item field's description, as for TRAIL_DESC)
+        fields["close_only"] = {"type": "boolean", "description": CLOSE_DESC}
+    place = {**order, "items": {**order["items"], "properties": fields}}
+    return {**TOOL, "description": "Submit this look's decision: orders to place, open orders to cancel, and notes for your next "
+                                   "look. Call it exactly once. Empty lists mean no change."
+                                   + (" " + PROBS_DESC if probs else " " + TRAIL_DESC + " " + CLOSE_DESC),
+            "parameters": {**TOOL["parameters"], "properties": {**TOOL["parameters"]["properties"], "place": place,
+                                                                "notes": {"type": "string", "description": NOTES_DESC}}}}
+
+
+TOOL_LIVE = tool_live()
+TOOL_LIVE_PROBS = tool_live(probs=True)      # the form through Fri 13 Nov 2026
 
 
 ETFS_FILE = ROOT / "lists" / "etfs.txt"
@@ -518,6 +576,114 @@ def shock_cap_of(meta):
     return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v < 1 else None
 
 
+def max_gross_of(meta):
+    """A sleeve's gross-exposure limit as a multiple of its value: 2.0 unless sleeves.json has "max_gross" (a sleeve term
+    only Clayton sets). A number above 0 is the limit; null is no software limit, so only IBKR's own checks on the whole
+    paper account can refuse an order. Anything else is malformed and keeps 2.0 (live.py logs it at each look)."""
+    if "max_gross" not in meta:
+        return 2.0
+    v = meta["max_gross"]
+    if v is None:
+        return None
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0 else 2.0
+
+
+def text_of(meta):
+    """Which text a sleeve reads: "A" is the text of Sat 14 Nov 2026 (main fd95e2a: the order form with p_fill and p_win,
+    no order echo, no cash clause, no account margin line, no check_orders tool), kept on one control sleeve by
+    "text": "A" in sleeves.json; "B", the default, is the text from Mon 16 Nov. Clayton approved a second no-tool base
+    twin for this A/B on 14 Nov. Changes that alter nothing a model reads go to both.
+    The one agreed exception (frozen 15 Nov, monday_changes.md item e): three fixes that repair a malformed call go to both
+    texts, so text A's tool results can differ from fd95e2a's for those calls only: agent.unwrap_args (a call wrapped in an
+    {"name", "arguments"} envelope runs as the call it wraps), tools.article_ref (a bare or lower-case article id is given
+    its provider and upper-cased) and tools.symbol_list ("symbols" given as one string is read as a list of names, not as
+    letters). Why both: at fd95e2a those calls ran as garbage (no symbols, the letters of a ticker, a dead article id, or
+    a submit rejected as malformed), which no text means to say; leaving the control on them would measure the bug, not
+    text B. A well-formed call reads the same in both texts.
+    A fourth (16 Nov 2026; the Trading Model Researcher's figures of 15 Nov): agent.gptoss_look's context reserve, for every
+    gpt-oss sleeve, text A too. Within RESERVE (2,500) tokens of the 32,768-token context it opens the submit instead of a
+    free turn and does not run a tool call whose result would leave less than the reserve (one line says so). A free
+    turn that ends in a tool call and leaves less than SUBMIT_ROOM (1,500) is dropped, and the submit is opened at the
+    prompt as it was before that turn; a tool's result is cut so that SUBMIT_ROOM is left for the decision. Why both:
+    it acts only where a look would otherwise end with no decision ("context full") or with a decision short of room; a
+    look whose room never falls under the reserve runs step for step as at fd95e2a.
+    Not a text difference, but a change from Saturday's look: the research-call limit is a sleeve setting (max_calls_of),
+    and Clayton set 15 on every sleeve from Mon 16 Nov, the text-A control included ("Every sleeve to 15", 15 Nov), so text
+    A reads "(research call k of 15)" where fd95e2a read "of 12". Both texts run at the same limit. The forced-submit
+    settings (live.forced_mode_of, final_line_of) are not set on the control: it keeps the plain opened submit and the old
+    limit line, the Researcher's recommendation, which Clayton followed.
+    A fifth that goes to both texts (17 Nov; Clayton, 16 Nov: "Yes, build it"): the missing-price re-ask (agent.gptoss_look,
+    tools.missing_prices). A submit holding an order whose type needs a price field it lacks is answered once a look and
+    the next submit is taken as written; it repairs a malformed call, as the first three do, and a submit with every price
+    field reads and runs as at fd95e2a. IBKR's margin warning (margin_warning) is in text B's account line only: the
+    control has no account line.
+    A sixth that changes text A too (18 Nov 2026): the sleeve's own exposure limit (own_limit.py; sleeves.json "own_limit"),
+    on the eight gpt-oss sleeves, the control included. Clayton, asked whether it should go live on those eight, the
+    control named: "Yes, text only". The control gets the system term and the state's limit line (with the positions
+    sentence when over); the account sentence and the order check's line are text B's, which alone has those parts.
+    A seventh (18 Nov 2026, from the 10:30 look): the last fill line of each symbol in "Since your last decision" ends
+    with the sleeve's position now (FILL_POSITION, fill_position_note), on all ten sleeves, the control included, and the
+    limit line counts and names the resting orders that would open or add (own_limit.STATE_RESTING). The Researcher's
+    decision: Clayton had answered its question about the control "Your decision. You're the trainer ...". Why: at 09:00
+    the control and cand2 read Tuesday's covering fills as longs they did not hold.
+    An eighth (from the first look of Thu 19 Nov 2026): the per-look limit pieces of the sixth and seventh come out of
+    both texts (OWN_LIMIT_LOOK False): the state's limit line, the account sentence and the check's line. The system
+    term and the fill-line note stay. Clayton, 18 Nov: "Don't decide for the trader model."; the Researcher's change.
+    A ninth that goes to both texts (19 Nov), of the kind of the first three: a stop type spelled out ("STOP", "STOP
+    LIMIT") is read as the tool's STP or STP LMT (tools.TYPE_NAMES), so its stop price reaches IBKR; at fd95e2a such an
+    order went out with no stop price and IBKR refused it (cand1, 11:30 on 18 Nov). An order typed as listed runs as before."""
+    return "A" if meta.get("text") == "A" else "B"
+
+
+def own_limit_of(meta):
+    """A sleeve's own exposure limit, as a multiple of its value, told to the model and never enforced (own_limit.py;
+    Clayton, Wed 18 Nov 2026: "Yes, text only"): sleeves.json "own_limit", a number above 0, on a sleeve whose
+    "max_gross" is null (no software limit). None otherwise: the sleeve reads the text it read before. A sleeve term
+    only Clayton sets."""
+    v = meta.get("own_limit")
+    if "max_gross" not in meta or meta["max_gross"] is not None:
+        return None
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v < float("inf") else None
+
+
+def own_limit_bad(meta):
+    """Why a sleeve's "own_limit" is ignored, or None: there but not a number above 0, or on a sleeve with a software
+    limit (max_gross not null)."""
+    if "own_limit" not in meta or meta["own_limit"] is None:
+        return None
+    v = meta["own_limit"]
+    if not (isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v < float("inf")):
+        return f"own_limit {v!r} is not a finite number above 0, so the sleeve reads no exposure limit"
+    if "max_gross" not in meta or meta["max_gross"] is not None:
+        return f"own_limit {v!r} is ignored: it applies only with max_gross null (no software limit)"
+    return None
+
+
+def max_gross_bad(meta):
+    """True if the sleeve's "max_gross" is there but is neither null nor a number above 0."""
+    v = meta.get("max_gross")
+    return "max_gross" in meta and v is not None and not (isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0)
+
+
+def max_calls_of(meta):
+    """A sleeve's research-call limit for a look (agent.gptoss_look's max_calls): tools.MAX_CALLS (12) unless sleeves.json
+    gives "max_calls", a whole number from 1 to tools.MAX_CALLS_TOP. Clayton, 15 Nov 2026, relayed by the Trading Model
+    Researcher: "Yes lets go for 15 and pass the info to Trader Training to implement."; then to me, asked whether anything
+    else moves to 15 (the text-A control and the Fable sleeves had stayed at 12): "Every sleeve to 15". A gpt-oss sleeve reads
+    its limit only in the counter after each research call ("(research call 3 of 15)") and in the research-limit line; a
+    Claude sleeve also in its system prompt ("at most 15 calls", agent.claude_look) and the MCP server counts to it
+    (TRADER_MAX_CALLS). Anything malformed keeps tools.MAX_CALLS (live.py logs it at each look)."""
+    return tools.MAX_CALLS if "max_calls" not in meta or max_calls_bad(meta) else meta["max_calls"]
+
+
+def max_calls_bad(meta):
+    """True if the sleeve's "max_calls" is there but is not a whole number from 1 to tools.MAX_CALLS_TOP."""
+    if "max_calls" not in meta:
+        return False
+    v = meta["max_calls"]
+    return not (isinstance(v, int) and not isinstance(v, bool) and 1 <= v <= tools.MAX_CALLS_TOP)
+
+
 def shock_rule(cap, st, before):
     """The state's line for a sleeve with a single-shock limit ("shock_cap" in sleeves.json, a sleeve term only Clayton
     sets): the rule, as PaperWorld.act applies it, and the book's worst shock now."""
@@ -533,7 +699,7 @@ def shock_rule(cap, st, before):
     return rule + f" Now the worst is {100 * max(worst, 0.0):.1f}% of the sleeve, if {name}."
 
 
-def account_text(world, data, d, feats, header=None, live=None, book=False):
+def account_text(world, data, d, feats, header=None, live=None, book=False, cash_clause=False):
     st = world.state(d, feats, live) if live else world.state(d, feats)
     header = header or (f"Date: {data.iso(d)} ({date.fromisoformat(data.iso(d)).strftime('%A')}). "
                         f"Orders you submit now work from today's open.")
@@ -549,19 +715,193 @@ def account_text(world, data, d, feats, header=None, live=None, book=False):
             shock = shock_rule(cap, st, data.iso(d).replace("-", ""))
         except Exception:                   # noqa: BLE001 - the rule alone, with no claim about the book
             shock = shock_rule(cap, dict(st, value=0.0), "")
-    return render_account(st, feats, header, live, getattr(world, "MAX_GROSS", None), book=line, shock=shock), st
+    account = getattr(world, "ACCOUNT", None) if getattr(world, "TEXT", "A") == "B" else None   # text B only (Clayton, 14 Nov)
+    if account is not None:
+        st["account"] = account             # kept in the look record's state, for replays
+    return render_account(st, feats, header, live, getattr(world, "MAX_GROSS", None), book=line, shock=shock,
+                          cash_clause=cash_clause, account=account, log=getattr(world, "log", None),
+                          own_limit=look_limit(getattr(world, "OWN_LIMIT", None)),
+                          fill_position=FILL_POSITION), st
 
 
-def render_account(st, feats, header, live=None, max_gross=2.0, book=None, shock=None):
+# Whether the sleeve's own exposure limit is worked out for it at each look: the state's limit line (own_limit.state_line,
+# with its room, positions-by-size and resting-orders words), the sentence after the account line (account_sentence) and
+# the last line of the check_orders answer (own_limit.check_block). False from Thu 19 Nov 2026: the limit is the system
+# text's term alone (own_limit.term, unchanged), and the sleeve reads its own gross on the sleeve-value line. Clayton, 18
+# Nov, to the Trading Model Researcher: "Don't decide for the trader model." and "The models need to trade themselves and
+# you only adjust the system prompt to guide the boundaries such as margin this time. Don't interfere by trading with the
+# 30 minutes look." On 18 Nov the over-limit line's positions by size, with a running total, led the five sleeves over
+# their limit at 09:00 to close 28 of the 30 positions it named. The Researcher's one change for 19 Nov: keep the term,
+# remove every per-look piece, add nothing in their place. True gives the text of 18 Nov (303b41c2) for replays.
+OWN_LIMIT_LOOK = False
+
+
+def look_limit(limit):
+    """The own limit the look's state and check work out (render_account, checks.context): limit when OWN_LIMIT_LOOK is
+    on, else None (the state and check as before 18 Nov). The system text's term (live_system) does not go through this."""
+    return limit if OWN_LIMIT_LOOK else None
+
+
+# Whether fill lines end with the sleeve's position now (fill_position_note), on every sleeve, text A and text B alike.
+# The Researcher, 18 Nov (about 09:25 ET), after the 09:00 look, where base-90k and cand2 read Tuesday's covering fills
+# ("filled BUY 100 NVDA ...") as longs and placed sells that would open shorts: "end every fill line with the position
+# now, in words, after the ref" (about 10:00 ET: on the last fill line of each symbol only). About 09:45 ET, relaying
+# Clayton ("Your decision. You're the trainer ..."): the text-A control gets it too, "build it for all ten sleeves", since
+# the fact is about the sleeve's own book, not a rule. On from the 10:30 look of 18 Nov, after the Researcher's check of
+# the built text on that day's records ("Both").
+FILL_POSITION = True
+_FILL = re.compile(r"^filled (?:BUY|SELL) \S+ (.+?) @ ")
+
+
+def fill_position_note(event, held):
+    """" (you now hold no NVDA)", " (you are now short 22 MU)" or " (you are now long 3 GLD)" for a fill line, from held
+    ({symbol: shares}, the state's positions: after all the fills); "" for any other line."""
+    m = _FILL.match(event)
+    if not m:
+        return ""
+    s = m.group(1)
+    q = held.get(s, 0)
+    if not q:
+        return f" (you now hold no {s})"
+    return f" (you are now {'long' if q > 0 else 'short'} {abs(q)} {s})"     # as the positions table prints it
+
+
+# The frozen wording of 15 Nov 2026 (monday_changes.md "FROZEN 15 Nov", item c): "your sleeve has spent more than its cash" is
+# out, read as a push to hold back (Clayton, 15 Nov: "be careful to not let do nothing creep in").
+CASH_NEGATIVE = " Negative cash is already subtracted in the sleeve value."
+CASH_SHORTS = " Cash includes the proceeds of your short sales. Your short positions are subtracted in the sleeve value."
+
+
+def cash_note(st):
+    """Text B's clause after "(cash $C)." (Clayton, 14 Nov 2026; from 16 Nov): what a negative cash, or a cash above the
+    sleeve's value (short proceeds), already means for the value. Empty otherwise."""
+    return CASH_NEGATIVE if st["cash"] < 0 else CASH_SHORTS if st["cash"] > st["value"] else ""
+
+
+_ET = ZoneInfo("America/New_York")
+
+
+def _acct_num(a, k):
+    try:
+        v = a.get(k)
+        return None if v is None or v == "" else float(v)
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
+def account_line(info, st, live=None):
+    """Text B's whole-account line (calculator_tools_spec_v2.md section 3, frozen 15 Nov 2026; Clayton, 14 Nov; from 16 Nov),
+    after the sleeve-value line. info: {"account": gw.account()'s row or None if it was not read, "sleeves": the number in the
+    sleeves file, "total": their values summed, "unheld": optional, live.unheld_gross()}, read once a look before the looks, so every sleeve sees the same figures
+    and their time. Every figure is the whole paper account's, IBKR's own, labelled so; the sleeve's shares are its value
+    (at delayed last prices, or the last close) and gross over the account's (IBKR's prices). No BuyingPower: it is the same
+    fact as (equity with loan - initial margin) / 0.25, and as a bare dollar figure the one most likely read as the sleeve's.
+    The SMA floor is equity with loan minus IBKR's RegTMargin (50% of gross), else minus half of gross."""
+    a = (info or {}).get("account")
+    if not isinstance(a, dict) or not a:
+        return "Whole paper account: IBKR's figures were not read for this look."
+    g = lambda k: _acct_num(a, k)
+    money = lambda k, name: f"{name} not reported" if g(k) is None else f"{name} ${g(k):,.0f}"
+    when = ""
+    try:
+        t = datetime.strptime(str(a.get("read_time")), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).astimezone(_ET)
+        when = f" at {t:%H:%M:%S} ET"
+    except (TypeError, ValueError):
+        pass
+    n, total = info.get("sleeves"), info.get("total")
+    shared = (f"shared by the {n} sleeves" + (f", whose values total {fmt_money(total)}" if total is not None else "")
+              if n else "shared by the sleeves")
+    ewl, regt, gross, nl, sma, cushion = (g(k) for k in ("EquityWithLoanValue", "RegTMargin", "GrossPositionValue",
+                                                          "NetLiquidation", "SMA", "Cushion"))
+    floor = ewl - regt if ewl is not None and regt is not None else ewl - 0.5 * gross if ewl is not None and gross is not None else None
+    sma_part = ("SMA not reported" if sma is None else f"SMA ${sma:,.0f}") + (
+        f", never below equity with loan minus half of gross (${floor:,.0f} now)" if floor is not None else "")
+    parts = [money("NetLiquidation", "net liquidation"), money("EquityWithLoanValue", "equity with loan"),
+             money("InitMarginReq", "initial margin"), money("ExcessLiquidity", "excess liquidity"),
+             "cushion not reported" if cushion is None else f"cushion {100 * cushion:.0f}%", sma_part, money("GrossPositionValue", "gross")]
+    # 16 Nov 2026: positions the account lists that no sleeve's ledger holds (live.unheld_gross; the reset's residue), only
+    # when there are some; otherwise the line is unchanged
+    unheld = info.get("unheld")
+    if isinstance(unheld, (int, float)) and not isinstance(unheld, bool) and round(unheld) >= 1:
+        parts[-1] += f"; ${round(unheld):,.0f} of the gross is in positions no sleeve holds"
+    line = f"Whole paper account ({shared}; IBKR's figures{when}): " + "; ".join(parts) + "."
+    if nl and nl > 0:
+        mine = sum(abs(p["quantity"]) * p["close"] for p in st.get("positions") or [])
+        line += (f" Your sleeve's value ({'at delayed last prices' if live else 'at last close'}) is {100 * st['value'] / nl:.1f}% "
+                 "of the account's net liquidation (at IBKR's prices)"
+                 + (f"; its gross exposure is {100 * mine / gross:.1f}% of the account's gross." if gross and gross > 0 else "."))
+        line += margin_warning(a, st, mine)
+    return line
+
+
+def margin_warning(a, st, mine):
+    """IBKR's margin warning, relayed to the sleeves more levered than the whole account (Clayton, 16 Nov: "We need to relay
+    the IBKR warning to the most levered sleeves, at least base-90k-b and cand2"; on Mon 16 Nov SMA was below zero for
+    hours before the close (the loop logged it from 13:06 ET at least), IBKR refused cand1's order for margin between 15:00
+    and 15:30, and at 15:51 ET IBKR closed positions in all ten sleeves). Shown when IBKR's figures put the account in IBKR's own danger zone, SMA below zero or excess liquidity
+    under 10% of net liquidation, to a sleeve whose gross is a larger multiple of its value than the account's gross is of
+    its net liquidation (on Mon 16 Nov at 15:30: base-90k-b 14.4x, cand2 8.3x, base-ml, base-90k-ml, cand2-ml and cand1,
+    against 3.45x; the text-A control has no account line). A sleeve whose value is at or below zero with any gross is
+    the most levered of all and gets it too. Facts only: IBKR's figures, its rule, the day it acted, and the two multiples.
+    "" otherwise."""
+    g = lambda k: _acct_num(a, k)
+    nl, xl, sma, gross = g("NetLiquidation"), g("ExcessLiquidity"), g("SMA"), g("GrossPositionValue")
+    value = st.get("value")
+    if not nl or nl <= 0 or not gross or not isinstance(value, (int, float)) or not mine or mine <= 0:
+        return ""
+    danger = (sma is not None and sma < 0) or (xl is not None and xl < 0.10 * nl)
+    acct_x = gross / nl
+    mine_x = mine / value if value > 0 else None          # None: value at or below zero, the most levered of all
+    if not danger or (mine_x is not None and mine_x <= acct_x):
+        return ""
+    # Clayton, Tue 17 Nov ~11:50 ET (the gpt-oss sleeves went on adding after the first wording): "Change the wording to
+    # 'Your gross exposure is 7.2x its value; the your account's maximum is 2.9x its net liquidation.'" ("the your" read
+    # as "your"). The 2.9x is the account's own gross over its net liquidation at IBKR's read, which he calls its maximum.
+    own = (f"Your gross exposure is {mine_x:.1f}x its value" if mine_x is not None
+           else f"Your gross exposure is ${mine:,.0f} with its value at or below zero")
+    figs = "; ".join(x for x in (f"SMA ${sma:,.0f}" if sma is not None else "", f"excess liquidity ${xl:,.0f}" if xl is not None else "") if x)
+    return (f" IBKR margin warning ({figs}): IBKR closes positions in this account, choosing which itself, when excess "
+            "liquidity is below zero, and near the close (from 15:50 ET on a full trading day) when SMA is below zero; it did "
+            f"so at 15:51 ET on Mon 16 Nov 2026, in every sleeve. {own}; your account's maximum is {acct_x:.1f}x its net "
+            "liquidation.")
+
+
+def render_account(st, feats, header, live=None, max_gross=2.0, book=None, shock=None, cash_clause=False, account=None,
+                   log=None, own_limit=None, fill_position=False):
     """The account part of a look's state text from a state dict (world.state(): value, cash, gross, net, beta_net,
     positions, orders with cancel_pending, events). Callable on a stored look file's "state" for replays. book: the
-    book_risk() line, shown after the per-position risk lines. shock: shock_rule()'s line, after the margin line."""
+    book_risk() line, shown after the per-position risk lines. shock: shock_rule()'s line, after the margin line.
+    cash_clause: text B's cash_note() after the cash figure; False (the default) is the text through 14 Nov. account:
+    text B's account_line() info, shown after the sleeve-value line; None (the default) is the text through 14 Nov.
+    log: where a failure of the account line is reported (live.py's log, so it reaches live.log; review, 15 Nov), else
+    stderr. own_limit: the sleeve's own exposure limit (own_limit_of; 18 Nov): its line (own_limit.state_line) straight
+    after the sleeve-value line, and own_limit.ACCOUNT_SENTENCE at the end of the account line when that line carries
+    figures; None, the default, is the text as before. fill_position: each fill line ends with the sleeve's position
+    now (fill_position_note); False, the default, is the text as before."""
     class _W:
         MAX_GROSS = max_gross
     world = _W
     lines = [header,
-             f"Sleeve value {'now, at delayed last prices' if live else 'at last close'}: {fmt_money(st['value'])} (cash {fmt_money(st['cash'])}). "
-             f"Gross exposure {st['gross']:.2f}x, net {st['net']:+.2f}x, beta-weighted {st['beta_net']:+.2f}x."]
+             f"Sleeve value {'now, at delayed last prices' if live else 'at last close'}: {fmt_money(st['value'])} (cash {fmt_money(st['cash'])})."
+             + (cash_note(st) if cash_clause else "") +
+             f" Gross exposure {st['gross']:.2f}x, net {st['net']:+.2f}x, beta-weighted {st['beta_net']:+.2f}x."]
+    limit_shown = False
+    if own_limit:                           # the sleeve's own limit, told and not enforced (Clayton, 18 Nov: "Yes, text only")
+        try:                                # a failure costs the line, never the look (as the account line)
+            import own_limit as _ol
+            lines.append(_ol.state_line(st, own_limit, _ol.prices_of(feats, live), log))
+            limit_shown = True
+        except Exception as e:              # noqa: BLE001
+            (log or (lambda m: print(m, file=sys.stderr)))(f"exposure-limit line left out: {type(e).__name__}: {e}"[:300])
+    if account is not None:
+        try:                                # a failure costs the line, never the look
+            aline = account_line(account, st, live)
+            if limit_shown and aline.startswith("Whole paper account ("):   # the line with IBKR's figures; the sentence
+                import own_limit as _ol2                                    # points at the limit line, so only with it
+                aline += _ol2.account_sentence(aline)
+            lines.append(aline)
+        except Exception as e:              # noqa: BLE001
+            (log or (lambda m: print(m, file=sys.stderr)))(f"account line left out: {type(e).__name__}: {e}"[:300])
     if getattr(world, "MAX_GROSS", None):
         cap, used = world.MAX_GROSS * max(st["value"], 0.0), st["gross"] * max(st["value"], 0.0)
         rule = ("Orders in one submit are checked in turn, each as if the earlier ones had filled: an order that only "
@@ -605,24 +945,41 @@ def render_account(st, feats, header, live=None, max_gross=2.0, book=None, shock
         for o in st["orders"]:
             g = lambda k: "-" if o.get(k) in (None, 0) else f"{o[k]:g}"
             lines.append(f"  {o['ref']} {o['symbol']} {o['action']} {o['quantity']} {o['type']} {g('limit')} {g('stop')} "
-                         f"{g('trail_percent')} {o['tif']} {'CANCEL-PENDING' if o.get('cancel_pending') else 'working'}")
+                         f"{g('trail_percent')} {o['tif']} {'CANCEL-PENDING' if o.get('cancel_pending') else 'working'}"
+                         + (" close_only" if o.get("close_only") else ""))
         if any(o.get("cancel_pending") for o in st["orders"]):
             lines.append("  (CANCEL-PENDING: you already asked to cancel it and the broker has not confirmed yet. It can still "
                          "fill until it leaves this list. Cancelling it again does nothing.)")
+            if any(o.get("cancel_pending") and o.get("close_only") for o in st["orders"]):   # 17 Nov: text B only (only it has
+                lines.append("  (A close_only order can also be CANCEL-PENDING because the close_only check cancelled it.)")   # them)
     else:
         lines.append("Open orders: none.")
     # gpt-oss adds listed fills to positions that already hold them: 13 of its 16 oversized exits, 26 Oct to 2 Nov ("increase from 20 to 40")
     held = " (your positions and cash above already include these fills)" if any(e.startswith("filled ") for e in st["events"]) else ""
-    lines.append(f"Since your last decision{held}: " + ("; ".join(st["events"]) if st["events"] else "nothing happened."))
+    events = st["events"]
+    if fill_position and events:            # the position now after each fill line (the Researcher, 18 Nov); a failure
+        try:                                # costs the notes only, never the look (the review of 18 Nov)
+            now = {p["symbol"]: p["quantity"] for p in st.get("positions") or []}
+            last = {}                       # the last fill line of each symbol carries the note, so "now" is true where
+            for i, e in enumerate(events):  # it stands (the Researcher, 18 Nov: on every line, cand1-ml's four AMD buys
+                m = _FILL.match(e)          # each read "long 30 AMD")
+                if m:
+                    last[m.group(1)] = i
+            marks = set(last.values())
+            events = [e + fill_position_note(e, now) if i in marks else e for i, e in enumerate(events)]
+        except Exception as e:              # noqa: BLE001
+            events = st["events"]
+            (log or (lambda m: print(m, file=sys.stderr)))(f"fill-position notes left out: {type(e).__name__}: {e}"[:300])
+    lines.append(f"Since your last decision{held}: " + ("; ".join(events) if events else "nothing happened."))
     return "\n".join(lines)
 
 
-def state_text(world, data, d, header=None, live=None, book=False):
+def state_text(world, data, d, header=None, live=None, book=False, cash_clause=False):
     held = world.symbols_in_play()
     table, feats = data.table(d, extra=held, live=live)
     if hasattr(data, "outside_features"):
         feats = feats | data.outside_features(d, [s for s in held if s not in feats])
-    acct, st = account_text(world, data, d, feats, header, live, book=book)
+    acct, st = account_text(world, data, d, feats, header, live, book=book, cash_clause=cash_clause)
     label = (f"daily bars through the close of {data.iso(d - 1)}" +
              ("; last = delayed last price, today = % change from the previous close" if live else ""))
     return acct + f"\n\nMarket table ({label}):\n" + table, st, feats
@@ -644,13 +1001,15 @@ def _num(x, name, integer=False):
 
 def clean_order(o):
     """Normalize one model order to sim/broker fields; returns (fields, error). Nothing is changed beyond
-    case and spacing: a missing or non-numeric field is an error, the same in simulation and live. p_fill and
-    p_win pass through as floats in [0, 1], else None; they never cause an error and never reach the broker."""
+    case and spacing, and a stop type spelled out read as the tool's own (tools.order_type: "STOP" is STP, "STOP
+    LIMIT" and "STOP LMT" are STP LMT; 19 Nov): a missing or non-numeric field is an error, the same in simulation and
+    live. p_fill and p_win pass through as floats in [0, 1], else None; they never cause an error and never reach the
+    broker."""
     if not isinstance(o, dict):
         return None, "order is not an object"
     sym = str(o.get("symbol", "")).upper().strip()
     act = str(o.get("action", "")).upper()
-    typ = str(o.get("type", "")).upper().replace("_", " ")
+    typ = tools.order_type(o.get("type", ""))
     tif = str(o.get("tif") or "DAY").upper()     # IBKR treats an order without a time-in-force as DAY
     q, err = _num(o.get("quantity"), "quantity", integer=True)
     if err or q is None:
@@ -662,7 +1021,29 @@ def clean_order(o):
             return None, f"{act} {sym}: {err}"
         out[k] = v
     out["p_fill"], out["p_win"] = prob(o.get("p_fill")), prob(o.get("p_win"))   # recorded and scored only; never an error
+    co = o.get("close_only")                     # text B's flag (17 Nov): only an explicit true; never an error
+    out["close_only"] = co is True or (isinstance(co, str) and co.strip().lower() == "true")
     return out, None
+
+
+def order_echo(o, price, value, held=0):
+    """Text B's line for an order the broker accepted (Clayton, 14 Nov 2026; from 16 Nov; PaperWorld.act writes none for an
+    order paper.place returned an error for, or with no status, or Cancelled, Inactive or ApiCancelled: that order has its
+    refusal note), shown at the next look after the refusals: its size in dollars at the quote's mark and as a multiple of
+    the sleeve's value at placement; for a TRAIL its trail in dollars; for an order on the closing side of a position
+    (held: the shares before this submit) larger than it, the position's size. Facts only. None with no price or a sleeve value not above 0."""
+    if not price or not value or value <= 0:
+        return None
+    dollars = o["quantity"] * price
+    line = (f"{o['action']} {o['quantity']} {o['symbol']} {o['type']}: about ${dollars:,.0f} at the last price, "
+            f"{dollars / value:.2f}x your sleeve's value")
+    if o["type"] == "TRAIL" and o.get("trail_percent") is not None:
+        line += f", trails ${price * o['trail_percent'] / 100:.2f} behind the price"
+    closing = (o["action"] == "SELL" and held > 0) or (o["action"] == "BUY" and held < 0)
+    if closing and o["quantity"] > abs(held):
+        n = abs(held)
+        line += f", your position is {int(n) if float(n).is_integer() else n} shares"     # the book keeps some as floats
+    return line + "."
 
 
 def prob(x):
@@ -768,7 +1149,15 @@ class PaperWorld:
         import paper
         self.paper, self.gw, self.sleeve, self.data = paper, gw, sleeve, data
         self.dry_run = False
-        self.SHOCK_CAP = shock_cap_of(paper.sleeves().get(sleeve) or {})   # a sleeve term, set only by Clayton
+        meta = paper.sleeves().get(sleeve) or {}
+        self.SHOCK_CAP = shock_cap_of(meta)   # a sleeve term, set only by Clayton
+        self.MAX_GROSS = max_gross_of(meta)   # the same: 2.0 unless Clayton set "max_gross"; None = no software limit
+        self.OWN_LIMIT = own_limit_of(meta)   # the sleeve's own limit, told and never enforced (18 Nov); None = not told
+        self.TEXT = text_of(meta)             # "B" adds the order echo to the next look's notes; "A" (the control) does not
+
+    log = None   # live.py sets its log(): a failure of a text-B feature in act() costs that feature and logs a line
+    ACCOUNT = None   # live.py sets text B's account_line() info, read once a look (account_text shows it for text B only)
+    OWN_LIMIT = None   # __init__ sets the sleeve's own_limit_of(meta)
 
     def symbols_in_play(self):
         b = self.paper.book(self.sleeve)
@@ -804,6 +1193,7 @@ class PaperWorld:
         orders = []
         asked = self.paper.cancel_requested(self.sleeve)      # still open after our cancel: IBKR has not confirmed it
         sent = self.paper.placed_fields(self.sleeve)
+        closers = self.paper.close_only_refs(self.sleeve)     # 17 Nov: shown as "close_only" after the status
         for o in self.paper.open_orders(self.gw, self.sleeve):
             orders.append({"ref": o["ref"], "symbol": o["symbol"], "action": o["action"], "quantity": o["quantity"],
                            "type": o["order_type"], "stop": o.get("aux"),
@@ -812,12 +1202,19 @@ class PaperWorld:
                            # its stops as STP LMT "on the wrong side"), so only order types with a limit show one
                            "limit": o.get("limit") if o["order_type"] in ("LMT", "STP LMT", "LOC") else None,
                            "tif": o.get("tif", "DAY"),
-                           "cancel_pending": o.get("status") == "PendingCancel" or o["ref"] in asked})
+                           "cancel_pending": o.get("status") == "PendingCancel" or o["ref"] in asked,
+                           **({"close_only": True} if o["ref"] in closers else {}),
+                           # not shown in the text: for the limit line's resting figure (own_limit.resting_figure; 18 Nov),
+                           # IBKR's own trail stop and what is left of a partly filled order, where the row has them
+                           **({"trail_stop": o["trail_stop"]} if o["order_type"] == "TRAIL" and o.get("trail_stop") is not None else {}),
+                           **({"remaining": o["remaining"]} if isinstance(o.get("remaining"), (int, float))
+                              and not isinstance(o.get("remaining"), bool) else {})})
         ev = self.paper.events_since_last_look(self.gw, self.sleeve, commit=not self.dry_run) + self.paper.take_notes(self.sleeve, commit=not self.dry_run)
         return {"value": value, "cash": b["cash"], "positions": pos, "orders": orders, "events": ev,
                 "gross": gross / value if value else 0, "net": net / value if value else 0, "beta_net": bnet / value if value else 0}
 
-    MAX_GROSS = 2.0   # each sleeve is its own margin account, as in sim.py: the paper account's margin is shared
+    MAX_GROSS = 2.0   # each sleeve is its own margin account, as in sim.py: the paper account's margin is shared.
+    #                   __init__ sets the sleeve's own term over this default (max_gross_of)
 
     def act(self, call):
         notes = []
@@ -832,8 +1229,27 @@ class PaperWorld:
                 notes.append(f"order rejected: {err}")
             else:
                 orders.append(o)
+        # close_only (Clayton, 17 Nov: "a flag the model sets on an order, so a stop it means as protective can never open a
+        # new position"): the position is read as of now, with the fills since the look's state (cand2 at 12:00 that day:
+        # its old stops filled during the look, and seven new stops then filled as opening buys). Only when the submit
+        # holds such an order; if the fills cannot be read, those orders are not sent (their own condition can't be held).
+        closers = [o for o in orders if o.get("close_only")]
+        co_err, covered = None, {}              # covered: (symbol, side) -> close_only quantity still open at IBKR there
+        if closers:                             # (CANCEL-PENDING included), then plus what this submit sends. The open
+            try:                                # orders are read before the fills (the review): one that fills between the
+                for w in self.paper.close_only_working(self.gw, self.sleeve):   # two reads counts twice, never not at all
+                    k = (w["symbol"], w["action"])
+                    covered[k] = covered.get(k, 0.0) + self.paper._left(w)
+            except Exception as e:              # noqa: BLE001
+                co_err = f"your open orders could not be read to check it ({type(e).__name__}: {str(e)[:120]})"
+            if co_err is None:
+                try:
+                    self.paper.sync_fills(self.gw)
+                except Exception as e:          # noqa: BLE001
+                    co_err = f"your fills could not be read to check it ({type(e).__name__}: {str(e)[:120]})"
         # Margin, as sim.py and IBKR apply it: an order that adds exposure is rejected if, filled at its limit or
-        # stop (else the last price), it would take the sleeve's gross exposure above MAX_GROSS x its value.
+        # stop (else the last price), it would take the sleeve's gross exposure above MAX_GROSS x its value. A sleeve
+        # with MAX_GROSS None has no such check: its orders go to IBKR, whose refusal is noted below like any other.
         syms = sorted(set(self.paper.book(self.sleeve)["positions"]) | {o["symbol"] for o in orders})
         quotes = {q["symbol"]: q for q in self.gw.quotes(syms) if not q.get("error")} if syms else {}
         px = {s: self.paper.mark(q) for s, q in quotes.items()}
@@ -841,11 +1257,42 @@ class PaperWorld:
         pos = {s: p["quantity"] for s, p in b["positions"].items()}
         mark = {s: (px.get(s) or p["avg_cost"]) for s, p in b["positions"].items()}
         nav = b["cash"] + sum(q * mark[s] for s, q in pos.items())
-        for o in orders:
+        held, echoes = dict(pos), []            # the book before this submit's orders, for the echo
+        now_pos, sent_syms = dict(pos), set()   # close_only: the position counting fills, re-read after an order in the
+        for o in orders:                        # same symbol was sent earlier in this submit (an entry and its stop)
             s, q0 = o["symbol"], pos.get(o["symbol"], 0)
+            if o.get("close_only"):
+                tag = f"{o['action']} {o['quantity']} {s} {o['type']} (close_only) not sent"
+                if co_err is None and s in sent_syms:
+                    try:                        # a market entry usually fills within seconds: wait 2 s, then read the open
+                        _time.sleep(2)          # close_only orders and the fills again, in that order (the recheck: cover
+                        covered = {}            # read before the wait counted a close_only order that filled in it twice)
+                        for w in self.paper.close_only_working(self.gw, self.sleeve):
+                            k = (w["symbol"], w["action"])
+                            covered[k] = covered.get(k, 0.0) + self.paper._left(w)
+                        self.paper.sync_fills(self.gw)
+                        now_pos = {k: v["quantity"] for k, v in self.paper.book(self.sleeve)["positions"].items()}
+                        sent_syms.discard(s)
+                    except Exception as e:      # noqa: BLE001
+                        notes.append(f"{tag}: your fills could not be read to check it ({type(e).__name__}: {str(e)[:120]})")
+                        continue
+                h = now_pos.get(s, 0)
+                closing = "BUY" if h < 0 else "SELL" if h > 0 else None
+                c = covered.get((s, o["action"]), 0.0)
+                if co_err is not None:
+                    notes.append(f"{tag}: {co_err}")
+                    continue
+                if o["action"] != closing:
+                    notes.append(f"{tag}: your position in {s} is {h:+g} counting fills so far, so it would "
+                                 + ("open a position" if not h else "add to it"))
+                    continue
+                if o["quantity"] > abs(h) - c + 1e-9:
+                    notes.append(f"{tag}: your position in {s} is {h:+g} counting fills so far, and your close_only orders "
+                                 f"there already cover {c:g}, so it would close more than you hold")
+                    continue
             q1 = q0 + (o["quantity"] if o["action"] == "BUY" else -o["quantity"])
             p = o["limit"] or o["stop"] or px.get(s) or mark.get(s)
-            if p and abs(q1) > abs(q0):
+            if p and self.MAX_GROSS and abs(q1) > abs(q0):
                 gross = sum(abs(q) * mark.get(k, p) for k, q in pos.items() if k != s) + abs(q1) * p
                 if gross > self.MAX_GROSS * max(nav, 0.0):
                     notes.append(f"{o['action']} {o['quantity']} {s} {o['type']} rejected: insufficient margin (gross exposure "
@@ -882,11 +1329,40 @@ class PaperWorld:
             q = quotes.get(o["symbol"], {})              # arrival quote, logged for the execution model (wave C)
             arrival = {k: q.get(k) for k in ("bid", "ask", "last", "close", "last_time")} if q else None
             r = self.paper.place(self.gw, self.sleeve, o["symbol"], o["action"], o["quantity"], typ, limit, aux, tif,
-                                 arrival=arrival, probs={"p_fill": o["p_fill"], "p_win": o["p_win"]}, **fields)
+                                 arrival=arrival, probs={"p_fill": o["p_fill"], "p_win": o["p_win"]},
+                                 **({"close_only": True} if o.get("close_only") else {}), **fields)
             res = r.get("result") or {}
             msg = r.get("error") or "; ".join(res.get("messages", []) or [])
             status = res.get("status", "error" if r.get("error") else "?")
-            if r.get("error") or status is None or status in ("Cancelled", "Inactive", "ApiCancelled"):   # None: an error before any status (so far always 321)
+            refused = bool(r.get("error")) or status is None or status in ("Cancelled", "Inactive", "ApiCancelled")
+            if not refused:                     # close_only (17 Nov): cover counts only what IBKR accepted; an accepted order
+                sent_syms.add(o["symbol"])      # makes a later close_only order in its symbol read fills again
+                if o.get("close_only"):
+                    covered[(o["symbol"], o["action"])] = covered.get((o["symbol"], o["action"]), 0.0) + o["quantity"]
+            if refused:                         # None: an error before any status (so far always 321)
                 notes.append(f"{o['action']} {o['quantity']} {o['symbol']} {o['type']}: {status or 'refused'} {msg}".strip())
+            # The echo only for an order the broker accepted, so it stays a fact about a real order; a refused one has its
+            # refusal note above (review, 15 Nov).
+            if not refused and getattr(self, "TEXT", "B") == "B":
+                try:                            # a failure costs the echo, never the order or the look
+                    e = order_echo(o, px.get(s), nav, held.get(s, 0))
+                except Exception as ex:         # noqa: BLE001
+                    e = None
+                    (self.log or (lambda m: print(m, file=sys.stderr)))(
+                        f"{self.sleeve}: order echo failed for {o['action']} {o['quantity']} {s}: {type(ex).__name__}: {ex}")
+                if e:
+                    echoes.append(e)
+        notes += echoes                         # refusals keep their place; the echoes follow, in the order sent
         self.paper.add_notes(self.sleeve, notes)
+        # This submit's own orders may close a position its close_only orders were for, and no check runs during a look
+        # (the recheck): when it sent anything and the sleeve has close_only orders open, wait 2 s, read fills, and cancel
+        # those the position no longer covers (their note goes in with the rest). Never raises.
+        if sent_syms or any(o.get("close_only") for o in orders):
+            try:
+                if self.paper.close_only_working(self.gw, self.sleeve):
+                    _time.sleep(2)
+                    self.paper.sync_fills(self.gw)
+                    self.paper.close_only_excess(self.gw, self.sleeve, log=self.log)
+            except Exception as e:              # noqa: BLE001
+                (self.log or (lambda m: print(m, file=sys.stderr)))(f"{self.sleeve}: close_only check after placing failed: {e}")
         return notes

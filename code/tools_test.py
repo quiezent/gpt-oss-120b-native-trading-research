@@ -81,6 +81,10 @@ with tempfile.TemporaryDirectory() as d:
                     ["SCAN_histPerfRatio1m_ASC", "SCAN_histPerfRatio1m_DESC", "SCAN_histPerfRatio3m_ASC",
                      "SCAN_histPerfRatio3m_DESC", "SCAN_utilization_DESC"]))
     for args, want in (({"symbols": 5}, "[]"), ({"symbols": True}, "[]"), ({"symbols": 1.5}, "[]"), ({"symbols": None}, "[]"),
-                       ({"symbols": ["aapl", " xle "]}, "['AAPL', 'XLE']"), ({"symbols": "ab"}, "['A', 'B']"), ("junk", "[]")):
+                       ({"symbols": ["aapl", " xle "]}, "['AAPL', 'XLE']"), ("junk", "[]"),
+                       # 16 Nov 2026: a string is split on commas and whitespace (it was split into letters: 'ab' gave A, B)
+                       ({"symbols": "ab"}, "['AB']"), ({"symbols": "AMAT, nvda  XLE"}, "['AMAT', 'NVDA', 'XLE']")):
         ok.append(check(f"symbols_in {args}", str(tools.symbols_in("quote", args)), [want]))
+    ok.append(check("quote with symbols as a string", tools.run(gw, "quote", {"symbols": "AAPL, SGOV"}),
+                    ["AAPL: last 100.50", "SGOV: last 100.50"], ["\nP: last", "\nL: last", "\nS: last"]))
 print("ALL OK" if all(ok) else "FAILED")

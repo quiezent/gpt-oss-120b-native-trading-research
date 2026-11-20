@@ -11,7 +11,7 @@ caught up later; exec_id dedupes the overlap.
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -24,6 +24,31 @@ DIVIDENDS = RUNS / "dividends.jsonl"   # dividends.py: one row per (sleeve, symb
 # A position held into ex_date is multiplied by ratio at an average cost divided by it; fills from ex_date on are already
 # in new shares (SOXX 3-for-1 on 5 Nov 2026: the books kept pre-split shares all day, against the account's).
 SPLITS = RUNS / "splits.jsonl"
+# dividends.py books a row itself when the account's quantity and the prices both show the ratio (a reverse split is 1/n, e.g.
+# 0.1 for 1-for-10). When a ratio leaves a fraction of a share (1-for-n, 3-for-2), the broker pays it in cash: a book keeps the
+# whole shares, toward zero, and is paid the fraction at the row's "cash_price" (the post-split price when it was booked).
+
+
+def split_qty(q, ratio):
+    """(whole shares, fraction of a share left over) of a q-share position after a split of `ratio` new shares per old."""
+    from fractions import Fraction
+    r = Fraction(ratio).limit_denominator(1000)
+    if r.denominator == 1:
+        return q * r.numerator, 0.0
+    x = Fraction(q) * r
+    return int(x), float(x - int(x))
+
+
+def splits():
+    """The rows of SPLITS in ex_date order, each (symbol, ex_date) once: the first row stands, a repeat (a row added by hand
+    on top of one dividends.py booked) is not applied again."""
+    seen, out = set(), []
+    for r in read(SPLITS):
+        k = (r["symbol"], str(r["ex_date"]))
+        if k not in seen:
+            seen.add(k)
+            out.append(r)
+    return sorted(out, key=lambda r: r["ex_date"])
 
 
 def et_today():
@@ -133,14 +158,21 @@ def book(sleeve, marks=None):
     pos = {}   # symbol -> [qty, avg_cost]
     opened = {}  # symbol -> date (YYYYMMDD) the current position was opened
     trades = 0
-    pending = sorted(read(SPLITS), key=lambda r: r["ex_date"])
+    pending = splits()
 
     def split_through(day):                  # every split up to `day` (YYYYMMDD), on the position held into it
+        nonlocal cash, realized
         while pending and pending[0]["ex_date"] <= day:
             r = pending.pop(0)
             if r["symbol"] in pos:
                 q, avg = pos[r["symbol"]]
-                pos[r["symbol"]] = [q * r["ratio"], avg / r["ratio"]]
+                whole, frac = split_qty(q, r["ratio"])
+                avg = avg / r["ratio"]
+                if frac:                     # paid in cash, as the broker pays it
+                    px = r.get("cash_price") or avg
+                    cash += frac * px
+                    realized += frac * (px - avg)
+                pos[r["symbol"]] = [whole, avg if whole else 0.0]
 
     for f in fills():
         if f.get("sleeve") != sleeve:
@@ -194,15 +226,20 @@ def book(sleeve, marks=None):
 def positions_at(sleeve, day):
     """{symbol: quantity} the sleeve held at the close before `day` (YYYYMMDD): its fills on earlier ET dates."""
     pos = {}
-    sp = read(SPLITS)
-    for f in fills():
-        fd = et_date(f["time"])
-        if f.get("sleeve") == sleeve and fd < day:
-            k = 1
-            for r in sp:                         # a split between the fill and the close before `day`
-                if r["symbol"] == f["symbol"] and fd < r["ex_date"] < day:
-                    k *= r["ratio"]
-            pos[f["symbol"]] = pos.get(f["symbol"], 0) + k * (f["shares"] if f["side"] == "BOT" else -f["shares"])
+    pending = splits()
+
+    def split_before(d):                         # a split between the fills so far and `d`, on the position held into it
+        while pending and pending[0]["ex_date"] < d:
+            r = pending.pop(0)
+            if r["symbol"] in pos:
+                pos[r["symbol"]] = split_qty(pos[r["symbol"]], r["ratio"])[0]
+
+    for fd, f in sorted(((et_date(f["time"]), f) for f in fills() if f.get("sleeve") == sleeve), key=lambda x: x[0]):
+        if fd >= day:
+            break
+        split_before(fd + "~")                   # ex_date <= fd: this fill is in new shares
+        pos[f["symbol"]] = pos.get(f["symbol"], 0) + (f["shares"] if f["side"] == "BOT" else -f["shares"])
+    split_before(day)
     return {s: q for s, q in pos.items() if q}
 
 
@@ -216,12 +253,15 @@ def mark(quote):
 
 
 def place(gw, sleeve, symbol, action, quantity, order_type="MKT", limit=None, aux=None, tif="DAY", arrival=None, probs=None,
-          **fields):
+          close_only=False, **fields):
     """Place one order for a sleeve exactly as given and record IBKR's answer (and the arrival quote and the
-    model's p_fill/p_win, if given: logged for calib_report.py, never sent to the broker)."""
+    model's p_fill/p_win, if given: logged for calib_report.py, never sent to the broker). close_only (17 Nov): recorded in
+    the row (close_only_refs), never sent to the broker (not an ibapi Order field)."""
     ref = new_ref(sleeve)
     row = {"time": now_iso(), "sleeve": sleeve, "ref": ref, "symbol": symbol, "action": action,
            "quantity": quantity, "order_type": order_type, "limit": limit, "aux": aux, "tif": tif, "fields": fields}
+    if close_only:
+        row["close_only"] = True
     if arrival:
         row["arrival"] = arrival
     if probs is not None:
@@ -251,6 +291,80 @@ def cancel(gw, sleeve, ref):
 def open_orders(gw, sleeve):
     done = {"Filled", "Cancelled", "ApiCancelled", "Inactive"}
     return [o for o in gw.orders() if sleeve_of(o.get("ref")) == sleeve and o.get("status") not in done]
+
+
+def close_only_refs(sleeve):
+    """Refs this sleeve placed as close_only (runs/orders.jsonl; Clayton, 17 Nov)."""
+    return {r["ref"] for r in read(ORDERS) if r.get("close_only") and r.get("ref") and r.get("sleeve") == sleeve}
+
+
+def _left(o):
+    """An open order's quantity still to fill: IBKR's remaining when it reports one, else the order's quantity."""
+    r = o.get("remaining")
+    return float(r) if isinstance(r, (int, float)) and not isinstance(r, bool) and r >= 0 else float(o.get("quantity") or 0)
+
+
+def close_only_working(gw, sleeve, open_rows=None):
+    """This sleeve's close_only orders still open at IBKR (orders() on client 10), CANCEL-PENDING ones included: a cancel IBKR
+    has not confirmed can still fill (the review of 17 Nov: on 22 Oct some took hours), so it still counts as cover."""
+    refs = close_only_refs(sleeve)
+    if not refs:                                               # no close_only order ever: no orders() round trip
+        return []
+    rows = open_orders(gw, sleeve) if open_rows is None else open_rows
+    return [o for o in rows if o.get("ref") in refs]
+
+
+def close_only_recent(days=10):
+    """Sleeves that placed a close_only order in the last `days` days (GTC orders may still be working): the loop's
+    between-looks guard connects only when there are some."""
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    return sorted({r["sleeve"] for r in read(ORDERS) if r.get("close_only") and r.get("sleeve") and str(r.get("time", "")) >= since})
+
+
+def close_only_excess(gw, sleeve, log=None, fail_log=None):
+    """At each look (live.look, after its fill syncs) and about once a minute between looks (live.close_only_guard): the
+    sleeve's close_only orders that its position no longer covers are cancelled. In each symbol, from the oldest order to the
+    newest, an order on the closing side is kept while what is left of the position still covers it; every other order
+    (the same side as the position, no position, or more than is left) is cancelled. One whose cancel is already pending is
+    not cancelled again, and one this check already tried to cancel is not tried again (a failed cancel is not retried
+    every minute); each order is named in a note once (the recheck: the guard runs about once a minute). fail_log: where a
+    failure of the check itself is said (the guard throttles it). Returns the cancel rows. Never raises."""
+    try:
+        work = close_only_working(gw, sleeve)
+        if not work:
+            return []
+        pos = {s: p["quantity"] for s, p in book(sleeve)["positions"].items()}
+        order_of = {r["ref"]: (r.get("time", ""), i) for i, r in enumerate(read(ORDERS))      # later rows win a tie
+                    if r.get("ref") and r.get("sleeve") == sleeve}
+        asked = cancel_requested(sleeve)
+        tried = {str(r["cancel"]) for r in read(ORDERS) if r.get("cancel") and r.get("sleeve") == sleeve}
+        out, said = [], []
+        for sym in sorted({o["symbol"] for o in work}):
+            q = pos.get(sym, 0)
+            closing = "BUY" if q < 0 else "SELL" if q > 0 else None
+            room = abs(q) if closing else 0
+            for o in sorted((o for o in work if o["symbol"] == sym), key=lambda o: order_of.get(o["ref"], ("", -1))):
+                left = _left(o)
+                if o["action"] == closing and left <= room + 1e-9:
+                    room -= left                                   # the oldest that still fit are kept
+                    continue
+                if o["ref"] in asked or o["ref"] in tried or o.get("status") == "PendingCancel":
+                    continue                                   # already asked for (by the model or this check): named once
+                r = cancel(gw, sleeve, o["ref"])
+                out.append(r)
+                said.append(f"{o['ref']} {o['action']} {left:g} {sym}" + (f" (cancel failed: {r['error']})" if r.get("error") else ""))
+        if said:
+            add_notes(sleeve, ["framework note (close_only): your position no longer covered these close_only orders, so a "
+                               "cancel was sent for each (the oldest that still fit were kept; an order is working until "
+                               "the broker confirms it): " + "; ".join(said) + "."])
+            if log:
+                log(f"{sleeve}: close_only orders cancelled: {said}")
+        return out
+    except Exception as e:                                     # noqa: BLE001 - a failed check costs nothing but itself
+        say = fail_log or log
+        if say:
+            say(f"{sleeve}: close_only check failed: {type(e).__name__}: {e}")
+        return []
 
 
 def placed_fields(sleeve):

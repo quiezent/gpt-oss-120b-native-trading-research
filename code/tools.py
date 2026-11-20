@@ -1,7 +1,8 @@
 """Research tools every model gets before it submits orders: the same names, schemas and results for
 gpt-oss (native tool calls) and for Claude (through mcp_server.py).
 
-Each look, a model may call up to MAX_CALLS research tools, then must call `submit` once. Results are
+Each look, a model may call up to MAX_CALLS research tools (from Mon 16 Nov 2026 a gpt-oss sleeve's own "max_calls",
+trader.max_calls_of), then must call `submit` once. Results are
 compact text so they fit the context. News and scanners appear only if the TWS framework offers them.
 
 news, article and tape: live, the gateway's rows plus the company's SEC 8-Ks and our macro calendar rows
@@ -10,6 +11,7 @@ news, article and tape: live, the gateway's rows plus the company's SEC 8-Ks and
 
 import json
 import os
+import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -18,6 +20,71 @@ from zoneinfo import ZoneInfo
 ET = ZoneInfo("America/New_York")
 LISTS = Path(__file__).resolve().parent / "lists"
 MAX_CALLS = 12
+MAX_CALLS_TOP = 30      # a sleeve's "max_calls" may be a whole number from 1 to this (agent.gptoss_look's seeds assume a look
+                        # of under 50 steps; its step range is the limit + 11 at most)
+# The price field each order type needs (as trader.PaperWorld.act and paper.place send them: LMT, LOC and STP LMT carry
+# "limit", STP and STP LMT "stop", TRAIL "trail_percent"); MKT, MOO and MOC need none. An order without it reaches IBKR
+# with no price and is refused (321 "Please enter a stop price"; cand2's five STPs at 15:30 on Mon 16 Nov wrote their
+# price under "limit"). Clayton, 16 Nov: "Yes, build it": a submit holding such an order is asked once again in the same
+# look, naming the missing field (missing_prices, missing_text; agent.gptoss_look and mcp_server.submit).
+PRICE_FIELDS = {"LMT": ("limit",), "LOC": ("limit",), "STP": ("stop",), "STP LMT": ("stop", "limit"), "TRAIL": ("trail_percent",)}
+# The stop types spelled out, read as the submit tool's own types (trader.clean_order, missing_prices). The Trading Model
+# Researcher, 18 Nov evening: at 11:30 cand1 sent three protective stops typed "STOP", each with its stop price; act()
+# sends a stop price to IBKR only for STP and STP LMT, so none went, IBKR refused all three (321: "Please enter a stop
+# price") and the note blamed a price the sleeve had given, while the entries beside them filled. IBKR itself read "STOP"
+# as a stop order. In the look records through 18 Nov, 4 of 12,934 orders were typed "STOP" (base-100k at 13:00 on 4 Nov,
+# cand1 at 11:30 on 18 Nov) and no other spelling of a listed type. The order goes out as the model wrote it.
+TYPE_NAMES = {"STOP": "STP", "STOP LIMIT": "STP LMT", "STOP LMT": "STP LMT"}
+
+
+def order_type(t):
+    """An order's type as the submit tool reads it, for trader.clean_order, missing_prices and train4's counts alike:
+    upper case, "_" read as a space, runs of spaces as one and none at the ends (the review of 18 Nov evening: " STOP"
+    and "STOP  LIMIT" lost their prices while the re-ask read them as STP), and a spelled-out stop type as the tool's
+    own (TYPE_NAMES)."""
+    t = " ".join(str(t).upper().replace("_", " ").split())
+    return TYPE_NAMES.get(t, t)
+FIELD_WORDS = {"limit": "its limit price", "stop": "its stop (trigger) price", "trail_percent": "its trail as a percent"}
+
+
+def missing_prices(place):
+    """[(index from 1, "BUY 100 AMD STP", [missing fields], [price fields given that its type does not use])] for each order
+    of a submit's place list whose type needs a price field it lacks (absent, null or ""). A value that is present but not a
+    number is not missing here (submit's own checks report it). Anything not a list of objects gives []."""
+    out = []
+    if not isinstance(place, list):
+        return out
+    for i, o in enumerate(place, 1):
+        if not isinstance(o, dict):
+            continue
+        typ = order_type(o.get("type") or "")   # as trader.clean_order reads it
+        need = PRICE_FIELDS.get(typ)
+        if not need:
+            continue
+        has = lambda k: o.get(k) not in (None, "") and not isinstance(o.get(k), bool)
+        lack = [k for k in need if not has(k)]
+        if lack:
+            unused = [k for k in ("limit", "stop", "trail_percent") if k not in need and has(k)]
+            desc = " ".join(str(x) for x in (str(o.get("action") or "").upper(), o.get("quantity"),
+                                             str(o.get("symbol") or "").upper(), typ) if str(x) != "")
+            out.append((i, desc, lack, unused))
+    return out
+
+
+def missing_text(missing):
+    """The one re-ask's text for missing_prices' result: which orders lack which field, and that the next submit is sent
+    as written."""
+    items = []
+    for i, desc, lack, unused in missing:
+        s = f"order {i} ({desc}) has no " + " and no ".join(f'"{k}" ({FIELD_WORDS[k]})' for k in lack)
+        if unused:
+            s += "; it gives " + " and ".join(f'"{k}"' for k in unused) + ", which its type does not use"
+        items.append(s)
+    return ("submit not accepted yet: " + "; ".join(items) + ". IBKR refuses an order of that type without it. Call submit "
+            "again with your whole decision (every order and cancel); this is asked once a look, and the next submit is sent "
+            "as written.")
+
+
 MAX_SYMBOLS = 20
 MAX_STATS = 10
 NOTES_DESC = ("Notes to yourself for your next look: your thesis, plan and exit levels. Nothing else you think or "
@@ -30,6 +97,20 @@ P_WIN_DESC = ("Your probability (0-1) that at the close 5 sessions after the ses
 PROBS_NOTE = "Each order's p_fill and p_win are recorded and scored against what happens; they never change how the order is handled."
 # in submit's own description too: the gpt-oss (Harmony) renderer drops descriptions of an array's item fields
 PROBS_DESC = f"p_fill: {P_FILL_DESC} p_win: {P_WIN_DESC} {PROBS_NOTE}"
+# The trailing-stop unit, in text B's submit form from 16 Nov 2026 (Clayton, 14 Nov); shared with mcp_server.py
+TRAIL_DESC = "trail_percent is in percent: the stop trails by price x trail_percent / 100."
+# Clayton, Tue 17 Nov 2026: "Close-only orders now, before the 20 Nov plan: a flag the model sets on an order, so a stop it
+# means as protective can never open a new position." (CLAUDE.md: "an order it marks as a close may not add to the
+# position"; cand2 at 12:00 that day: its old stops filled during the look, its cancels came back "not an open order", and
+# seven new stops filled as opening buys.) Text B's submit form only; trader.PaperWorld.act and paper.close_only_excess.
+CLOSE_DESC = ("close_only true marks an order meant only to close. It is sent only if your position in that symbol, "
+              "counting fills so far (an order earlier in the same submit counts if it has filled 2 seconds after it was "
+              "sent, which a market order in the session usually has and one before the open has not), is on the other "
+              "side and covers it together with your other close_only orders still open there, those earlier in the same "
+              "submit included. At each look and about once a minute between looks, "
+              "close_only orders your position no longer covers are cancelled, keeping the oldest that still fit. Between "
+              "those checks it is an ordinary order at the broker: if another order closes the position first, it can fill "
+              "and open one.")
 
 # IBKR scan codes that work on this account (checked 15 Oct 2026; the Refinitiv fundamental scans are not allowed).
 SCANS = {
@@ -194,12 +275,32 @@ def _headline(r):
     return f"{t} [{r.get('provider')} {r.get('article_id')}] {r.get('headline')}"
 
 
-def run(gw, name, args, ml_tool=None):
+def article_ref(provider, article_id):
+    """(provider, article_id) as the gateway and our stores key them. news and tape print IBKR and MACRO ids with the provider
+    prefix ("[BRFG BRFG$1fc7c7a5]") and EDGAR ids bare (accessions); IBKR answers 10172 to a bare id. Week 5 (9-13 Nov): 14 gpt-oss
+    article calls gave a bare BRFG id and all failed with 10172, while each of those ids worked in another look with "BRFG$". So a bare id gets the
+    prefix and an EDGAR id loses one; the provider is upper-cased (IBKR's codes are)."""
+    p, aid = str(provider).strip().upper(), str(article_id).strip()
+    if p == "EDGAR":
+        return p, aid.removeprefix("EDGAR$")
+    return p, (aid if "$" in aid or not aid or p in ("", "NONE") else f"{p}${aid}")
+
+
+def symbol_list(x):
+    """A "symbols" argument as a list: a string ("AMAT" or "AMAT, NVDA") is split on commas and whitespace. Until 16 Nov 2026
+    a string was iterated, so "AMAT" asked for A, M, A and T; a list (or anything else) comes back as it was."""
+    return [s for s in re.split(r"[,\s]+", x) if s] if isinstance(x, str) else x
+
+
+def run(gw, name, args, ml_tool=None, sleeve_value=None, look=None):
     """Execute one research tool; returns text. Errors come back as text, verbatim. ml_tool: the sleeve's forecast tool
-    version (ml_tools.py)."""
+    version (ml_tools.py); sleeve_value (the sleeve's value in its state) and look (a key that is the same for every call
+    of one look and new at the next) go to the forecast tool as they are (ML2.3 and ML3.1, fixes 1 and 4)."""
     try:
         if not isinstance(args, dict):
             return "error: arguments must be a JSON object"
+        if name in ("quote", "stats", "forecast") and isinstance(args.get("symbols"), str):
+            args = dict(args, symbols=symbol_list(args["symbols"]))
         if name == "quote":
             syms = [str(s).upper().strip() for s in (args.get("symbols") or [])][:MAX_SYMBOLS]
             if not syms:
@@ -250,11 +351,12 @@ def run(gw, name, args, ml_tool=None):
                 rows, note = gw.tape(seconds=5), ""
             return "\n".join([_headline(r) for r in rows[:25]] + ([note] if note else [])) or "no headlines"
         if name == "article":
+            prov, aid = article_ref(args.get("provider"), args.get("article_id"))
             if _live(gw):
                 from ml_research import livenews
-                text = livenews.article(gw, str(args.get("provider")), str(args.get("article_id")))
+                text = livenews.article(gw, prov, aid)
             else:
-                text = gw.article(str(args.get("provider")), str(args.get("article_id")))
+                text = gw.article(prov, aid)
             text = text.get("text", "") if isinstance(text, dict) else str(text)
             if len(text) <= 4000:
                 return text
@@ -263,7 +365,7 @@ def run(gw, name, args, ml_tool=None):
                                   "filing may be longer]" if edgar else f"\n[cut at 4,000 of {len(text):,} characters]")
         if name == "forecast":                     # the ML arm's tool (ml_tools.py); only -ml sleeves are offered it
             import ml_tools
-            return ml_tools.module(ml_tool).run(gw, args)
+            return ml_tools.module(ml_tool).run(gw, args, sleeve_value=sleeve_value, look=look)
         if name == "stats":
             syms = [str(s).upper().strip() for s in (args.get("symbols") or [])][:MAX_STATS]
             if not syms:
@@ -310,6 +412,6 @@ def symbols_in(name, args):
     if name in ("bars", "news"):
         return [str(args.get("symbol", "")).upper().strip()]
     if name in ("quote", "stats", "forecast"):
-        syms = args.get("symbols") or []
+        syms = symbol_list(args.get("symbols") or [])                  # a string as run() reads it: "AMAT, NVDA" is two
         return [] if isinstance(syms, (int, float)) else [str(s).upper().strip() for s in syms]   # the model can send {"symbols": 5}
     return []

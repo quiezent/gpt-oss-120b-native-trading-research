@@ -615,7 +615,7 @@ def main():
                                            "shock_cap": 0.15}, "text", st, None, [], [], [], True, secs=1.0)
     live.record_look(MON, "base", {"model": "base", "ml": False, "shock_cap": "15%"}, "text", st, None, [], [], [], True)
     r1, r0 = (json.loads((live.LIVE / "2026-11-09" / f"{k}-0820.json").read_text(encoding="utf-8")) for k in ("base-100k-ml", "base"))
-    check("look record: kelly_prompt and shock_cap", (r1["ml_tool"], r1["kelly_prompt"], r1["shock_cap"]) == ("ML3.0", True, 0.15)
+    check("look record: kelly_prompt and shock_cap", (r1["ml_tool"], r1["kelly_prompt"], r1["shock_cap"]) == (forecast3.VERSION, True, 0.15)
           and (r0["ml_tool"], r0["kelly_prompt"], r0["shock_cap"]) == (None, False, None), (r1, r0))
 
     # refresh() starts it after compute_versions succeeds, and not when it fails
@@ -628,11 +628,18 @@ def main():
     live.rates.fetch = lambda: (_ for _ in ()).throw(RuntimeError("offline"))
     sys.modules["fetch_extra"] = types.SimpleNamespace(update=lambda gw, syms, kind, **k: [])
     sys.modules["fetch_av"] = types.SimpleNamespace(daily=lambda n: (_ for _ in ()).throw(RuntimeError("offline")))
+    # refresh() also updates the per-night carry record and reads recently traded names (16 Nov 2026): a fake here, so this
+    # test never writes the real runs/carry or reads the real ledgers
+    carry = []
+    sys.modules["carry_record"] = types.SimpleNamespace(update=lambda *a, **k: (carry.append("update"), "carry: (test)")[1],
+                                                         recent_names=lambda *a, **k: (carry.append("names"), {"ZZTOP"})[1])
     live.compute_versions = lambda: order.append("compute")
     live.warm_outside = lambda: order.append("warm")
     live.ml2_guard = lambda: order.append("guard")
     live.refresh()
     check("refresh: the warm-up right after compute_versions", order == ["compute", "warm", "guard"], order)
+    check("refresh: reads the recently traded names for its bars refresh, then updates the carry record once, after the bars",
+          carry == ["names", "update"], carry)
 
     def fails():
         order.append("compute failed")
@@ -651,13 +658,14 @@ def main():
     head = subprocess.run(["git", "describe", "--always", "--dirty"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     vs = ", ".join(f"{k} {ml_tools.module(k).VERSION}" for k in sorted(ml_tools.VERSIONS))
     check("start line: git describe (dirty shown) and every ML tool's VERSION",
-          live.code_line() == f"code {head}; ML tools: {vs}" and head and "ML3 ML3.0" in vs, live.code_line())
+          live.code_line() == f"code {head}; ML tools: {vs}" and head and f"ML3 {forecast3.VERSION}" in vs, live.code_line())
     dirty = types.SimpleNamespace(returncode=0, stdout="2baf629-dirty\n")
     check("start line: a dirty tree is named", live.code_line(run=lambda *a, **k: dirty).startswith("code 2baf629-dirty; "))
     check("start line: git unavailable", live.code_line(run=lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError("git")))
           .startswith("code unknown; "))
     polls = []
     live.JOBS, live.STOP, live.load_done = [], tmp / "STOP", lambda: set()
+    live.LOOKING, live.LOOP = tmp / "LOOKING", tmp / "LOOP.json"     # loop() writes these (16 Nov 2026): never the real ones
     live.macro_intraday = lambda st: None
     live.warm_poll = lambda: polls.append(1)
     live.time = types.SimpleNamespace(sleep=lambda s: live.STOP.touch(), time=time.time)

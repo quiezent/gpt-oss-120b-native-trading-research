@@ -40,10 +40,20 @@ from ml_research import bondfx
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "runs" / "ml" / "forecast"
 RES = ROOT / "runs" / "ml" / "research"
-VERSION = "ML2.2"               # this tool's version (runs/ml/research/ml_tool_versions.md): recorded on looks, not shown to models
+VERSION = "ML2.4"               # this tool's version (runs/ml/research/ml_tool_versions.md): recorded on looks, not shown to models
+                                # ML2.4 (15 Nov 2026; Clayton: "Apply to all sleeves running ML."): the description's paragraph
+                                # on the models that did not beat trading costs is out (its first sentence, "No return or
+                                # direction forecast is offered.", stays), and the legend's "the expected gain from direction
+                                # is 0" (the Researcher's recommendation: the same claim). No number changes.
 MAX_SYMBOLS = 20
 DEFAULT_NOTIONAL = 3000.0
-DEFAULT_SLEEVE = 30000.0        # the sleeves' start: the sleeve% base unless the model passes its sleeve's value
+DEFAULT_SLEEVE = 30000.0        # the sleeve% base when neither the model (sleeve_usd) nor the caller (run's sleeve_value) gives
+                                # one. ML2.3 (ML3 review fix 1, 15 Nov): 28 of about 735 week-5 calls left sleeve_usd out, 8 of
+                                # them base-90k-ml's, whose sleeve% then read about 3x too high; the caller now passes the
+                                # sleeve's own value from its state
+LEGEND_REF = "legend as in your first forecast call this look"      # ML2.3 (fix 4): later calls of a look print this instead
+_LEGEND_SEEN = {}               # look key -> True once that look's first call printed the legend (insertion order, capped)
+_LEGEND_LOCK = threading.Lock()
 
 # Names outside the cache, scored at look time (live only; the simulator has no data for them).
 ONDEMAND = OUT / "ondemand"     # <as_of>/<SYM>.json: one file per name and close, shared by the live loop and opus-ml
@@ -64,12 +74,15 @@ _LOCK = threading.Lock()        # the MCP server may run tool calls in threads
 
 # The tool description, verbatim from runs/ml/research/synthesis_wave_c.md, plus the dollar columns verbatim from
 # dollarline_prereg.md (gpt-oss sees each line as a "// " comment; the MCP tool reads the same SPEC).
-DESCRIPTION = """Risk and cost forecasts from our machine-learning models, plus today's company filings and macro calendar: how much a stock is likely to move and what a round trip costs, not which way it will go. Use them to size positions, to set stop and limit distances, and to skip trades whose cost eats much of the expected move. A move forecast is not a gain forecast: every ± column is as likely down as up.
+# ML2.3 (ML3 review fix 2, 15 Nov; Clayton, 14 Nov: a fix, so it reaches ML2): three sentences that told the model what to
+# do with a number are gone (size positions, set stops, skip trades; size_scale "keeps your risk at its usual level"; a
+# stop "likely to be touched by noise"). What each number is, its units and its measured record stay word for word.
+DESCRIPTION ="""Risk and cost forecasts from our machine-learning models, plus today's company filings and macro calendar: how much a stock is likely to move and what a round trip costs, not which way it will go. A move forecast is not a gain forecast: every ± column is as likely down as up.
 
 **Ask for all your candidates in one call** (up to 20 symbols): each call uses one of your research calls, whatever its length.
 
 **Header lines:**
-- **market:** expected SPY volatility over the next 20 and 5 sessions, annualized %, with 10-90% ranges. Also size_scale = typical SPY vol / expected vol, which is about how much gross exposure keeps your risk at its usual level.
+- **market:** expected SPY volatility over the next 20 and 5 sessions, annualized %, with 10-90% ranges. Also size_scale = typical SPY vol / expected vol.
 - **macro:** today's scheduled US releases (ET), with the first-release value once it is in our data and the Kalshi pre-release expectation, plus the next week's CPI, payrolls, PCE, GDP and FOMC. It is a calendar, not a forecast.
 
 **Columns as of the last close:**
@@ -85,15 +98,15 @@ DESCRIPTION = """Risk and cost forecasts from our machine-learning models, plus 
 
 **Session columns (09:30-16:00 ET), from today's 30-minute bars:**
 - next60 ±: the expected high-low range over the next 60 minutes, shown as ± half of it, % of the current price, with its 10-90% range.
-- rest_of_day ±: the same through the close. A stop closer than twice the rest_of_day ± value's 10% figure is likely to be touched by noise.
+- rest_of_day ±: the same through the close.
 
 **Dollar columns (after the session columns, before the note), from range1:**
 - move$ ±(90): what a move of one range1 ± value, up or down, is in dollars on an order of notional_usd (not rounded to whole shares); in brackets, the same for range1's 90% value (the 90 in range1's 10-90). For example, a one-± move on a $5,000 order is ±$62 (0.21% of a $30,000 sleeve); at range1's 90% value ±$94 (0.31%).
-- sleeve% ±(90): the same two moves as % of sleeve_usd (default $30,000, a sleeve's starting value: pass your sleeve's current value).
+- sleeve% ±(90): the same two moves as % of a sleeve's value: the sleeve_usd you pass; without it, your sleeve's current value from your state when the tool is given it, else $30,000 (a sleeve's starting value). The legend line names the value used and where it came from.
 - They measure the size of a move, not a result: either direction is as likely. A name without a range1 forecast shows na.
 - Neither is a loss limit. range1 is half the session's high-low span and leaves out the overnight gap, so the dollars understate a move from the close: measured from the last close, the session's largest move, up or down, went past the bracketed figure in about 47% of sessions. absr1 (close to close, gap included) measures a move from the close.
 
-**No return or direction forecast is offered.** Out of sample, none of the models we tested beat trading costs. That covers overnight gaps, intraday momentum, reversal, volume and time-of-day, news sentiment, industry, factor timing, momentum ranking and market timing. Our anomaly flag did not predict drops. Earnings drift was tested and did not beat trading costs: over 1,821 earnings releases (Oct 2025-Oct 2026), the move from 10:30 ET on the reaction day to the close two sessions later, in the direction of the first reaction, averaged -9 bps against SPY, against round-trip costs of 14-18 bps.
+**No return or direction forecast is offered.**
 
 **Track record** (out of sample; per-symbol figures cover today's S&P 500 stocks and ETFs, so they are survivor-biased; scored on the full high-low range, of which range1, next60 and rest_of_day show half):
 - **range1:** R2 0.37 vs 0.29 for the 20-day average range (Jan 2025-Oct 2026). A plain recent-range average does nearly as well. Its 10-90% range held 81% of outcomes, but only 76% in the April 2025 shock half-year.
@@ -127,8 +140,10 @@ SPEC = {
                     "description": f"Up to {MAX_SYMBOLS} symbols. Put all your candidates in one call: each call uses one research call."},
         "notional_usd": {"type": "number",
                          "description": f"Order size, $, for the cost and move$ columns (default {DEFAULT_NOTIONAL:,.0f})."},
-        "sleeve_usd": {"type": "number", "description": f"Your sleeve's value, $, for the sleeve% column (default "
-                                                        f"{DEFAULT_SLEEVE:,.0f}, a sleeve's starting value)."}},
+        "sleeve_usd": {"type": "number", "description": f"Your sleeve's value, $, for the sleeve% column. Without it: your "
+                                                        f"sleeve's current value from your state when the tool is given it, "
+                                                        f"else {DEFAULT_SLEEVE:,.0f} (a sleeve's starting value); the legend "
+                                                        f"line says which."}},
         "required": ["symbols"]},
 }
 
@@ -505,7 +520,38 @@ def _session(gw, syms, iv_hint=None):
     return f"session ranges at the {now:%H:%M} look", res
 
 
-def run(gw, args):
+def _sleeve_of(x):
+    """A usable sleeve value from the model's sleeve_usd or the caller's sleeve_value, else None (booleans, text, zero,
+    negative and non-finite values are not one, as before ML2.3)."""
+    if x is None or isinstance(x, bool):
+        return None
+    try:
+        v = float(x or 0)
+    except (TypeError, ValueError):
+        return None
+    return v if math.isfinite(v) and v > 0 else None       # a sleeve at or below zero has no share to show
+
+
+def legend_once(look):
+    """True if this look's legend is still to be printed (and marks it printed). look None: always True, the pre-ML2.3
+    behaviour, so a caller that names no look gets the full legend on every call. Keys are kept for the last 512 looks."""
+    if look is None:
+        return True
+    with _LEGEND_LOCK:
+        if look in _LEGEND_SEEN:
+            return False
+        _LEGEND_SEEN[look] = True
+        while len(_LEGEND_SEEN) > 512:
+            del _LEGEND_SEEN[next(iter(_LEGEND_SEEN))]
+        return True
+
+
+def run(gw, args, sleeve_value=None, look=None):
+    """The forecast tool. sleeve_value (ML2.3, fix 1): the sleeve's current value from its state, the sleeve% base when the
+    model gives no usable sleeve_usd (None: DEFAULT_SLEEVE, as before). look (fix 4): any hashable key that is the same for
+    every call of one look and new for the next; only the cost_bps, move$ and direction legend lines print on a look's first
+    call, and later calls print one line with LEGEND_REF and this call's order size and sleeve value in their place; the
+    header, market and macro lines print on every call (None: the full legend every call)."""
     t0 = time.monotonic()                           # the outside names' budget counts from here
     syms = args.get("symbols") or []
     if isinstance(syms, str):
@@ -518,13 +564,11 @@ def run(gw, args):
     except (TypeError, ValueError):
         notional = DEFAULT_NOTIONAL
     notional = min(max(notional, 50.0), 1e6)
-    sleeve = args.get("sleeve_usd")
-    try:
-        sleeve = DEFAULT_SLEEVE if isinstance(sleeve, bool) else float(sleeve or DEFAULT_SLEEVE)
-    except (TypeError, ValueError):
-        sleeve = DEFAULT_SLEEVE
-    if not (math.isfinite(sleeve) and sleeve > 0):          # a sleeve at or below zero has no share to show
-        sleeve = DEFAULT_SLEEVE
+    sleeve, src = _sleeve_of(args.get("sleeve_usd")), "the sleeve_usd you passed"
+    if sleeve is None:
+        sleeve, src = _sleeve_of(sleeve_value), "your sleeve's value in your state"
+    if sleeve is None:
+        sleeve, src = DEFAULT_SLEEVE, "the default: no sleeve value given"
     sleeve = min(max(sleeve, 1e3), 1e7)                     # as notional is clamped: keeps sleeve% readable
     sim = hasattr(gw, "forecast_provider")
     got = gw.forecast_provider() if sim else live_provider()
@@ -576,14 +620,19 @@ def run(gw, args):
     if sess:
         cols += " next60±%(10-90) rest_of_day±%(10-90)"
     cols += " move$±(90) sleeve%±(90)"
-    lines = [head, mline] + ([m["macro"]] if m.get("macro") else []) + [
-        f"cost_bps: round trip (spread, impact on entry and exit, both commissions) for a ${notional:,.0f} order per symbol",
-        f"move$ ±(90) and sleeve% ±(90): a move of one range1 ± value, up or down, on a ${notional:,.0f} order, in $ and as % "
-        f"of a ${sleeve:,.0f} sleeve; in brackets, the same for range1's 90% value. Neither is a loss limit: held from the "
-        f"last close, a long or a short was at some point down by more than the bracketed $ in 23-25% of next sessions.",
-        "No column forecasts direction: the expected gain from direction is 0. The ± columns are moves up OR down: "
-        "range1, next60 and rest_of_day are half the expected high-low span (a band around the price; no overnight gap), "
-        "absr1 the expected size of the close-to-close move (gap included, so usually larger).", cols + " note"]
+    if legend_once(look):
+        legend = [
+            f"cost_bps: round trip (spread, impact on entry and exit, both commissions) for a ${notional:,.0f} order per symbol",
+            f"move$ ±(90) and sleeve% ±(90): a move of one range1 ± value, up or down, on a ${notional:,.0f} order, in $ and as % "
+            f"of a ${sleeve:,.0f} sleeve ({src}); in brackets, the same for range1's 90% value. Neither is a loss limit: held "
+            f"from the last close, a long or a short was at some point down by more than the bracketed $ in 23-25% of next "
+            f"sessions.",
+            "No column forecasts direction. The ± columns are moves up OR down: "       # ML2.4: ": the expected gain from direction is 0" is out
+            "range1, next60 and rest_of_day are half the expected high-low span (a band around the price; no overnight gap), "
+            "absr1 the expected size of the close-to-close move (gap included, so usually larger)."]
+    else:                                           # fix 4: the same look's later calls (this call's own size and sleeve)
+        legend = [f"cost_bps and move$ for a ${notional:,.0f} order, sleeve% of a ${sleeve:,.0f} sleeve ({src}); {LEGEND_REF}"]
+    lines = [head, mline] + ([m["macro"]] if m.get("macro") else []) + legend + [cols + " note"]
     f = lambda x: "na" if x is None else f"{x:g}"
     h = lambda x: "na" if x is None else f"{round(x / 2, 2):g}"          # a high-low span shown as a ± half-span
     outside = []

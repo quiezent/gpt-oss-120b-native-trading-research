@@ -46,7 +46,9 @@ check("on: removing the paragraph gives the off text", on.replace("\n\n" + trade
 check("on: plain ASCII", all(ord(c) < 128 for c in on))
 check("on, no-ML twin: same paragraph", trader.KELLY in trader.live_system(30000, day, ml=False, kelly=True))
 
-check("ML3 registered: forecast3", ml_tools.module("ML3").__name__ == "forecast3" and ml_tools.module("ML3").VERSION == "ML3.0")
+import forecast3  # noqa: E402 - the pin follows the module's own version (ML3.0, then ML3.1 on 15 Nov 2026)
+check("ML3 registered: forecast3", ml_tools.module("ML3").__name__ == "forecast3"
+      and ml_tools.module("ML3").VERSION == forecast3.VERSION and forecast3.VERSION.startswith("ML3."))
 check("ML3 sleeves aren't 'unknown' (they get looks)", ml_tools.unknown({"x": {"ml": True, "ml_tool": "ML3"}}) == [])
 check("ML2 still the default", ml_tools.module(None).__name__ == "forecast" and ml_tools.DEFAULT == "ML2")
 check("in_use: ML2 first, then ML3", ml_tools.in_use({"a": {"ml": True}, "b": {"ml": True, "ml_tool": "ML3"}}) == ["ML2", "ML3"])

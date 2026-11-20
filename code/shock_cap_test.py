@@ -83,6 +83,7 @@ def world(pos, cap=0.15, nav=30000.0):
     w.paper = FakePaper(dict(pos))
     w.paper.cash = nav - sum(q * PX[s] for s, q in pos.items())          # NAV at these prices
     w.SHOCK_CAP = cap
+    w.TEXT = "A"            # no order echo (16 Nov 2026, text B's), so the notes are the rejections alone; text_ab_test.py tests the echo
     return w
 
 

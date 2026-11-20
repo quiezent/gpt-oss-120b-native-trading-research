@@ -21,7 +21,8 @@ Definitions (fixed here):
 - retried: the trace entries of agent.sample_once's first timeout (09657d2). framework_failure: no decision, with an
   error the framework raised, not the model (an exception, a second sample timeout, a Claude look that did not finish);
   `failure` says which. place_failed: a Claude decision whose placing raised.
-- no_decision: no valid submit. forced: a research call was answered "research limit reached".
+- no_decision: no valid submit. forced: a research call was answered "research limit reached", or (from 16 Nov 2026)
+  the context reserve acted: a call not run for lack of room, a dropped turn, or the submit opened near the context's end.
 - The order accounting is train4.order_stats as of the Researcher's 0f645b2 (models-w3), vendored verbatim below so a
   later training change cannot move it. Inputs: the look's state and call; prices from replay4.prices (the frozen R1
   scorer's reading of the look's table and research results), then each quote result's "SYM: last X" lines in call order
@@ -455,7 +456,8 @@ def decision_text(lk):
     r = reasoning_of(lk)
     if r.strip():
         return r
-    prev = [t for t in (lk.get("trace") or []) if "said" in t and t.get("tool") != "submit"]
+    prev = [t for t in (lk.get("trace") or []) if "said" in t and t.get("tool") != "submit"
+            and "dropped" not in t]         # a dropped turn (16 Nov 2026) was never in the prompt the decision was written on
     return analysis(prev[-1]["said"]) if prev else ""
 
 
@@ -539,7 +541,8 @@ def look_row(lk, day, slot, started, times, r1, sleeve_meta, sessions_before):
            "framework_failure": fail, "failure": why,
            "place_failed": any(str(t.get("error", "")).startswith("placing:") for t in raw),
            "no_decision": call is None,
-           "forced": any(str(t.get("result", "")).startswith("research limit reached") for t in raw),
+           "forced": any(str(t.get("result", "")).startswith(("research limit reached", "context nearly full ("))
+                         or "submit opened" in str(t.get("note", "")) for t in raw),
            "research_calls": sum(1 for t in raw if t.get("tool") not in (None, "submit")),
            "conc75_unprotected": replay4.state_conc75(lk),
            "margin_rejected": sum("insufficient margin" in str(n) for n in lk.get("placed_notes") or []),

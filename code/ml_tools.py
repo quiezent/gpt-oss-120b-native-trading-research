@@ -1,11 +1,14 @@
 """The forecast tool's versions, one module each, so a sleeve keeps its version when a newer one arrives.
 
 Clayton, 2 Nov 2026: ML2 stays available when there is an ML3 or ML4. A sleeve names its version in sleeves.json's
-ml_tool. A bug fix goes into that version's module and reaches its sleeves at the next restart (ML2.2). An upgrade, such
-as extra training or changed models, is a new version: a new module, with its own model files and cache, added to
-VERSIONS. It leaves the older modules and their files as they are; ML2_FILES' hashes catch one changed by
-mistake. A new module offers what forecast.py does: VERSION, SPEC, run(gw, args), compute(); its SPEC keeps the name
-forecast and the parameters symbols, notional_usd and sleeve_usd, which mcp_server.py declares. History, the sleeves on
+ml_tool. A bug fix goes into that version's module and reaches its sleeves at the next restart (ML2.2; ML2.3 and ML3.1,
+the ML3 review's fixes 1-4, which Clayton counted as fixes on 14 Nov). An upgrade, such as extra training or changed
+models, is a new version: a new module, with its own model files and cache, added to VERSIONS. It leaves the older
+modules and their files as they are; ML2_FILES' hashes catch one changed by mistake. A new module offers what
+forecast.py does: VERSION, SPEC, run(gw, args, sleeve_value=None, look=None) (from ML2.3: the sleeve's own value for
+sleeve%, and a key naming the look so the legend prints once a look), compute(); its SPEC keeps the name forecast and the
+parameters symbols, notional_usd and sleeve_usd, which mcp_server.py declares (ML4 adds track_record, declared only for a
+module whose SPEC has it; a sleeve on ML4 also reads trader.S3_ML4 as its step 3, not S3_ML). History, the sleeves on
 each version and what a new version must not touch: runs/ml/research/ml_tool_versions.md.
 """
 
@@ -14,7 +17,7 @@ import importlib
 import json
 from pathlib import Path
 
-VERSIONS = {"ML2": "forecast", "ML3": "forecast3"}   # version -> module; ML3 from week 5 (Clayton, 9 Nov)
+VERSIONS = {"ML2": "forecast", "ML3": "forecast3", "ML4": "forecast4"}   # version -> module; ML3 from week 5 (Clayton, 9 Nov); ML4 from forecast4.py (ML4.0)
 DEFAULT = "ML2"                       # a sleeve with the tool and no ml_tool
 
 ROOT = Path(__file__).resolve().parent

@@ -4,32 +4,29 @@ We are training **gpt-oss-120b**, OpenAI's open-weight model, into a specialized
 
 Our target is +200% a year (CAGR) on NAV, after costs. We publish here what we train, what works and what fails. The work is done by a small team of AI agents for Clayton, who sets the goals and budgets.
 
-*Last updated 14 November 2026, for week 5.*
+*Last updated 21 November 2026, for week 6.*
 
-## Live results: week 5 (9–13 Nov)
+## Live results: week 6 (16–20 Nov)
 
-Thirteen sleeves. Base + ML2.2 carries its book from 26 Oct (four weeks without a restart, to 20 Nov). Our three trained checkpoints, c1, F and H, went live for the first time, each with and without the new ML3 forecast tool. The untrained base model runs at $30,000 and $90,000, and Claude Opus, Sonnet and Haiku 5.5 run as references; these six get a Kelly sizing paragraph in the prompt. Every sleeve trades under a 15% single-shock limit. Values at Friday's close, net of commissions, from each sleeve's own fills.
+Ten sleeves. No software exposure limit: orders go to IBKR as the models write them, under IBKR's own margin (from Wed 18 Nov the gpt-oss sleeves are told to keep gross at or under 3x their own NAV). Base + ML4 carries its book from 26 Oct and ends its four-week run. Base runs on two prompt texts (A, the frozen control, and B), and two new trained checkpoints, Candidate 1 and Candidate 2, run at $90,000 beside it, each with and without the ML4 forecast tool. Claude Fable 5.2 runs as a reference at $30,000. Values at Friday's close, net of commissions, from each sleeve's own fills.
 
 | Sleeve | Model | Week | Change |
 |---|---|---:|---:|
-| Base $90k | gpt-oss-120b, untrained, Kelly paragraph | **+3.12%** | +$2,812 |
-| H | gpt-oss-120b + H LoRA (SFT), $30k | +1.06% | +$317 |
-| Opus + ML3 | Claude Opus 5.5 (reference), $30k | +0.73% | +$219 |
-| Haiku + ML3 | Claude Haiku 5.5 (reference), $30k | +0.67% | +$201 |
-| Sonnet + ML3 | Claude Sonnet 5.5 (reference), $30k | +0.60% | +$180 |
-| H + ML3 | gpt-oss-120b + H LoRA (SFT), $30k | −1.26% | −$377 |
-| F + ML3 | gpt-oss-120b + F LoRA (SFT), $30k | −2.10% | −$629 |
-| F | gpt-oss-120b + F LoRA (SFT), $30k | −2.81% | −$843 |
-| Base + ML3 | gpt-oss-120b, untrained, Kelly paragraph, $30k | −2.98% | −$893 |
-| c1 | gpt-oss-120b + c1 LoRA (SFT), $30k | −3.08% | −$925 |
-| Base + ML3 $90k | gpt-oss-120b, untrained, Kelly paragraph | −4.20% | −$3,784 |
-| Base + ML2.2 | gpt-oss-120b, untrained; book carried from 26 Oct ($30,832 on 6 Nov) | −4.57% | −$1,408 |
-| c1 + ML3 | gpt-oss-120b + c1 LoRA (SFT), $30k | −4.95% | −$1,485 |
-| **SPY** (bought at the 6 Nov mark) | | +2.37% | +$711 per $30k |
-| **Goal** (+200% a year, weekly pace) | | +2.14% | +$642 per $30k |
+| Base + ML4 $90k | gpt-oss-120b, untrained, text B | **+15.90%** | +$14,312 |
+| Candidate 2 + ML4 | gpt-oss-120b + candidate 2 LoRA (SFT), $90k | +13.47% | +$12,119 |
+| Candidate 1 + ML4 | gpt-oss-120b + candidate 1 LoRA (SFT), $90k | +8.86% | +$7,978 |
+| Base + ML4 | gpt-oss-120b, untrained; book carried from 26 Oct ($29,424 on 13 Nov) | +8.45% | +$2,488 |
+| Base $90k (B) | gpt-oss-120b, untrained, text B | +5.87% | +$5,284 |
+| Candidate 1 | gpt-oss-120b + candidate 1 LoRA (SFT), $90k | +4.79% | +$4,309 |
+| Fable 5.2 + ML4 | Claude Fable 5.2 (reference), $30k | +3.13% | +$940 |
+| Base $90k (A) | gpt-oss-120b, untrained, text A (control) | +0.85% | +$765 |
+| Fable 5.2 | Claude Fable 5.2 (reference), $30k | −1.88% | −$565 |
+| Candidate 2 | gpt-oss-120b + candidate 2 LoRA (SFT), $90k | −3.57% | −$3,216 |
+| **SPY** (bought at the 13 Nov mark) | | −7.97% | −$7,173 per $90k |
+| **Goal** (+200% a year, weekly pace) | | +2.14% | +$1,926 per $90k |
 | **Cash** | | 0.00% | $0 |
 
-Only Base $90k beat SPY and the goal; H and the three Claude sleeves, which barely traded, beat cash, and Base + ML2.2 is −1.92% since 26 Oct against SPY −0.92%. The trained checkpoints trailed untrained Base $90k by 2.1 to 6.2 points without the tool, and with ML3 two of three (F, H) led Base + ML3 at $30k while c1 trailed, all confounded by the Kelly paragraph or size, so training still hasn't shown a better live trader than base. Details: [week 5](reports/2026-11-13-week5.md) · [week 4](reports/2026-11-06-week4.md) · [week 3](reports/2026-10-30-week3.md) · [week 2](reports/2026-10-23-week2.md) · [week 1](reports/2026-10-16-week1.md).
+Every sleeve beat SPY in a week it fell on all five days, and seven reached the goal, mostly from net-short books at about 3x gross through Friday's 3.55% fall; Base + ML4 ends its four weeks at +6.37% against SPY −8.74%. Both trained candidates trailed untrained base on the same text in all four comparisons (by 1.1 and 9.4 points without the tool, 7.0 and 2.4 with it), so training still hasn't shown a better live trader than base. Details: [week 6](reports/2026-11-20-week6.md) · [week 5](reports/2026-11-13-week5.md) · [week 4](reports/2026-11-06-week4.md) · [week 3](reports/2026-10-30-week3.md) · [week 2](reports/2026-10-23-week2.md) · [week 1](reports/2026-10-16-week1.md).
 
 ## The models we train
 
@@ -54,6 +51,10 @@ flowchart LR
     B -->|best-of-8 SFT, log-growth reward<br/>on the next session incl. the gap| C1["c1<br/>48 steps · ~$101 with samples and eval<br/>failed its risk test; NAV backtest<br/>not better in both configurations"]
     C1 --> LC1["live week 5<br/>−3.1% alone · −5.0% with ML3<br/>(Base $90k +3.1% · Base + ML3 −3.0%)"]
     C1 -.->|needs a new input to pass first| C2["c2<br/>not trained:<br/>8-K text failed its confirmation"]
+    B -->|SFT on 289 clean-execution base looks<br/>no outcome selects a row| K1["Candidate 1<br/>63 steps · $17 retrain<br/>trades 8–10% less than base, no fault gain"]
+    K1 --> LK1["live week 6<br/>+4.8% alone · +8.9% with ML4<br/>(Base $90k B +5.9% · +15.9%)"]
+    B -->|the same looks, new final turns,<br/>regime line, rows weighted off the day's move| K2["Candidate 2<br/>54 steps · $15 retrain<br/>no shift shown, like base"]
+    K2 --> LK2["live week 6<br/>−3.6% alone · +13.5% with ML4"]
     B -->|Codex, before 9 Oct<br/>16 steps at 1e-5| N9["NAV9<br/>no edge on our 14 Oct re-test"]
     N9 --> LN9["live week 4<br/>−15.1% alone · −3.0% with ML2<br/>(Base $100k −6.3% · −9.1%)"]
 ```
@@ -73,6 +74,9 @@ flowchart LR
 | **NAV9** (Codex) | Codex's recipe from base, 16 steps at 1e-5 | Our 14 Oct re-test: no measurable edge over base (−0.03 points, p 0.93); on live looks it sits about where an untrained LoRA does | Week 4: −15.12% alone, −3.00% with ML2 (Base $100k −6.31% / −9.08%; the pairs differ in size). Not run in week 5 |
 | **c1** (9 Nov) | Best-of-8 SFT from base: 408 live states from weeks 1–4, each sample scored by log growth on the next session's whole-book path, net of costs and including the overnight gap; 383 targets, 48 steps | Do-no-harm bar on 210 held-out live looks of 4–6 Nov: failed A4(a), less single-shock risk than base. Closed-loop NAV backtest: c1 − base −0.48 points; c1 + ML2 − base + ML2 +1.41 (p 0.052); needed both, so not passed | Week 5 (Clayton's choice): −3.08% alone, −4.95% with ML3 |
 | **c2** | c1 trained further for stock picks, once a new input passes | Not trained: its gate, the 8-K text input, failed its confirmation | — |
+| **Candidate 1** (14–15 Nov) | SFT from base on 289 whole live looks of weeks 3–5 picked by execution rules (no fill, price or P&L selects a row); retrained in the Week 6 text, 63 steps | Mechanics read on 393 held-out looks: works. Against base sampled fresh: 8% fewer orders, 10% less entry notional (p 0.01), no fault gain (11.4% against 12.6%). Simulator: −1.73% a week | Week 6 (Clayton's choice): +4.79% alone, +8.86% with ML4 (Base $90k B +5.87%, Base + ML4 $90k +15.90%) |
+| **Candidate 2** (14–15 Nov) | The same looks with three declared shifts: a VIX/QQQ regime line, rows weighted so the book doesn't follow the day's move, new final turns base wrote on the Week 6 prompt; 54 steps | Works; neither shift shows (it followed the market more on down days in its first read); against fresh base nothing differs beyond chance. Simulator: +0.84% a week (−1.57 to +3.26) | Week 6: −3.57% alone, +13.47% with ML4 |
+| **Candidate 3a** (21 Nov) | A week 7 candidate on the plain text: 262 rows from 519 base drafts on 125 states | Training | — |
 
 **How we train.** GRPO on LoRA adapters, in point-in-time simulators where every research tool answers as of the decision time.
 - **rl1–rl3 (daily simulator):** one pre-open decision, rewarded on what it earns over the next 10 sessions after selling everything, minus a beta-matched SPY hedge, with a charge for idle cash and a risk penalty for concentration.
@@ -97,24 +101,26 @@ About twenty classical ML models were built and tested out of sample, January 20
 | **ML2.2** (9 Nov), a revision of ML2 | macro releases show the same day once posted, not two sessions late | **Shipped** to every ML2 sleeve |
 | **ML3.0** (9 Nov): **gap1**, tonight's overnight gap per name (quantile regression), plus SPY's move since the close | pre-registered on 241,993 name-nights, Jan 2025–Nov 2026 | Pre-registered test **failed** (coverage 76.5% against 77–83%); a walk-forward refit chosen afterwards passes (78.7%, pinball 7% below a naive band). Registered by Clayton for the "+ ML3" sleeves; forward check on 9–20 Nov nights. An intraday market line failed and isn't shown |
 | **Base gpt-oss as a probability source** (Kelly v0, 9 Nov) | 49 windows × 41 names, 4 draws, Jul 2024–Jun 2025 | **No information**: AUC 0.497; a Kelly engine on it lost 29% against SPY +13% |
+| **ML4.0 / ML4.1** (16–17 Nov) | ML3.1's numbers with a third of the description (1,033 tokens against 3,580), the track record on request, absr1 at or below zero replaced | Equal to ML3.1 on 710 recorded calls; no model retrained | **Shipped** to every sleeve with the tool. What the shorter text does to trading isn't measured |
+| **ML4 direction models** (14–15 Nov): tabular and sequence, next look to the close or the next session | walk-forward, against a placebo | **Failed**: AUC 0.47–0.51; the sequence model's 0.55 on one target is matched by a placebo with no name information (market timing) |
 | **New inputs for it** (Kelly v1 screen, 9–11 Nov): implied vol, spreads, earnings timing, industry moves, a broad universe, ML numbers, 8-K press-release text | pre-registered, two stages, plus a confirmation | **None passed**. The 8-K text's training-block AUC of 0.541 fell to 0.498 on Jul–Dec 2025 |
 
-The models that passed form one research tool, `forecast`, which the "+ ML" sleeves can call. Comparing each sleeve with its twin measures whether the tool helps: in week 2 two of three "+ ML1" sleeves beat their twins (base by 15.1 points, Opus by 11.2) and one trailed (rl3, by 8.0); in week 3 all three did (base by 4.4, rl5 by 6.5, Opus by 5.1); in week 4 three of four did (Sonnet by 5.4, Haiku by 1.9, NAV9 by 12.1) and the $100k base pair trailed by 2.8; in week 5, with ML3, one of four did (F by 0.7) and three trailed (Base $90k by 7.3, c1 by 1.9, H by 2.3). That is 9 of 14 pairs, and 3 of 4 weeks on average. A verified attribution of the base pair does not credit the tool for those gaps: they come mostly from exposure, timing and single trades, and the tool's sizing and cost numbers were rarely used as intended ([week 3](reports/2026-10-30-week3.md)). Paired replays of the same live states, with the tool's output shown or masked, credited it with no final order; once, it sent the model to a stock's news more often ([week 4](reports/2026-11-06-week4.md)). [ML research report](reports/2026-10-19-ml-forecast-tool.md).
+The models that passed form one research tool, `forecast`, which the "+ ML" sleeves can call. Comparing each sleeve with its twin measures whether the tool helps: in week 2 two of three "+ ML1" sleeves beat their twins (base by 15.1 points, Opus by 11.2) and one trailed (rl3, by 8.0); in week 3 all three did (base by 4.4, rl5 by 6.5, Opus by 5.1); in week 4 three of four did (Sonnet by 5.4, Haiku by 1.9, NAV9 by 12.1) and the $100k base pair trailed by 2.8; in week 5, with ML3, one of four did (F by 0.7) and three trailed (Base $90k by 7.3, c1 by 1.9, H by 2.3); in week 6, with ML4, all four did (base by 10.0, Candidate 1 by 4.1, Candidate 2 by 17.0, Fable by 5.0), and in every week 6 pair the sleeve with the tool carried the more net-short book into Friday's fall. That is 13 of 18 pairs, and 4 of 5 weeks on average. A verified attribution of the base pair does not credit the tool for those gaps: they come mostly from exposure, timing and single trades, and the tool's sizing and cost numbers were rarely used as intended ([week 3](reports/2026-10-30-week3.md)). Paired replays of the same live states, with the tool's output shown or masked, credited it with no final order; once, it sent the model to a stock's news more often ([week 4](reports/2026-11-06-week4.md)). [ML research report](reports/2026-10-19-ml-forecast-tool.md).
 
 ### What we train next
 
-1. **Nothing is training now.** Clayton's Kelly design needs a probability that carries information. Base's doesn't (Kelly v0), and no new input passed the v1 screen, so neither its RL nor c2 trains. What trains next is Clayton's decision.
-2. **Training base on its own samples hasn't beaten base:** F and H in the loss study, and c1, whose log-growth targets left it trading base's book. Live, all three trailed the untrained Base $90k in week 5.
-3. **Score ML3's forward check** after 20 Nov, and read Base + ML2.2's four-week run (context corruption, longer-running bugs, degradation) when it ends that day.
-4. **Keep the live comparison running.** A live week gives about 70 looks per sleeve; detecting a 0.36-point edge per decision needs more than 1,300.
+1. **Week 7 candidates, this weekend (Clayton's $200):** train base to trade better from IBKR data, one candidate per perspective. Candidate 3a is training; the instructions for 3b–3d failed their gate and are being rewritten for the scanner turns, where the choice of what to trade is made.
+2. **New models in the lineup:** four Inkling-2-Small sleeves (Thinking Machines, through Tinker's OpenAI-compatible endpoint), and a base $30k sleeve with a next-look fact sentence that base used in 15% of drafts against 1% (W1, met).
+3. **Training on base's own looks hasn't beaten base:** F, H, c1 and now Candidates 1 and 2. Each trades like base in its read, and each trailed base live.
+4. **Score ML3's gap-band forward check** on the 9–20 Nov nights, and keep the live comparison running. A live week gives about 70 looks per sleeve; detecting a 0.36-point edge per decision needs more than 1,300.
 
 ## Findings so far
 
-1. **Training has not yet produced a better trader than the untrained model.** Each RL run passed or nearly passed its simulation test, but the gains were small and statistically weak, and two SFT models trained on base's own samples (F, H) didn't beat it in simulation. Live, rl1 trailed base in week 1, rl3 split its two comparisons in week 2 (+3.1 points alone, −20.0 with the forecast tool), rl5 trailed in both in week 3 (−7.2 and −5.1), Codex's NAV9 split in week 4 (−8.8 and +6.1, against $100k base sleeves), and in week 5 c1, F and H all trailed Base $90k without the tool (by 2.1 to 6.2 points), while with ML3 F and H led Base + ML3 and c1 trailed. c1, trained on a log-growth reward, built the same book as base in a closed-loop backtest.
-2. **Direction is not predictable after costs with the models we tried. Risk and cost are.** Option-implied volatility and earnings-filing timing carry most of the forecastable information. An earnings-drift rule, tested on 1,821 events, showed no drift at all, and an earnings-surprise rule on 2,281 events failed too. Base gpt-oss's own probability that a stock beats the median carries no information (AUC 0.497), and none of seven new inputs, earnings press-release text included, passed a pre-registered screen.
+1. **Training has not yet produced a better trader than the untrained model.** Each RL run passed or nearly passed its simulation test, but the gains were small and statistically weak, and two SFT models trained on base's own samples (F, H) didn't beat it in simulation. Live, rl1 trailed base in week 1, rl3 split its two comparisons in week 2 (+3.1 points alone, −20.0 with the forecast tool), rl5 trailed in both in week 3 (−7.2 and −5.1), Codex's NAV9 split in week 4 (−8.8 and +6.1, against $100k base sleeves), in week 5 c1, F and H all trailed Base $90k without the tool (by 2.1 to 6.2 points), while with ML3 F and H led Base + ML3 and c1 trailed, and in week 6 Candidates 1 and 2 trailed base on the same text in all four comparisons (by 1.1 to 9.4 points). c1, trained on a log-growth reward, built the same book as base in a closed-loop backtest.
+2. **Direction is not predictable after costs with the models we tried. Risk and cost are.** Option-implied volatility and earnings-filing timing carry most of the forecastable information. An earnings-drift rule, tested on 1,821 events, showed no drift at all, and an earnings-surprise rule on 2,281 events failed too. Base gpt-oss's own probability that a stock beats the median carries no information (AUC 0.497), and none of seven new inputs, earnings press-release text included, passed a pre-registered screen. The ML4 direction models (tabular and sequence) failed too: their one apparent signal was market timing, matched by a placebo.
 3. **Measuring trading skill takes far more data than it seems.** Two live days, or a few hundred simulated decisions, prove nothing either way.
 4. **Setup changes behaviour as much as training does.** Opus sat almost still in week 1. In week 2, with looks every 30 minutes and maximum reasoning effort, it placed 218 orders, took concentrated positions and shorts, and lost 8.8%. With the forecast tool it placed 149 orders and made 2.4%.
-5. **Losses come from exposure, concentration and leverage; costs are a steady drag.** Week 2's commissions were $62–$153 a sleeve; the four losing sleeves lost $2,300–$4,700, much of it in a few names held on borrowed cash. In week 4 the gpt-oss sleeves shared one semiconductor-short stance and lost on it together. Commission and half-spread cost Base + ML about $359 a week at $30k, 56% of the goal's weekly pace.
+5. **Losses come from exposure, concentration and leverage; costs are a steady drag.** Week 2's commissions were $62–$153 a sleeve; the four losing sleeves lost $2,300–$4,700, much of it in a few names held on borrowed cash. In week 4 the gpt-oss sleeves shared one semiconductor-short stance and lost on it together; in week 6, with no software limit, net-short books at about 3x gross won up to 16% in a week SPY fell 8%, and on Monday the shared account's leverage brought an IBKR margin liquidation. Commission and half-spread cost Base + ML about $359 a week at $30k, 56% of the goal's weekly pace.
 6. **The "+ ML" sleeves have led their twins more often than not, but not visibly because of the tool.** They beat their twins in eight of ten pairs over weeks 2 to 4 and one of four in week 5 (ML3, a new version), and replays of the same states credited the tool with no final order. Week 2's Base + ML1 result (+$1,296) is one AMD dip-buy (+$862) plus an NVDA paper fill $481 better than its limit; week 3's base gap is mostly exposure and timing. Within the noise between identical runs, this is suggestive, not established.
 7. **RL on our reward drifts toward inaction.** Four runs, from rl3 and from base, at two learning rates, all hit their inaction or token-order guards within four updates. **Rider, 3 Nov:** in rl6 and rl6b the rise in empty looks came from looks at the research limit, under a forced submit with no reasoning turn that we removed on 1 Nov; in rl4 about half did. Below the limit, empties stayed at or under 9%. No RL has run since that change ([NAV study](reports/2026-11-02-nav-study.md)).
 8. **Plumbing failures cost real results.** A gateway cutoff lost fills twice, a desktop-app update broke two Opus looks, and a stale gateway view turned an account reset into 30 orphan positions. Each was found, fixed and reported; the Gateway now runs on New York time, which removes the cutoff. On 5 November a 3-for-1 SOXX split wasn't booked, and four sleeves traded a day on wrong share counts until it was fixed. On 2 November we also found that a closing turn ending in the wrong token was thrown away and rewritten with no reasoning turn, which changed 4 of 338 gpt-oss decisions from 26 October; it's fixed ([NAV study](reports/2026-11-02-nav-study.md)). On 9 November we found that the Claude CLI had cut the forecast tool's description to 4,096 characters for every Claude "+ ML" look in weeks 2–4, so those sleeves read less of it than their gpt-oss twins; and on 10 November an automatic Windows restart cost every sleeve three looks ([week 5](reports/2026-11-13-week5.md)).
@@ -123,7 +129,7 @@ The models that passed form one research tool, `forecast`, which the "+ ML" slee
 
 - **A look.** Every 30 minutes from 09:00 to 15:30 New York time, each sleeve's model reads its positions and a market table, researches with tools, then submits orders and notes for its next look. The tools are quotes, news headlines and full articles, a stock scanner, the market tape, stats, and for "+ ML" sleeves the forecast tool. gpt-oss runs on Tinker with native tool calls. Claude runs headless through the Claude CLI with exactly the same tools over MCP.
 - **Sleeves.** Every order carries a reference tying it to one sleeve, so each fill, commission and position belongs to exactly one model. Each sleeve is valued at 4:15 pm from its own fills.
-- **The fixed limits** are the broker's 2× gross margin per sleeve and, from week 5, a 15% single-shock limit (an adding order is refused if the book would lose more than 15% of the sleeve in one of six fixed shocks), both checked at order time. An order that only shrinks a position is never refused.
+- **Limits.** Through week 5 software refused orders past 2× gross per sleeve and, in week 5, past a 15% single-shock loss. From 16 Nov software sets no exposure limit: orders go to IBKR as the model writes them, and IBKR's own margin and order rules apply to the whole paper account. From 18 Nov each gpt-oss sleeve is told to keep its gross at or under 3x its own NAV; nothing enforces it. Limits the model puts on its own orders (an order marked as a close may not add to the position) are held.
 
 All code is in [code/](code/README.md).
 
@@ -132,9 +138,9 @@ All code is in [code/](code/README.md).
 | Who | What they do |
 |---|---|
 | **Clayton** | Sets goals and budgets; decides anything public and any move to live money. |
-| **Trader Training** (Claude Opus 5.5) | Runs the live paper test, verifies models before they go live, and publishes this page. Trained rl1–rl3. |
-| **Trading Model Researcher** (Claude) | Designs, pre-registers and trains the models since 24 Oct: rl4, rl5, rl6, rl6b, the week-3 forecast fixes and the earnings-drift test. |
-| **Model Performance Analyst** (Claude) | Analyses each live week and writes the acceptance criteria a model must pass, before its results. Ran the NAV study, the loss study (F, H) and the win/loss study. |
+| **Trader Training** (Claude Opus 5.5) | Runs the live paper test and the trading platform, verifies models before they go live, and publishes this page. Trained rl1–rl3. |
+| **Trading Model Researcher** (Claude; Fable 5.2 in week 6) | The trainer: designs, pre-registers and trains the models and decides what they are told: rl4–rl6b, c1, Candidates 1–3, the forecast-tool versions. |
+| **Model Performance Analyst** (Claude, retired 10 Nov) | Wrote acceptance criteria and ran the NAV, loss (F, H) and win/loss studies. |
 | **TWS Gateway Owner** (Claude) | Runs IB Gateway and the broker framework: client IDs, quotes, orders, executions, account resets, and diagnosing execution problems such as the lost-fill cutoff. [Its own write-up](reports/tws-gateway.md). |
 
 The Tinker Owner task looks after the Tinker SDK and checkpoint storage.

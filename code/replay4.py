@@ -103,7 +103,7 @@ def load(sleeves, live=LIVE, drop=False):
 
 def parts(lk):
     """(header, goal and notes lines, account section, market section) of the stored user message."""
-    steps = trader.live_steps(lk["sleeve"].endswith("-ml"))
+    steps = trader.live_steps(lk["sleeve"].endswith("-ml"), probs=True)   # the looks replayed here are from before 16 Nov 2026
     assert lk["state_text"].startswith(steps), lk["file"]
     body, market = lk["state_text"][len(steps):].split("\n\nMarket table (", 1)
     lines = body.split("\n")
@@ -158,7 +158,7 @@ def user(lk):
               orders=[dict(o, cancel_pending=o["ref"] in asked) for o in lk["state"]["orders"]])
     acct = trader.render_account(st, feats(day.replace("-", "")), head, {"": 0} if "at delayed last prices" in old else None)
     g = trader.goal_line(SIZE, st["value"], None, day) + ("\n" + notes if notes else "")
-    return trader.live_steps(lk["sleeve"].endswith("-ml")) + head + "\n" + g + "\n" + acct.split("\n", 1)[1] + "\n\n" + market
+    return trader.live_steps(lk["sleeve"].endswith("-ml"), probs=True) + head + "\n" + g + "\n" + acct.split("\n", 1)[1] + "\n\n" + market
 
 
 def research(lk):
@@ -420,7 +420,7 @@ def call_tokens(name, args):
 
 
 def specs(lk):
-    return tools.SPECS + ([forecast.SPEC] if lk["sleeve"].endswith("-ml") else []) + [trader.TOOL_LIVE]
+    return tools.SPECS + ([forecast.SPEC] if lk["sleeve"].endswith("-ml") else []) + [trader.TOOL_LIVE_PROBS]
 
 
 def system(lk):

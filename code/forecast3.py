@@ -34,7 +34,9 @@ MODEL = ROOT / "runs" / "ml" / "research" / "ml3_model_amend1.json"   # Amendmen
 BARS = ROOT / "data" / "bars"
 BARS30 = ROOT / "data" / "bars30"
 MACRO = ROOT / "data" / "macro" / "calendar.json"
-VERSION = "ML3.0"                               # recorded on looks, not shown to models
+VERSION = "ML3.2"                               # recorded on looks, not shown to models (ML3.1: ML3 review fixes 1-4, 15 Nov;
+                                                # ML3.2: ML2.4's two text cuts, which reach it through forecast.py; no number changes)
+DELAY_MIN = 15                                  # IBKR's delayed data: the loop's header says prices are about 15 minutes old
 TAUS = (0.1, 0.5, 0.9)
 FEATS = ["lm60", "lm250", "lmkt5", "lv5", "long"]
 FLOOR = 0.001                                   # %, the log floor for a gap of zero
@@ -324,7 +326,7 @@ DESCRIPTION = forecast.DESCRIPTION + """
 - gap1 ±(10-90), after absr1: the expected size of the gap from today's close to the next open, up or down, % of the close: the median, with the 10-90% range of the gap's size (not a price bound). range1 leaves the gap out and absr1 includes it; gap1 is the gap alone. It comes from the name's own past gaps, the market's recent gaps and SPY's recent volatility, as of the last close, and it does not change during the day.
   - It is raised when the note names an earnings release after today's close or before the next open: about ×6.4 at the median when the date comes from the Alpha Vantage calendar, ×2.7 when it is our estimate (right about half the time, so its range is wide). A line above the columns names them.
   - It is raised about ×1.14 for every name when CPI, payrolls, PCE or GDP comes out before the next open.
-- market now: SPY's move since the last close: before 09:30 from a pre-market quote, from 09:30 to 16:00 from today's 30-minute bars, with its range since the close. It is a fact, not a forecast. A size scale refreshed from it did not beat the morning size_scale out of sample, so size_scale stays the morning value.
+- market now: SPY's move since the last close: before 09:30 from a pre-market quote, from 09:30 to 16:00 from today's 30-minute bars, with its range since the close and the time (ET) of the delayed print it uses. It is a fact, not a forecast. A size scale refreshed from it did not beat the morning size_scale out of sample, so size_scale stays the morning value.
 
 **gap1 track record** (out of sample, 2 Jan 2025-6 Nov 2026, 523 names, 241,993 name-nights; survivor-biased): {track}"""
 TRACK = ("the 10-90% range held 78.7% of gaps, and 47.8% fell below the median. The pinball loss was 7% lower than for the "
@@ -409,7 +411,17 @@ def _market_now(gw, mline, fc3, sim, now):
             px = q.get("last") or ((q["bid"] + q["ask"]) / 2 if q.get("bid") and q.get("ask") else None)
             if q.get("error") or not px or not q.get("close"):
                 raise ValueError(q.get("error") or "no pre-market price")
-            mv = f"SPY {(px / q['close'] - 1) * 100:+.2f}% since the last close (pre-market quote, delayed about 15 minutes)"
+            # ML3.1 (review fix 3): the line names its time, so a stale move is not read as a current one: the quote's
+            # last trade time when the price is that trade, else the time it was asked for
+            at = f"quote asked for at {now:%H:%M} ET"
+            if q.get("last") and q.get("last_time"):
+                try:
+                    lt = datetime.fromisoformat(str(q["last_time"]).replace("Z", "+00:00")).astimezone(now.tzinfo)
+                    at = f"last trade {lt:%H:%M} ET"
+                except (ValueError, TypeError):
+                    pass
+            mv = (f"SPY {(px / q['close'] - 1) * 100:+.2f}% since the last close (pre-market quote, {at}, delayed about "
+                  f"{DELAY_MIN} minutes)")
         except Exception as e:                          # noqa: BLE001
             mv = f"SPY pre-market quote unavailable ({type(e).__name__})"
         return f"market now: {mv}" + (f"; size_scale_now {ss:g} (the morning value until 09:30)" if NOW_SHIPS and ss else "")
@@ -427,11 +439,20 @@ def _market_now(gw, mline, fc3, sim, now):
         k = min((mins - 570) // 30, 12)
         gap = math.log(tb["09:30"]["open"] / c0)
         x = so_far(tb, k, gap)
-        done = [tb[s] for s in SLOTS[:k] if s in tb]
-        px = done[-1]["close"] if done else tb["09:30"]["open"]
+        done = [s for s in SLOTS[:k] if s in tb]
+        px = tb[done[-1]]["close"] if done else tb["09:30"]["open"]
     except Exception as e:                              # noqa: BLE001
         return f"market now: SPY's 30-minute bars unavailable ({type(e).__name__}: {str(e)[:60]})"
-    line = f"market now: SPY {(px / c0 - 1) * 100:+.2f}% since the last close at the {SLOTS[k]} look, range since the close {x * 100:.2f}%"
+    # ML3.1 (review fix 3, 15 Nov): the line said "at the 10:30 look", but in 60 lines of 9-13 Nov it matched the close of
+    # the last (partial, delayed) bar within a median 0.05 pp, a price 15-30 minutes older. It now names that print: the
+    # bar's end, or the look time less the delay if the bar is still open; the 09:30 open when no bar is used yet.
+    if done:
+        b0 = datetime.strptime(f"{now:%Y-%m-%d} {done[-1]}", "%Y-%m-%d %H:%M").replace(tzinfo=now.tzinfo)
+        at = max(b0, min(b0 + timedelta(minutes=30), now - timedelta(minutes=DELAY_MIN)))
+        when = f"as of about {at:%H:%M} ET (the latest print of the {done[-1]} bar, delayed about {DELAY_MIN} minutes)"
+    else:
+        when = f"at the 09:30 ET open (delayed about {DELAY_MIN} minutes)"
+    line = f"market now: SPY {(px / c0 - 1) * 100:+.2f}% since the last close {when}, range since the close {x * 100:.2f}%"
     g = ((fc3 or {}).get("spy") or {}).get("g") or [None] * 13
     if NOW_SHIPS and ss and v and g[k]:
         now_ss, z = scale_now(ss, float(v.group(1)) / 100 / math.sqrt(252), x, g[k], k)
@@ -439,11 +460,13 @@ def _market_now(gw, mline, fc3, sim, now):
     return line
 
 
-def run(gw, args):
+def run(gw, args, sleeve_value=None, look=None):
     """ML2's text (forecast.run, unchanged) with gap1 after absr1 on each row, its legend, the night's events and
-    the market-now line. ML2's errors and its "no forecasts" come back as they are."""
+    the market-now line. ML2's errors and its "no forecasts" come back as they are. sleeve_value and look go to
+    forecast.run as they are (ML3.1, fixes 1 and 4); gap1's legend line follows ML2's: on a look's later calls it is left
+    out with ML2's, under ML2's one line naming the first call."""
     t0 = time.monotonic()
-    text = forecast.run(gw, args)
+    text = forecast.run(gw, args, sleeve_value=sleeve_value, look=look)
     lines = text.split("\n")
     if not lines[0].startswith("as of the close of "):
         return text
@@ -459,6 +482,12 @@ def run(gw, args):
     except Exception as e:                              # noqa: BLE001 - ML2's text is still served, gap1 na
         M, fc3 = None, None
         lines.insert(1, f"gap1 unavailable ({type(e).__name__}: {str(e)[:60]})")
+    night = (fc3 or {}).get("night") or [None, None]
+    # ML3.1: this check came after the row indices below, so its inserted line shifted every row by one and each row's
+    # numbers were rewritten under the symbol of the row after it (found 15 Nov in forecast_fixes_test.py, on a stale night)
+    if fc3 and not sim and night[0] and night[0] != _now().strftime("%Y-%m-%d"):   # a failed refresh: yesterday's night
+        lines.insert(1, f"gap1 unavailable (its forecasts are for the night after the {night[0]} close)")
+        M, fc3, night = None, None, [None, None]
     ci = next((i for i, x in enumerate(lines) if x.startswith("sym close range1")), None)
     if ci is None:
         return text
@@ -467,10 +496,6 @@ def run(gw, args):
         s = max((s for s in syms if lines[i] == s or lines[i].startswith(s + " ")), key=len, default=None)
         if s and not lines[i][len(s) + 1:].startswith("not covered"):
             rows[i] = s
-    night = (fc3 or {}).get("night") or [None, None]
-    if fc3 and not sim and night[0] and night[0] != _now().strftime("%Y-%m-%d"):   # a failed refresh: yesterday's night
-        lines.insert(1, f"gap1 unavailable (its forecasts are for the night after the {night[0]} close)")
-        M, fc3, night = None, None, [None, None]
     have = dict((fc3 or {}).get("rows") or {})
     need = [s for s in rows.values() if s not in have]
     if need and fc3 and not sim:
@@ -492,7 +517,8 @@ def run(gw, args):
         if len(p) >= 3:
             lines[i] = " ".join([s] + p[:3] + [tok] + p[3:])
     lines[ci] = lines[ci].replace("absr1±% ", "absr1±% gap1±%(10-90) ", 1)
-    add = [("gap1 ±(10-90): the expected size of the gap from today's close to the next open, up or down, % (median, "
+    short = any(ln.endswith(forecast.LEGEND_REF) for ln in lines[:ci])     # ML2 printed its one-line reference instead
+    add = [] if short else [("gap1 ±(10-90): the expected size of the gap from today's close to the next open, up or down, % (median, "
             "with the 10-90% range of its size; it does not change during the day). It includes the night's events "
             "below. range1 leaves the gap out; absr1 includes it. Names outside the validated universe get no earnings "
             "check, so their gap1 is not raised for an earnings release.")]

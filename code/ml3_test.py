@@ -208,7 +208,8 @@ def main():
     tb = f3.by_day(spy_bars("20261109", "20261106", 5))["20261109"]
     x = f3.so_far(tb, 5, math.log(0.99))
     px = tb["11:30"]["close"]
-    want = f"market now: SPY {(px / 100 - 1) * 100:+.2f}% since the last close at the 12:00 look, range since the close {x * 100:.2f}%"
+    want = (f"market now: SPY {(px / 100 - 1) * 100:+.2f}% since the last close as of about 11:50 ET (the latest print of "
+            f"the 11:30 bar, delayed about 15 minutes), range since the close {x * 100:.2f}%")    # ML3.1: was "at the 12:00 look"
     check("market-now line after the market line", nl == want, f"{nl!r} vs {want!r}")
     check("no size_scale_now while it doesn't ship", "size_scale_now" not in out)
     check("SPY bars request differs from intraday.live's (IBKR refuses identical requests within 15 s)",
@@ -228,7 +229,8 @@ def main():
     # 4. before the open: the pre-market quote, and a failed quote
     live_patches(datetime(2026, 11, 9, 9, 5, tzinfo=ET))
     out = f3.run(GW(quote={"last": 101.0, "close": 100.0, "bid": 100.9, "ask": 101.1}), args)
-    check("pre-open quote", "market now: SPY +1.00% since the last close (pre-market quote, delayed about 15 minutes)" in out,
+    check("pre-open quote", "market now: SPY +1.00% since the last close (pre-market quote, quote asked for at 09:05 ET, "
+                            "delayed about 15 minutes)" in out,                       # ML3.1: the quote's time added
           next(ln for ln in out.split("\n") if ln.startswith("market now:")))
     out = f3.run(GW(quote_fails=True), args)
     check("pre-open quote failed", "market now: SPY pre-market quote unavailable (RuntimeError)" in out)
@@ -287,7 +289,7 @@ def main():
     check("SPEC keeps ML2's name and parameters", f3.SPEC["name"] == "forecast"
           and f3.SPEC["parameters"] == forecast.SPEC["parameters"] and "gap1" in f3.SPEC["description"]
           and forecast.DESCRIPTION in f3.SPEC["description"] and "{track}" not in f3.SPEC["description"])
-    check("version", f3.VERSION == "ML3.0" and forecast.VERSION == "ML2.2")
+    check("version", f3.VERSION == "ML3.2" and forecast.VERSION == "ML2.4")
 
 
 if __name__ == "__main__":
