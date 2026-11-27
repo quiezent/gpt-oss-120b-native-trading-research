@@ -201,5 +201,51 @@ check("no recorded article call that worked asks for anything else now", changed
 check("the recorded bare-id failures (BRFG) now ask for an id that worked in another look", len(bare) == 15 and fixed == 14,
       f"{fixed} of {len(bare)} (the 15th names provider 'Briefing.com', which IBKR does not take either way)")
 
+# Mon 23 Nov 2026: an id that carries a known provider, with a provider that is not a code, takes the id's provider
+# (the Inkling sleeves gave "briefing"; IBKR answered 321 "Not subscribed for 'BRIEFING'"). Known codes are left alone.
+for (prov, aid), want in ((("briefing", "BRFG$1fdf5d68"), ("BRFG", "BRFG$1fdf5d68")),
+                          (("", "BRFG$1fdf5d68"), ("BRFG", "BRFG$1fdf5d68")),
+                          (("dow jones", "DJNL$x1"), ("DJNL", "DJNL$x1")),
+                          (("sec", "EDGAR$0001-23"), ("EDGAR", "0001-23")),
+                          (("BRFG", "BRFUPDN$abc"), ("BRFG", "BRFUPDN$abc")),
+                          (("brfg", "BRFG$1"), ("BRFG", "BRFG$1")),
+                          (("briefing", "weird$1"), ("BRIEFING", "weird$1")),
+                          (("Briefing.com", "1fc7c7a5"), ("BRIEFING.COM", "BRIEFING.COM$1fc7c7a5"))):
+    got = tools.article_ref(prov, aid)
+    check(f"article_ref({prov!r}, {aid!r}) -> {want}", got == want, str(got))
+
+# every recorded article call of Week 6 and 23 Nov: none that worked asks for anything else now; the three "briefing"
+# calls of 23 Nov ask for BRFG with their own ids (skipped where the records are not on disk, e.g. a fresh worktree)
+recent = []
+for d in ("2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-23"):
+    for f in sorted(glob.glob(str(ROOT / "runs" / "live" / d / "*.json"))):
+        try:
+            L = json.loads(Path(f).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        for tr in L.get("trace") or []:
+            if isinstance(tr, dict) and tr.get("tool") == "article" and isinstance(tr.get("args"), dict):
+                recent.append((tr["args"], str(tr.get("result", ""))))
+def ref_before_23nov(provider, article_id):          # article_ref as it was until 23 Nov (week7 46b9579a)
+    p, aid = str(provider).strip().upper(), str(article_id).strip()
+    if p == "EDGAR":
+        return p, aid.removeprefix("EDGAR$")
+    return p, (aid if "$" in aid or not aid or p in ("", "NONE") else f"{p}${aid}")
+
+
+if (ROOT / "runs" / "live" / "2026-11-23").is_dir():
+    moved = [a for a, r in recent if tools.article_ref(a.get("provider"), a.get("article_id"))
+             != ref_before_23nov(a.get("provider"), a.get("article_id"))]
+    expected = [a for a in moved if str(a.get("provider")).strip().upper() not in tools.KNOWN_PROVIDERS
+                and str(a.get("article_id")).split("$", 1)[0].upper() in tools.KNOWN_PROVIDERS]
+    brief = [a for a, r in recent if "Not subscribed for 'BRIEFING'" in r]
+    check(f"recorded article calls 16-23 Nov ({len(recent)}): only calls with a non-code provider and a known prefix ask for "
+          f"anything else than before ({len(moved)})", moved == expected and len(moved) == len(brief), str(moved[:3]))
+    check("the recorded 'briefing' failures of 23 Nov now ask for BRFG with their own ids",
+          len(brief) >= 3 and all(tools.article_ref(a.get("provider"), a.get("article_id"))
+                                  == ("BRFG", str(a.get("article_id"))) for a in brief), f"{len(brief)} calls")
+else:
+    print("skip  recorded article calls 16-23 Nov: no 23 Nov look records on disk here (run from C:/Claude/Trader)")
+
 print("ALL OK" if all(ok) else "FAILED")
 sys.exit(0 if all(ok) else 1)

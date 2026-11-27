@@ -691,8 +691,101 @@ try:
     live.unheld_gross(checks.Link(g), MarkData(), 1, LIVE_PX)
     check("positions() for the clause is read with the line's 5 s bound", g.seen == checks.READ_TIMEOUT and g.timeout == 30.0
           and g.reads == 1, (g.seen, g.timeout))
+
+    # 24 Nov 2026: fills IBKR reported after the look's own sync are booked before the ledgers are summed. At the 09:30 look
+    # the sleeves' own opening trades were counted as positions no sleeve holds ($257,994 on 23 Nov, $8,686 on 24 Nov).
+    real_sync, order = paper.sync_fills, []
+
+    class SyncGW:                       # client 10: its executions now include s1's 42 SPY bought since the look's sync
+        pass
+
+    class OrderedPosGW(PosGW):
+        def positions(self):
+            order.append("positions")
+            return PosGW.positions(self)
+
+    def fake_sync(gw):
+        order.append("sync")
+        assert isinstance(gw, SyncGW), gw
+        BOOKS["s1"]["SPY"] = 82         # the 42 SPY reach s1's ledger
+        return 1
+
+    try:
+        paper.sync_fills = fake_sync
+        logs2.clear()
+        us = live.unheld_gross(checks.Link(OrderedPosGW(ACCT_POS)), MarkData(), 1, LIVE_PX, SyncGW())
+        check("with client 10 given: positions() read, then the fills synced, then the ledgers summed; SPY's 42 are the "
+              "sleeve's own, not unheld", order == ["positions", "sync"] and abs(us - (270 * 160.0 + 10 * 25.0 + 5 * 400.0)) < 1e-6
+              and not logs2, (order, us, logs2))
+        BOOKS["s1"]["SPY"] = 40
+        order.clear()
+        u_none = live.unheld_gross(checks.Link(OrderedPosGW(ACCT_POS)), MarkData(), 1, LIVE_PX)
+        check("without gw: no sync, the figure as before (76,933)", order == ["positions"] and round(u_none) == 76933, (order, u_none))
+
+        def failing_sync(gw):
+            order.append("sync")
+            raise GatewayError("No reply from IB Gateway to the executions request within 30s")
+
+        paper.sync_fills, logs2[:], order[:] = failing_sync, [], []
+        uf = live.unheld_gross(checks.Link(OrderedPosGW(ACCT_POS)), MarkData(), 1, LIVE_PX, SyncGW())
+        check("the sync fails: None (no clause) and one log line; the line itself unchanged",
+              uf is None and order == ["positions", "sync"] and len(logs2) == 1
+              and logs2[0].startswith("account line: positions no sleeve holds not computed (GatewayError: No reply")
+              and trader.account_line(dict(INFO, unheld=uf), ST, live=LIVE_PX) == LINE, (uf, order, logs2))
+
+        def never_sync(gw):
+            order.append("sync")
+            return 0
+
+        paper.sync_fills, logs2[:], order[:] = never_sync, [], []
+        bad = checks.Link(OrderedPosGW(ACCT_POS, fail=GatewayError("No reply from IB Gateway to the positions request within 5s")))
+        ub = live.unheld_gross(bad, MarkData(), 1, LIVE_PX, SyncGW())
+        check("positions() fails: no sync is attempted, None, one log line", ub is None and order == ["positions"]
+              and len(logs2) == 1, (ub, order, logs2))
+
+        # the review of 24 Nov: a stop covering a short fills after positions() was read. The ledgers after the sync are
+        # short of the account by it; the sum before the sync explains it, so it is not unheld (the smaller part counts)
+        BOOKS["s2"]["KLAC"] = -50
+
+        def covering_sync(gw):
+            order.append("sync")
+            BOOKS["s2"].pop("KLAC", None)   # s2's BUY 50 KLAC stop, filled after the positions() read, is booked
+            return 1
+
+        paper.sync_fills, logs2[:], order[:] = covering_sync, [], []
+        pos_k = ACCT_POS + [{"symbol": "KLAC", "quantity": -50, "avg_cost": 600.0}]   # the account still short 50 KLAC
+        uk = live.unheld_gross(checks.Link(OrderedPosGW(pos_k)), MarkData(), 1, LIVE_PX, SyncGW())
+        check("a covering fill after positions() was read (s2's 50 KLAC): not counted; the rest as without it (76,933, "
+              "SPY's 42 unexplained by both sums)", order == ["positions", "sync"] and round(uk) == 76933 and not logs2,
+              (order, uk, logs2))
+
+        def opening_sync(gw):
+            order.append("sync")
+            BOOKS["s1"]["SPY"] = 82         # and an opening fill before the read, booked by the same sync
+            BOOKS["s2"].pop("KLAC", None)
+            return 2
+
+        BOOKS["s2"]["KLAC"], paper.sync_fills, order[:] = -50, opening_sync, []
+        ub2 = live.unheld_gross(checks.Link(OrderedPosGW(pos_k)), MarkData(), 1, LIVE_PX, SyncGW())
+        check("both at once (SPY's 42 bought before the read, KLAC's 50 covered after it): neither counted; the short no "
+              "sleeve holds, the name with no mark and TSLA still are", abs(ub2 - (270 * 160.0 + 10 * 25.0 + 5 * 400.0)) < 1e-6,
+              ub2)
+    finally:
+        paper.sync_fills = real_sync
+        BOOKS["s1"]["SPY"] = 40
+        BOOKS["s2"].pop("KLAC", None)
 finally:
     paper.sleeves, paper.book, live.log = real
+
+# 24 Nov 2026: in live.look the account line's figures are taken in this order: account(), then the clause (which syncs
+# client 10's fills), then the sleeves' total, so the total counts the same fills the clause does
+_all = open(live.__file__, encoding="utf-8").read()       # the module's own text (a check above may stand in for look)
+_src = _all[_all.find("\ndef _look("):_all.find("\ndef ", _all.find("\ndef _look(") + 1)]   # look()'s body
+_i_acct = _src.find('"account": read_account(acct_link, gw)')
+_i_unheld = _src.find("unheld_gross(acct_link, data, d, live, gw)")
+_i_total = _src.find('acct_info["total"] = sleeves_total(data, d, live)')
+check("live.look: account() read, then unheld_gross with client 10, then the sleeves' total; the workers start after",
+      0 < _i_acct < _i_unheld < _i_total < _src.find("w.start()"), (_i_acct, _i_unheld, _i_total))
 
 
 class W:

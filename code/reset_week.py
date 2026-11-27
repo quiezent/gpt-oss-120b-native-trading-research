@@ -99,7 +99,8 @@ def main():
     sl = {k: old[k] for k in old if k in carry}
     if a.new:
         for name, m in json.loads(Path(a.new).read_text(encoding="utf-8")).items():
-            sl[name] = {"ml": False, "effort": "high", **m, "start_cash": float(m["start_cash"]), "start": paper.now_iso()}
+            top = "max" if str(m.get("model", "")).startswith("thinkingmachines/Inkling") else "high"   # each model's
+            sl[name] = {"ml": False, "effort": top, **m, "start_cash": float(m["start_cash"]), "start": paper.now_iso()}   # maximum
     else:
         rl_name, rl_model = a.rl.split("=", 1)
         for name, model in {"base": NEW["base"], rl_name: rl_model, "opus": NEW["opus"]}.items():   # last week's look order

@@ -389,6 +389,8 @@ def compare(t31, t4, syms, stats):
     bad = []
     for old, new in getattr(f4, "_PLAIN", ()):
         t4 = t4.replace(new, old)
+    if hasattr(f4, "_slot_label"):          # ML4.2 (20 Nov): a quarter-hour call is labelled with its half-hour slot,
+        t31 = f4._slot_label(t31)           # its only change to the head line, so ML3.1's label is mapped the same way
     a, b = t31.split("\n"), t4.split("\n")
     ka = [(line_kind(x), x) for x in a]
     kb = [(line_kind(x), x) for x in b]
@@ -556,7 +558,17 @@ def main():
     m3 = (ROOT / "runs" / "ml" / "research" / "ml3_model_amend1.json").read_bytes().replace(b"\r\n", b"\n")
     m4 = MODEL4.read_bytes().replace(b"\r\n", b"\n")
     check("0. ml4_gap1_model.json is a byte copy of ML3's fit (line endings aside)", m3 == m4, hashlib.sha256(m4).hexdigest()[:16])
-    check("0. versions", forecast.VERSION == "ML2.4" and f3.VERSION == "ML3.2" and f4.VERSION == "ML4.1",
+    # ML4.2 (20 Nov): the slot label at quarter-hour calls; a call in a slot's first half reads as before, byte for byte
+    for before, after in (("session ranges at the 10:04 look", "session ranges at the 10:04 look"),
+                          ("session ranges at the 09:30 look", "session ranges at the 09:30 look"),
+                          ("session ranges at the 10:14 look", "session ranges at the 10:14 look"),
+                          ("session ranges at the 09:47 look", "session ranges at the 09:30 look"),
+                          ("session ranges at the 10:15 look", "session ranges at the 10:00 look"),
+                          ("session ranges at the 15:52 look", "session ranges at the 15:30 look"),
+                          ("session ranges at the 09:05 look", "session ranges at the 09:05 look")):
+        txt = f"as of the close of 2026-11-20\n{before}\nAAA ..."
+        check(f"ML4.2 label: {before[-10:-5]} -> {after[-10:-5]}", f4._slot_label(txt) == txt.replace(before, after), f4._slot_label(txt))
+    check("0. versions", forecast.VERSION == "ML2.4" and f3.VERSION == "ML3.2" and f4.VERSION == "ML4.2",
           f"{forecast.VERSION} {f3.VERSION} {f4.VERSION}")
 
     # ---------------- a. numbers on recorded calls (build4)
@@ -647,8 +659,54 @@ def main():
     added = sorted(nums(f4.DESCRIPTION + f4.TRACK_RECORD + f4.DIR_LINE + f4.GAP1_LINE)
                    - nums(f3.SPEC["description"] + (ROOT / "forecast3.py").read_text(encoding="utf-8")
                           + (ROOT / "forecast.py").read_text(encoding="utf-8")))
-    check("c. (review) the only numbers new to ML4's texts are the absr1 fix's own figures",
-          set(x.rstrip(",") for x in added) <= {"35", "10,972", "151", "4,279", "51"}, str(added))
+    label_check = {"87", "20", "0.2", "426", "63", "0.88", "95,624",           # ML4.2's corrections of gap1's "median" on
+                   "24", "3", "16", "780", "640", "23", "17", "1,151"}          # nights our estimate names and range1's centre:
+    # the Researcher's words of 21 Nov (RESULT.md: 0.8709 / 0.2019 / 0.0023 of 426, 0.631 and 0.883 of 95,624) and of 22 Nov,
+    # after Trader Training's two reviews (models-w3 e4f6f93a, labels_check/WORDS_22NOV.md: on 780 report nights our estimate
+    # named, 0.2359 / 0.0295 / 0.1603 walk-forward and 0.2346 / 0.0295 / 0.1692 with today's fit, about 640 of them in it;
+    # 0 of 1,151 gap1 tables listed "earnings (our estimate)"); numbers already in forecast.py or forecast3.py aren't listed
+    check("c. (review) the only numbers new to ML4's texts are the absr1 fix's own figures and ML4.2's label corrections",
+          set(x.rstrip(",") for x in added) <= {"35", "10,972", "151", "4,279", "51"} | label_check, str(added))
+    s = ("In a replay of nights our estimate named, before the tool had the Alpha Vantage calendar, 87% of gaps fell below "
+         "the raised median when no report came that night (a check declared in advance); when one came, 24% did and 16% "
+         "went above the raised 90% value (computed after the fact). Through 20 Nov 2026 there is no live record of gap1 "
+         "for a name the events line lists as \"earnings (our estimate)\", or of how often a report comes then; see the "
+         "track record.")
+    check("c. ML4.2: gap1's correction in the description (22 Nov words), once, inside gap1's line",
+          f4.DESCRIPTION.count(s) == 1
+          and s in next(ln for ln in f4.DESCRIPTION.split("\n") if ln.startswith("- gap1 ±(10-90):")))
+    check("c. ML4.2: no ML4 text carries 21 Nov's 149-night figures or says the values ran high (22 Nov words: the live "
+          "tool listed no such name)", all(x not in f4.DESCRIPTION + f4.TRACK_RECORD + f4.GAP1_LINE
+                                         for x in ("149 name-nights", "ran high")))
+    check("c. ML4.2: the note line's estimate figure in the record's terms (22 Nov words)",
+          "(last year's report plus 52 weeks; 47% of reports came in the estimated session)" in f4.DESCRIPTION
+          and "in the right session 47% of the time" not in f4.DESCRIPTION)
+    check("c. ML4.2: the description no longer says none was above the 90% value (that stays in the record, marked)",
+          "none was above" not in f4.DESCRIPTION and "none above the 90% value" not in f4.DESCRIPTION)
+    for s, col in (("Where our estimate named the night and no report came that night, 87% of gaps fell below the median, 20% below "
+                    "the 10% value and 0.2% above the 90% value (426 name-nights, Nov 2025-Aug 2026, a check declared in advance). "
+                    "Where our estimate named the night and a report did come that night, 24% of gaps fell below the median, 3% "
+                    "below the 10% value and 16% above the 90% value (780 name-nights, Nov 2025-Oct 2026, computed after the fact, "
+                    "with multipliers fit on earlier nights only; with today's fit, which used about 640 of these nights, 23%, 3% "
+                    "and 17%). Both sets are from a replay of nights before the tool had the Alpha Vantage calendar; the two "
+                    "counts cover different windows and give no share of named nights on which a report came. Since 2 "
+                    "Nov 2026 a name is listed as \"earnings (our estimate)\" only when the latest Alpha Vantage calendar "
+                    "snapshot has no entry for it that is dated today or later and gives a time of day; in the looks of 9-20 Nov "
+                    "2026 no forecast table listed one (0 of 1,151 tables with gap1), so there is no live record of gap1 on such "
+                    "a night, and how often a report comes on one is not measured.", "- gap1 ("),
+                   ("range1 is a mean, not a median: 63% of half-spans fell below it, and half fell below 0.88 of it (95,624 "
+                    "name-sessions, Nov 2025-Aug 2026).", "- range1: ")):
+        check(f"c. ML4.2: the track record's correction on its {col.strip('- (:')} line, once", f4.TRACK_RECORD.count(s) == 1
+              and s in next(ln for ln in f4.TRACK_RECORD.split("\n") if ln.startswith(col)))
+    check("c. ML4.2: the 64% report-rate sentence is not in any ML4 text (the Researcher dropped it: a model would read it as "
+          "the chance of a report on an (our estimate) row)", "64% of the time" not in f4.DESCRIPTION + f4.TRACK_RECORD + f4.GAP1_LINE)
+    check("c. ML4.2: the legend's gap1 line is ML4.1's again (the 21 Nov clause removed, 22 Nov words), and the events "
+          "line names its own mark",
+          f4.GAP1_LINE == ("gap1 ±(10-90): median and 10-90% range of the size of the gap from today's close to the next "
+                           "open, %; it does not change during the day and includes the events line below. Names outside "
+                           "the validated universe get no earnings adjustment.")
+          and """events.append(f"{s} earnings ({'Alpha Vantage calendar' if e == 'earn' else 'our estimate'})")"""
+          in (ROOT / "forecast4.py").read_text(encoding="utf-8"))
 
     # ---------------- d. banned phrases (build4's list plus the review's additions)
     hits_desc = banned_hits(f4.DESCRIPTION)
@@ -744,7 +802,7 @@ def main():
     # ---------------- g. interface (build4)
     check("g. ml_tools and tools from this repo", Path(ml_tools.__file__).parent == ROOT and Path(tools.__file__).parent == ROOT)
     check("g. ml_tools.module('ML4') is forecast4 and version_of names ML4.0",
-          ml_tools.module("ML4") is f4 and ml_tools.version_of({"ml": True, "ml_tool": "ML4"}) == "ML4.1"
+          ml_tools.module("ML4") is f4 and ml_tools.version_of({"ml": True, "ml_tool": "ML4"}) == "ML4.2"
           and ml_tools.unknown({"x": {"ml": True, "ml_tool": "ML4"}}) == []
           and ml_tools.in_use({"a": {"ml": True}, "b": {"ml": True, "ml_tool": "ML4"}, "c": {"ml": True, "ml_tool": "ML3"}}) == ["ML2", "ML3", "ML4"])
     p4, p2 = f4.SPEC["parameters"]["properties"], forecast.SPEC["parameters"]["properties"]
@@ -803,6 +861,8 @@ def main():
             t4 = f4.run(gw, dict(args), sleeve_value=c["value"], look=("h4", k))
             for old, new in getattr(f4, "_PLAIN", ()):  # ML4.1's two plainly worded lines: wording only (as compare())
                 t4 = t4.replace(new, old)
+            if hasattr(f4, "_slot_label"):              # ML4.2's slot label, mapped as compare() maps it
+                t3 = f4._slot_label(t3)
             c3, r3, L3, h3 = my_rows(t3, syms)
             c4, r4, L4, h4 = my_rows(t4, syms)
             st_h["calls"] += 1

@@ -248,7 +248,7 @@ MARKER = Path(tempfile.mkdtemp()) / "LOOKING"     # live.LOOKING, patched (16 No
 marker_seen = []
 
 
-def fake_finish(now, name, meta, text, st, call, trace, notes, rows, dry_run, cost=None, secs=None):
+def fake_finish(now, name, meta, text, st, call, trace, notes, rows, dry_run, cost=None, secs=None, words=None):
     texts[name] = text
     marker_seen.append(live.own_marker().exists())  # this process's LOOKING.<pid> beside MARKER (16 Nov 2026)
 

@@ -225,6 +225,8 @@ def resting_figure(st, prices=None):
     look.update({p["symbol"]: _px(p.get("close")) for p in st.get("positions") or []})
     legs = {}
     for o in st.get("orders") or []:
+        if o.get("held"):                   # a held close_only exit (v2.1) is not at the broker
+            continue
         n = _norm(o, o.get("type"), o.get("limit"), o.get("stop"), o.get("trail_percent"), o.get("trail_stop"),
                   _left(o, None), bool(o.get("close_only")))
         if n["q"] <= 0 or (n["co"] and not pos.get(n["sym"], 0.0)):
@@ -437,7 +439,8 @@ def _plural(n, one, many):
 
 
 def check_block(ctx, orders, resting=None, close_only=(), filled=None):
-    """Piece 4: the order check's line for a sleeve with the term. ctx: checks.context() (value, gross, positions, prices,
+    """Piece 4 (replay only while trader.OWN_LIMIT_LOOK is False; it keeps the close_only rule of 17-19 Nov, not v2.1's
+    close_only.py): the order check's line for a sleeve with the term. ctx: checks.context() (value, gross, positions, prices,
     own_limit); orders: the check's cleaned orders (trader.clean_order), in the order given; resting: this sleeve's
     resting orders at IBKR (all_open_orders rows) or None if they were not read; close_only: refs of this sleeve's
     close_only orders; filled: {ref: shares} of this sleeve's fills, for what is left of a partly filled resting order.

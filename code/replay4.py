@@ -620,7 +620,8 @@ def conc75(lk, w, px):
     if abs(pos[s]) * (px.get(s) or 0) < 0.75 * st["value"]:
         return 0
     exit_side = "SELL" if pos[s] > 0 else "BUY"
-    stops = [o for o in st["orders"] if o["ref"] not in cancels and o["symbol"] == s and o["type"] in STOPS and o["action"] == exit_side]
+    stops = [o for o in st["orders"] if o["ref"] not in cancels and o["symbol"] == s and o["type"] in STOPS and o["action"] == exit_side
+             and not o.get("held")]   # a held close_only exit (v2.1) is not at the broker
     stops += [o for o in w if "error" not in o and not o["margin"] and o["symbol"] == s and o["type"] in STOPS and o["action"] == exit_side]
     return 0 if stops else 1
 
@@ -712,7 +713,8 @@ class Sim7:
             m.positions[p["symbol"]] = [p["quantity"], p["avg_cost"]]
         cancel = {str(c) for c in cancel}
         orders = [(o["symbol"], o["action"], o["quantity"], "MOO" if o.get("tif") == "OPG" else o["type"], o.get("limit"),
-                   o.get("stop"), None, o.get("tif") != "GTC") for o in st["orders"] if o["ref"] not in cancel]
+                   o.get("stop"), None, o.get("tif") != "GTC") for o in st["orders"] if o["ref"] not in cancel
+                  and not o.get("held")]   # a held close_only exit (v2.1) is not at the broker
         orders += [(o["symbol"], o["action"], o["quantity"], o["type"], o["limit"], o["stop"], o["trail_percent"], o["tif"] != "GTC")
                    for o in place]
         placed, nobars = [], 0
@@ -781,7 +783,8 @@ def state_conc75(lk):
     if abs(p["quantity"] * p["close"]) < 0.75 * st["value"]:
         return 0
     side = "SELL" if p["quantity"] > 0 else "BUY"
-    return int(not any(o["symbol"] == p["symbol"] and o["type"] in STOPS and o["action"] == side for o in st["orders"]))
+    return int(not any(o["symbol"] == p["symbol"] and o["type"] in STOPS and o["action"] == side and not o.get("held")
+                       for o in st["orders"]))   # a held close_only exit (v2.1) is not at the broker
 
 
 def score_live(cfg):

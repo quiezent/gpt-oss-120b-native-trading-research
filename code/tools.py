@@ -17,6 +17,8 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import close_only as co
+
 ET = ZoneInfo("America/New_York")
 LISTS = Path(__file__).resolve().parent / "lists"
 MAX_CALLS = 12
@@ -103,7 +105,7 @@ TRAIL_DESC = "trail_percent is in percent: the stop trails by price x trail_perc
 # means as protective can never open a new position." (CLAUDE.md: "an order it marks as a close may not add to the
 # position"; cand2 at 12:00 that day: its old stops filled during the look, its cancels came back "not an open order", and
 # seven new stops filled as opening buys.) Text B's submit form only; trader.PaperWorld.act and paper.close_only_excess.
-CLOSE_DESC = ("close_only true marks an order meant only to close. It is sent only if your position in that symbol, "
+CLOSE_DESC_V1 = ("close_only true marks an order meant only to close. It is sent only if your position in that symbol, "
               "counting fills so far (an order earlier in the same submit counts if it has filled 2 seconds after it was "
               "sent, which a market order in the session usually has and one before the open has not), is on the other "
               "side and covers it together with your other close_only orders still open there, those earlier in the same "
@@ -111,6 +113,31 @@ CLOSE_DESC = ("close_only true marks an order meant only to close. It is sent on
               "close_only orders your position no longer covers are cancelled, keeping the oldest that still fit. Between "
               "those checks it is an ordinary order at the broker: if another order closes the position first, it can fill "
               "and open one.")
+# close_only v2.1 (runs/analysis/close_only_v2/DESIGN.md; Clayton, 19 Nov: "Yes if its a fix for future sleeves too"), on
+# with close_only.V2. The words are the Trading Model Researcher's decision of 20 Nov 2026 (models-w3 f1af7fa8,
+# runs/ml/research/week7_prep/close_only_words/DECISION.md; 314 gpt-oss tokens), copied from that file. 25 Nov 2026: the
+# Researcher's final sentence for its exit-size rule (P with the late gate, models-w3 d13f1c02 week7/co_note/P_DECISION.md)
+# replaces "..., never for other shares you hold, and grows ..."; HELD_LINE loses "only" (the same decision).
+CLOSE_DESC_V2 = ("close_only true marks an order meant only to close. An order without it is an ordinary order: it can "
+                 "open, add to or reverse a position. A close_only order is sent only if your position in that symbol, "
+                 "counting fills so far, is on the other side and covers it beside your other close_only orders there that "
+                 "could fill at the same moment: stops with stops, limits with limits, a working MKT with both; a MOO, "
+                 "MOC, LOC or order sent outside the session with your stops and, separately, your limits; a MKT in the "
+                 "session only with working MKTs and CANCEL-PENDING orders. If not, and an order of yours there with the "
+                 "opposite action, not close_only, is working (one listed earlier in the same submit counts, one later "
+                 "does not), it is held (a MOO, MOC or LOC is not): not at the broker, so it cannot fill. At the next "
+                 "check after that order fills, it goes out for that order's fills since the hold (all of them if in the "
+                 "same submit) and, while it is at the broker, grows with them up to its size, as far as it fits. When "
+                 "that order has ended, the part of its size above what that order had left to fill at the hold goes out "
+                 "too, for other shares you held there at the hold, as far as it fits then, and never later. At "
+                 "each look and about once a minute in the session, close_only orders at the broker that could fill at the "
+                 "same moment and together exceed your position are reduced, newest first and a MKT last, or cancelled, as "
+                 "is one with no position or on the wrong side. Between those checks one can fill and open a position if "
+                 "another order closes it first.")
+CLOSE_DESC = CLOSE_DESC_V2 if co.V2 else CLOSE_DESC_V1
+HELD_LINE = ("(held: a close_only order that is not at the broker, so it cannot fill; it goes out when the order it "
+             "waits for fills, for those fills; it is cancelled if that order ends with nothing for it to close, "
+             "and a DAY one at the close.)")
 
 # IBKR scan codes that work on this account (checked 15 Oct 2026; the Refinitiv fundamental scans are not allowed).
 SCANS = {
@@ -275,12 +302,22 @@ def _headline(r):
     return f"{t} [{r.get('provider')} {r.get('article_id')}] {r.get('headline')}"
 
 
+KNOWN_PROVIDERS = {"BRFG", "BRFUPDN", "DJNL", "EDGAR", "MACRO"}   # IBKR's news providers for this account (news_providers,
+#                                                                   23 Nov 2026) and the two the desk serves itself
+
+
 def article_ref(provider, article_id):
     """(provider, article_id) as the gateway and our stores key them. news and tape print IBKR and MACRO ids with the provider
     prefix ("[BRFG BRFG$1fc7c7a5]") and EDGAR ids bare (accessions); IBKR answers 10172 to a bare id. Week 5 (9-13 Nov): 14 gpt-oss
     article calls gave a bare BRFG id and all failed with 10172, while each of those ids worked in another look with "BRFG$". So a bare id gets the
-    prefix and an EDGAR id loses one; the provider is upper-cased (IBKR's codes are)."""
+    prefix and an EDGAR id loses one; the provider is upper-cased (IBKR's codes are).
+    An id that carries a known provider ("BRFG$1fdf5d68") with a provider that is not a code at all takes the id's: Mon 23 Nov
+    2026, the Inkling sleeves gave provider "briefing" and IBKR answered 321 "Not subscribed for 'BRIEFING'" (3 of their 40
+    article calls). A known code that differs from the prefix is left as the model gave it."""
     p, aid = str(provider).strip().upper(), str(article_id).strip()
+    pre = aid.split("$", 1)[0].upper() if "$" in aid else ""
+    if pre in KNOWN_PROVIDERS and p not in KNOWN_PROVIDERS:
+        p = pre
     if p == "EDGAR":
         return p, aid.removeprefix("EDGAR$")
     return p, (aid if "$" in aid or not aid or p in ("", "NONE") else f"{p}${aid}")
@@ -360,7 +397,7 @@ def run(gw, name, args, ml_tool=None, sleeve_value=None, look=None):
             text = text.get("text", "") if isinstance(text, dict) else str(text)
             if len(text) <= 4000:
                 return text
-            edgar = str(args.get("provider")).upper() == "EDGAR"     # 8-K text is stored only up to 6,000 characters
+            edgar = prov == "EDGAR"                                  # 8-K text is stored only up to 6,000 characters
             return text[:4000] + (f"\n[cut at 4,000 characters; our copy of the filing stops at {len(text):,}, and the "
                                   "filing may be longer]" if edgar else f"\n[cut at 4,000 of {len(text):,} characters]")
         if name == "forecast":                     # the ML arm's tool (ml_tools.py); only -ml sleeves are offered it

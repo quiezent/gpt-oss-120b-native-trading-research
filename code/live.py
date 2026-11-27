@@ -32,6 +32,7 @@ import concurrent.futures
 import contextlib
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -47,7 +48,9 @@ import tinker
 import agent
 import bars as barsmod
 import checks
+import close_only as co
 import dividends
+import inkling
 import ml_tools
 import paper
 import rates
@@ -72,11 +75,34 @@ HOLIDAYS = {"2026-11-26", "2026-12-25", "2027-01-01", "2027-01-18", "2027-02-15"
             "2027-06-18", "2027-07-05", "2027-09-06", "2027-11-25", "2027-12-24"}
 HALF_DAYS = {"2026-11-27", "2026-12-24", "2027-11-26"}   # NYSE closes at 13:00 ET
 LOOK_TIMES = [(h, m) for h in range(9, 16) for m in (0, 30)]   # every 30 minutes, 09:00-15:30 (Clayton, 16 Oct)
-JOBS = [("refresh", (7, 30))] +[(f"look-{h:02d}{m:02d}", (h, m)) for h, m in LOOK_TIMES] + [("record", (16, 15))]
+# The quarter-hour looks (Clayton, 20 Nov 2026: "new base-30k-b change to 15 minutes cadence and add another base-30k. So 2
+# base pair at 15 minutes cadence while the others stay at 30 minutes cadence"): 09:15, 09:45 ... 15:45, for the sleeves
+# whose sleeves.json "cadence" is 15 only (cadence_of). Every sleeve, 15-minute ones too, looks at :00 and :30 as before.
+QUARTER_TIMES = [(h, m) for h in range(9, 16) for m in (15, 45)]
+JOBS = ([("refresh", (7, 30))]
+        + [(f"look-{h:02d}{m:02d}", (h, m)) for h, m in sorted(LOOK_TIMES + QUARTER_TIMES)] + [("record", (16, 15))])
 WINDOW = timedelta(minutes=25)      # a look that can't start within 25 minutes of its time is skipped (looks are 30 minutes apart)
-GPTOSS_LANES = 10                   # gpt-oss sleeves sampled side by side (Clayton, 11 Nov 2026: "they need to be [parallel]
+QUARTER_WINDOW = timedelta(minutes=8)    # a quarter-hour look starts by :23 or :53, so its 5-6 minutes end before the next
+                                         # half-hour look (review, 20 Nov: at 12 a late one delayed every sleeve's next look)
+LAST_START = timedelta(minutes=8)        # no look starts with less than this to the close: its orders would reach IBKR after
+                                         # the close (a DAY order then works at the next open; review, 20 Nov)
+
+
+def _sleeves_or_none(said):
+    """paper.sleeves(), or None when sleeves.json can't be read (mid-write, or a bad edit): the loop never dies of it and
+    says so at most once a minute (review, 20 Nov)."""
+    try:
+        return paper.sleeves()
+    except Exception as e:                # noqa: BLE001
+        now = time.time()
+        if now - said.get("t", 0) > 60:
+            said["t"] = now
+            log(f"sleeves.json not read ({type(e).__name__}: {str(e)[:120]}); quarter-hour looks wait for it")
+        return None
+GPTOSS_LANES = 20                   # gpt-oss sleeves sampled side by side (Clayton, 11 Nov 2026: "they need to be [parallel]
                                     # because trading is time sensitive"; one after another, the 09:00 look's last sleeve
-                                    # decided 21 minutes after its first)
+                                    # decided 21 minutes after its first). 10 until 20 Nov; the Inkling sleeves take lanes in
+                                    # the same pool, so from Week 7 (17 such sleeves) up to 20 start together (review, 20 Nov)
 
 
 def log(msg):
@@ -215,14 +241,35 @@ def read_account(link, gw):
         return None
 
 
-def unheld_gross(link, data, d, live):
+def unheld_gross(link, data, d, live, gw=None):
     """The dollars of the account's gross in positions no sleeve holds, for the account line (16 Nov 2026: the Gateway may
     still list names IBKR removed at the weekend's cash reset, 70 names and $775,595 of gross on 15 Nov, which no Week 6
     sleeve holds). positions() is read once a look on the account line's connection, with its 5 s bound and skip rule
     (checks.Link.read). Per symbol, the account's signed position A less the sleeves' ledgers' sum L: the part the ledgers
     do not explain is A - L when A is the same sign as L and larger, all of A when L is the other sign (or zero), else
     nothing. Valued at the look's marks (delayed last, else last close), else the row's average cost; summed in absolute
-    value. None (one log line) when positions() or a ledger was not read: the clause is then left out."""
+    value. None (one log line) when positions() or a ledger was not read: the clause is then left out.
+    24 Nov 2026: with gw (client 10), the ledgers are summed twice: as they stand when positions() is read, and again after
+    the fills IBKR has reported since are booked (paper.sync_fills); per symbol the smaller unexplained part counts. At
+    09:30 the look syncs at 09:30:45 and reads the account about 35-85 s later, after every held name's quote; the fills in
+    between were in positions() and in no ledger, so the clause counted the sleeves' own opening trades ($257,994 on 23 Nov,
+    $8,686 on 24 Nov): the second sum explains those. A fill after positions() was read (a stop covering a short) would
+    leave the second sum short of the account; the first sum explains that one. A position no sleeve holds is unexplained
+    by both and counts in full when no sleeve trades that name in either window. Known limits (the review of 24 Nov): a
+    sleeve's fill on such a name in either window can make one sum explain part of it, so the figure can be too low by
+    up to that fill; and a fill toward the account's sign before the read with one against it after (in one sleeve or
+    across sleeves) is still counted, up to the smaller of the two. Splitting the synced fills by execution time against
+    the read would remove both. A failed sync leaves the clause out."""
+    def held_now():
+        held = {}
+        for name in paper.sleeves():
+            for s, p in paper.book(name)["positions"].items():
+                held[s] = held.get(s, 0) + float(p["quantity"])
+        return held
+
+    def unexplained(a, h):
+        return a - h if (a * h > 0 and abs(a) > abs(h)) else a if a * h <= 0 else 0.0
+
     try:
         rows = link.read("positions")
         acct, cost = {}, {}
@@ -230,15 +277,15 @@ def unheld_gross(link, data, d, live):
             if r.get("quantity"):
                 acct[r["symbol"]] = acct.get(r["symbol"], 0) + float(r["quantity"])
                 cost.setdefault(r["symbol"], r.get("avg_cost"))
-        held = {}
-        for name in paper.sleeves():
-            for s, p in paper.book(name)["positions"].items():
-                held[s] = held.get(s, 0) + float(p["quantity"])
+        before = after = held_now()
+        if gw is not None:
+            paper.sync_fills(gw)
+            after = held_now()
         marks = {s: x["close"] for s, x in data.features(d)[0].items()} | (live or {})
         total = 0.0
         for s, a in acct.items():
-            h = held.get(s, 0.0)
-            u = a - h if (a * h > 0 and abs(a) > abs(h)) else a if a * h <= 0 else 0.0
+            u1, u2 = unexplained(a, before.get(s, 0.0)), unexplained(a, after.get(s, 0.0))
+            u = u1 if abs(u1) <= abs(u2) else u2       # both have a's sign (or are 0)
             if u:
                 px = marks.get(s) if marks.get(s) is not None else cost.get(s)
                 total += abs(u) * float(px)
@@ -246,6 +293,116 @@ def unheld_gross(link, data, d, live):
     except Exception as e:                  # noqa: BLE001
         log(f"account line: positions no sleeve holds not computed ({type(e).__name__}: {str(e)[:150]})")
         return None
+
+
+def settle_orders(rows, sleeve):
+    """An orders() snapshot read before a fill sync, settled by the fills the sync then booked (24 Nov 2026, the review of
+    catch_up): each of this sleeve's working rows whose booked fills reach its quantity is marked Filled (so
+    paper.open_orders leaves it out); one partly filled has remaining set to its quantity less those fills (or IBKR's
+    remaining, if that is smaller). Other sleeves' rows and rows IBKR already ended are left as they are. New dicts; the
+    snapshot is not changed. A fill booked can't be undone, so this never hides an order that can still fill."""
+    done = {"Filled", "Cancelled", "ApiCancelled", "Inactive"}
+    booked = {}
+    for f in paper.fills():
+        if f.get("sleeve") == sleeve and f.get("ref"):
+            booked[f["ref"]] = booked.get(f["ref"], 0.0) + float(f.get("shares") or 0)
+    out = []
+    for r in rows or []:
+        q = booked.get(r.get("ref"), 0.0)
+        if paper.sleeve_of(r.get("ref")) != sleeve or r.get("status") in done or q <= 0:
+            out.append(r)
+            continue
+        total = float(r.get("quantity") or 0)
+        if q >= total:
+            out.append({**r, "status": "Filled"})
+        else:
+            left, rem = total - q, r.get("remaining")
+            if isinstance(rem, (int, float)) and not isinstance(rem, bool):
+                left = min(left, float(rem))
+            out.append({**r, "remaining": left})
+    return out
+
+
+def catch_up_sleeve(gw, name, live=None, dry_run=False):
+    """Just before a sleeve's state is built: reads IBKR's orders, then books the fills IBKR has reported since the
+    last sync, then quotes this sleeve's held names the look has no mark for. Returns the orders rows, which the
+    state is built from (build's orders: its open-orders list, its names in play and the orders IBKR ended in
+    "Since your last decision"). Every sleeve, the first gpt-oss sleeve and the Claude sleeves included (24 Nov
+    2026: at the 09:30 look on 23 Nov those two were built from the books as at the 09:30:45 sync, about 80 s
+    before their states, while their orders were read live as each state was built, so base-90k-ml was shown 14
+    shorts its stops had covered at the open, with no stop, and 4.11x gross for 2.94x, and covered them again;
+    fable-ml was shown three positions it had closed). Orders first, then fills, the order close_only v2.1
+    (DESIGN C) uses, so an order that fills between the two reads (a window that includes waiting for client
+    10 behind other sleeves' research calls) is never shown as neither held nor working: once the sync has
+    booked its fills, its snapshot row is settled from them (filled in full: shown filled, so not listed;
+    partly: its remaining is what the booked fills leave). One that fills later (during the quotes or the
+    build) shows as working with no fill yet, as it stood at the sync, and its fill reaches the next look. An
+    error raises: it costs this sleeve's look, as a failed re-sync has since 11 Nov.
+
+    25 Nov 2026 (the Researcher's choice of 24 Nov): with close_only v2.1 on and not in a dry run, this sleeve's
+    close_only check runs between the fill sync and the settling (co_before_state), on those orders and fills, so
+    the state shows each exit as it stands at the broker; if the check changed something at the broker, the orders
+    are read and the fills synced again, in that order, and the state is built from that second read."""
+    snap = gw.orders()
+    paper.sync_fills(gw)
+    snap = co_before_state(gw, name, snap, dry_run)
+    snap = settle_orders(snap, name)
+    if live is not None:            # the look's marks: held names it has none for are quoted now
+        missing = sorted(set(paper.book(name)["positions"]) - set(live))
+        for q in (gw.quotes(missing) if missing else []):
+            m = None if q.get("error") else paper.mark(q)
+            if m is not None:
+                live[q["symbol"]] = m
+    return snap
+
+
+def co_before_state(gw, sleeve, rows, dry_run=False):
+    """A sleeve's close_only check just before its state is built (25 Nov 2026; the Trading Model Researcher's choice of
+    24 Nov), inside catch_up_sleeve: rows is IBKR's orders, read before the fill sync that has just run (DESIGN C's
+    order). With close_only v2.1 off or in a dry run it does nothing and returns rows. Else the check runs on them, so
+    the state shows each exit as it stands at the broker (23 Nov, 09:30: 14 held rows in 9 sleeves were shown "held
+    (waits for <ref>)" beside entries already filled; 8 looks cancelled an exit and 4 placed one again). When it changed
+    something at the broker (a release or a cancel sent; a raise or reduction confirmed, not yet confirmed, or met by an
+    order that had ended), IBKR's orders are read again and the fills synced again, in that order, and those rows are
+    returned for the state; else rows. A modify that sent nothing, or a held row cancelled or expired in the ledger, needs
+    no new read. One pass (the third review of 25 Nov: a second pass read the orders before IBKR listed an unacknowledged
+    release and sent a second exit into its room, and turned an unconfirmed reduction into a cancel within seconds); a
+    fill that lands while the check waits for IBKR is booked by that sync and shows as it stood (an entry filled, its
+    exit still held), and the next check (act's tail, the minute check) acts on it. The time is logged when the check
+    changed something or took 2 s or more (it runs under the look's ledger lock, and IBKR's acknowledgement can take
+    seconds). The check never raises (a failure is logged and the state is built as before); a failed read here raises,
+    as catch_up_sleeve's own do."""
+    if dry_run or not co.V2:
+        return rows
+    t0, moved = time.time(), []
+    try:
+        done = paper.close_only_check(gw, sleeve, log=log, fail_log=log, rows=rows, synced=True, place_ok=not HOLD.exists())
+        moved = [d for d in done if d[0] in ("cancel", "release")
+                 or (d[0] in ("grow", "reduce") and d[3] in (True, None, "gone"))]
+    finally:
+        secs = time.time() - t0
+        if moved or secs >= 2:
+            log(f"{sleeve}: close_only check before the state: {len(moved)} change(s), {secs:.1f}s")
+    if not moved:
+        return rows
+    rows = gw.orders()
+    paper.sync_fills(gw)
+    return rows
+
+
+class OrdersAt:
+    """Client 10 with orders() answered from one snapshot (catch_up's, read before the fills are synced), for one sleeve's
+    state build only (24 Nov 2026); every other call goes to the connection itself. build() puts the connection back on
+    the world before it returns, so placing and close_only read IBKR's orders live."""
+
+    def __init__(self, gw, rows):
+        self._gw, self._rows = gw, list(rows or [])
+
+    def orders(self):
+        return [dict(r) for r in self._rows]
+
+    def __getattr__(self, name):
+        return getattr(self._gw, name)
 
 
 def sleeves_total(data, d, live):
@@ -346,13 +503,14 @@ def compute_versions(only=None):
 
 def compute_retry(now=None):
     """Try again, alone, each version whose compute failed at this morning's refresh: every 5 minutes until it succeeds
-    or the day's last look time (15:30) has passed. The loop calls it between jobs, so never during a look; a compute
+    or the day's last look time (15:45, a 15-minute sleeve's; 12:45 on a half day) has passed. The loop calls it between jobs, so never during a look; a compute
     takes seconds and a look reads a new file at its next call. Never raises. (16 Nov 2026: with every sleeve on ML4, a
     failed ML4 compute would have left gap1 "unavailable" all day with no second try; the Trading Model Researcher.)"""
     try:
         st = COMPUTE_RETRY
         now = now or datetime.now(ET)
-        if not st["versions"] or st["day"] != now.date() or now.time() >= dtime(15, 30):
+        last = (datetime.combine(now.date(), close_time(now.date())) - timedelta(minutes=15)).time()
+        if not st["versions"] or st["day"] != now.date() or now.time() >= last:
             return
         if st["last"] is not None and now - st["last"] < timedelta(minutes=5):
             return
@@ -457,7 +615,8 @@ def research_summary(trace, call, table_rows):
     """What a look researched. A call the loop did not run for lack of room is no research and no check, and its symbols
     were not researched (16 Nov 2026: such a call came back with one line, not data); a dropped turn has no "tool" at all.
     A call answered with a limit text is counted as before."""
-    ran = lambda t: not str(t.get("result", "")).startswith(NOT_RUN)
+    ran = lambda t: not str(t.get("result", "")).startswith(NOT_RUN) and not (     # an Inkling reply's later call after
+        t.get("tool") != "submit" and isinstance(t.get("not_run"), str))           # the line that opened the submit (20 Nov)
     not_run = sum(1 for t in trace if t.get("tool") and t["tool"] != "submit" and not ran(t))
     trace = [t for t in trace if ran(t)]
     calls = [t for t in trace if t.get("tool") and t["tool"] not in ("submit", "check_orders")]   # checks are not research (14 Nov)
@@ -477,7 +636,7 @@ MEMO = LIVE / "memo.json"   # each sleeve's own notes from its last look (submit
 
 
 def load_memo(name):
-    return (json.loads(MEMO.read_text(encoding="utf-8")) if MEMO.exists() else {}).get(name, {})
+    return paper._read_json(MEMO, {}).get(name, {})
 
 
 NOTES_CAP = {"claude": 8000, "gpt-oss": 2000}   # characters kept for the next look. gpt-oss stays at the 2,000 it was
@@ -489,22 +648,23 @@ def save_memo(name, now, call, model=""):
     if not call:                      # no valid decision: the previous notes stay
         return
     cap = NOTES_CAP["claude" if str(model).startswith("claude-") else "gpt-oss"]
-    d = json.loads(MEMO.read_text(encoding="utf-8")) if MEMO.exists() else {}
+    d = paper._read_json(MEMO, {})
     d[name] = {"when": f"{now:%a %d %b %H:%M} ET", "notes": str(call.get("notes") or "")[:cap]}
-    MEMO.write_text(json.dumps(d, indent=1), encoding="utf-8")
+    paper._write_json(MEMO, d, indent=1)
 
 
 def effort(meta):
     """The sleeve's reasoning effort: each model's maximum unless sleeves.json says otherwise (Clayton, 18 Oct)."""
-    return meta.get("effort") or ("max" if meta["model"].startswith("claude-") else "high")
+    return meta.get("effort") or ("max" if meta["model"].startswith("claude-") or inkling.is_inkling(meta["model"]) else "high")
 
 
 def forced_mode_of(meta):
     """How a gpt-oss sleeve's opened submit is written (agent.gptoss_look's forced_mode): the sleeve's "forced_mode" if it is
     one of agent.FORCED_MODES, else agent.FORCED_MODE ("plain" until it is changed). Per sleeve because the Researcher's
     second forced-submit draw (15 Nov, preliminary) read base and the candidates differently, so the setting may differ
-    by sleeve; no sleeve sets it until Clayton says which. None for a Claude sleeve (its submit is never opened for it)."""
-    if str(meta.get("model", "")).startswith("claude-"):
+    by sleeve; no sleeve sets it until Clayton says which. None for a Claude sleeve (its submit is never opened for it)
+    and for an Inkling sleeve (inkling.look names submit in tool_choice instead; 20 Nov)."""
+    if str(meta.get("model", "")).startswith("claude-") or inkling.is_inkling(meta.get("model")):
         return None
     v = meta.get("forced_mode")
     return v if v in agent.FORCED_MODES else agent.FORCED_MODE
@@ -519,10 +679,90 @@ def final_line_of(meta):
     return v if isinstance(v, bool) else agent.FINAL_LINE
 
 
+def cadence_of(meta):
+    """A sleeve's minutes between looks: sleeves.json "cadence" 15 (a gpt-oss or Inkling sleeve; it also gets the
+    quarter-hour looks), else 30. A Claude sleeve stays at 30 (its CLI lanes are capped by WINDOW; switch_bad says so)."""
+    v = meta.get("cadence")
+    return 15 if v == 15 and not isinstance(v, bool) and not str(meta.get("model", "")).startswith("claude-") else 30
+
+
+def quarter_sleeves(sleeves):
+    """The sleeves a quarter-hour look runs: those at cadence 15."""
+    return sorted(k for k, v in sleeves.items() if cadence_of(v) == 15)
+
+
+def base_model_of(meta):
+    """The base model a base-weight gpt-oss sleeve samples on: sleeves.json "base_model" if it names BASE or a variant of it
+    ("openai/gpt-oss-120b:peft:131072"; the Trading Model Researcher, 20 Nov 2026, for the text-B base sleeves from Week 7
+    on its decision of Sat 21 Nov), else BASE. None for a checkpoint (it runs on its own trained base), Claude or Inkling
+    sleeve."""
+    if str(meta.get("model", "")) not in ("base", BASE):
+        return None
+    v = meta.get("base_model")
+    return v if isinstance(v, str) and (v == BASE or variant_context(v)) else BASE
+
+
+def variant_context(name):
+    """n for a base model named exactly "<BASE>:peft:<n>" with n a whole number from 32,768 to 1,048,576, else None."""
+    m = re.fullmatch(re.escape(BASE) + r":peft:(\d+)", str(name or ""))
+    n = int(m.group(1)) if m else None
+    return n if n is not None and agent.CONTEXT <= n <= 1048576 else None
+
+
+def context_of(meta):
+    """The look's context: an Inkling sleeve's (inkling.context_of); a base-weight gpt-oss sleeve on a variant named
+    "<BASE>:peft:<n>", its "context" if a whole number up to n, else n; any other gpt-oss sleeve agent.CONTEXT (32,768);
+    None for a Claude sleeve. A "context" without such a variant changes nothing (switch_bad says so)."""
+    m = str(meta.get("model", ""))
+    if m.startswith("claude-"):
+        return None
+    if inkling.is_inkling(m):
+        return inkling.context_of(meta)
+    n = variant_context(base_model_of(meta))
+    if not n:
+        return agent.CONTEXT
+    v = meta.get("context")
+    return v if isinstance(v, int) and not isinstance(v, bool) and agent.MIN_ROOM < v <= n else n
+
+
+def next_look_of(meta):
+    """Whether the sleeve's system text has trader.NEXT_LOOK: sleeves.json "next_look" true on a text-B sleeve that is not a
+    Claude sleeve (the Researcher, 20 Nov: per sleeve, so a sleeve can have a twin without it)."""
+    return (meta.get("next_look") is True and trader.text_of(meta) == "B"
+            and not str(meta.get("model", "")).startswith("claude-"))
+
+
+def range_line_of(meta):
+    """Whether the sleeve's state has the range line (trader.book_range): sleeves.json "range_line" true, the same sleeves."""
+    return (meta.get("range_line") is True and trader.text_of(meta) == "B"
+            and not str(meta.get("model", "")).startswith("claude-"))
+
+
 def switch_bad(meta):
     """The sleeve's malformed forced-submit settings, as log text: a "forced_mode" not in agent.FORCED_MODES, a "final_line"
     that is not true or false, or either on a Claude sleeve (which has no opened submit). [] if none."""
     out, claude = [], str(meta.get("model", "")).startswith("claude-")
+    if "cadence" in meta and cadence_of(meta) != meta["cadence"]:
+        out.append(f"cadence {meta['cadence']!r} is not used; the sleeve looks every {cadence_of(meta)} minutes "
+                   "(15 or 30; a Claude sleeve stays at 30)")
+    for key, on in (("next_look", next_look_of), ("range_line", range_line_of)):
+        if key in meta and bool(meta[key]) != on(meta):
+            out.append(f"{key} {meta[key]!r} is not used: only true, on a text-B sleeve that is not a Claude sleeve")
+    if inkling.is_inkling(meta.get("model")):   # an entry copied from a gpt-oss twin (the Researcher's read, 20 Nov)
+        try:
+            if inkling.effort_value(effort(meta)) < inkling.EFFORT:
+                out.append(f"effort {meta.get('effort')!r} runs an Inkling sleeve at {inkling.effort_value(effort(meta))}, "
+                           f"under its maximum {inkling.EFFORT}")
+        except ValueError as e:
+            out.append(f"effort: {e}")
+        if not isinstance(meta.get("final_line"), bool):
+            out.append(f"final_line is not set on an Inkling sleeve, so the default {agent.FINAL_LINE!r} applies")
+    if "forced_mode" in meta and inkling.is_inkling(meta.get("model")):
+        out.append(f"forced_mode {meta['forced_mode']!r} is ignored on an Inkling sleeve (its submit is opened by tool_choice)")
+    if "base_model" in meta and base_model_of(meta) != meta["base_model"]:
+        out.append(f"base_model {meta['base_model']!r} is ignored: only a base-weight gpt-oss sleeve takes one, naming {BASE} or a variant of it")
+    if "context" in meta and context_of(meta) != meta["context"]:
+        out.append(f"context {meta['context']!r} is not used; the look's context is {context_of(meta)}")
     for key, good, want in (("forced_mode", lambda v: v in agent.FORCED_MODES, f"one of {list(agent.FORCED_MODES)}"),
                             ("final_line", lambda v: isinstance(v, bool), "true or false")):
         if key in meta and claude:
@@ -540,7 +780,16 @@ def finish(now, name, *a, **k):
         log(f"{name}: look record failed: " + traceback.format_exc()[-300:])
 
 
-def record_look(now, name, meta, text, st, call, trace, notes, table_rows, dry_run, cost=None, secs=None):
+def words_of(words):
+    """(system text hash, tool words hash) for the look record (the Researcher, 20 Nov: nothing in a record showed that twins
+    read the same words): sha256 of the system text, inkling.words_sha of the tools offered; None for what is not given."""
+    import hashlib
+    system, offered = words if words else (None, None)
+    return (hashlib.sha256(system.encode()).hexdigest()[:16] if isinstance(system, str) else None,
+            inkling.words_sha(offered) if offered else None)
+
+
+def record_look(now, name, meta, text, st, call, trace, notes, table_rows, dry_run, cost=None, secs=None, words=None):
     if not dry_run:                     # first: later looks read these two, and the rest is only the record
         save_memo(name, now, call, meta["model"])
         if not call:                    # no decision, so the next look's "Since your last decision" must repeat what this one was told
@@ -556,7 +805,9 @@ def record_look(now, name, meta, text, st, call, trace, notes, table_rows, dry_r
            "shock_cap": trader.shock_cap_of(meta), "max_gross": trader.max_gross_of(meta), "max_calls": trader.max_calls_of(meta),
            "forced_mode": forced_mode_of(meta), "final_line": final_line_of(meta), "own_limit": trader.own_limit_of(meta),
            "regime_line": bool(meta.get("regime_line")), "regime_text": regime.shown(text) if meta.get("regime_line") else None,
-           "text": trader.text_of(meta)}
+           "text": trader.text_of(meta), "base_model": base_model_of(meta), "context": context_of(meta),
+           "cadence": cadence_of(meta), "next_look": next_look_of(meta), "range_line": range_line_of(meta),
+           "system_sha": words_of(words)[0], "tools_sha": words_of(words)[1]}
     (out_dir / f"{name}-{now:%H%M}.json").write_text(json.dumps(rec, indent=1, default=float), encoding="utf-8")
     if not dry_run:
         paper.append(LIVE / "research.jsonl", {"time": rec["time"], "sleeve": name, "max_calls": rec["max_calls"],
@@ -720,17 +971,17 @@ def _look(dry_run=False, only=None):
             time.sleep(wait)                    # cover a short already closed. A fact's timing, not a delay of a decision.
     check_ctxs, claude_checks = {}, False      # text B's check_orders context by sleeve; the Claude path's switch
     with gateway() as gw, contextlib.ExitStack() as whatif_hold:   # the what-if connection closes before client 10's
+        co_rows = gw.orders() if co.V2 and not dry_run else None   # v2.1: the broker's orders before the look's sync
         paper.sync_fills(gw)
         reconcile(gw)
         if not dry_run:                     # close_only orders the position no longer covers (Clayton, 17 Nov): cancelled
-            for name in sleeves:            # now, newest first, so this look's state shows it and the sleeve's note says why
-                paper.close_only_excess(gw, name, log=log)
+            co_all(gw, sleeves, rows=co_rows)   # now, newest first, so this look's state shows it and the note says why
         specs = tools.available(gw)
         live, qqq_quote = None, None
         if session:
             held = set()
-            for name in sleeves:
-                held |= set(paper.book(name)["positions"])
+            for name in (paper.sleeves() if only else sleeves):   # every sleeve's names, at a quarter look too: the account
+                held |= set(paper.book(name)["positions"])        # line totals every sleeve (review, 20 Nov)
             rows, _ = data.table_rows(d, extra=sorted(held))
             syms = sorted(set(rows) | held)                 # held names outside the table too, else they show at cost;
             live = {}                                       # at most 90 snapshots at a time (IBKR's 100 market-data lines)
@@ -759,15 +1010,16 @@ def _look(dry_run=False, only=None):
             if link is not None:
                 whatif_hold.callback(link.gw.close)
             acct_link = link if link is not None else checks.Link(gw)   # account() and positions() on one connection
-            acct_info = {"account": read_account(acct_link, gw), "sleeves": n_all,
-                         "total": sleeves_total(data, d, live)}
+            acct_info = {"account": read_account(acct_link, gw), "sleeves": n_all}
             if acct_info["account"] is not None:    # no line figures, no clause; a failure leaves the clause out
-                acct_info["unheld"] = unheld_gross(acct_link, data, d, live)
+                acct_info["unheld"] = unheld_gross(acct_link, data, d, live, gw)   # books the fills since the look's
+            acct_info["total"] = sleeves_total(data, d, live)   # sync first (24 Nov), so the total counts them too
 
-        def build(name, meta):
-            world = trader.PaperWorld(gw, name, data)
+        def build(name, meta, orders=None):
+            world = trader.PaperWorld(gw if orders is None else OrdersAt(gw, orders), name, data)   # catch_up's orders
             world.dry_run, world.log = dry_run, log
             world.OWN_LIMIT = trader.own_limit_of(meta)     # the look-start settings, as the system text, check and record
+            world.RANGE_LINE = range_line_of(meta)          # Week 7: the range line, sleeves.json "range_line"
             if trader.text_of(meta) == "B":
                 world.ACCOUNT = acct_info
             text, st, feats = trader.state_text(world, data, d, header=header, live=live, book=bool(meta.get("risk_line")),
@@ -790,13 +1042,21 @@ def _look(dry_run=False, only=None):
             rows, _ = data.table_rows(d, extra=world.symbols_in_play())
             system = trader.live_system(meta["start_cash"], today, ml=ml, ml_tool=meta.get("ml_tool"),
                                         kelly=bool(meta.get("kelly_prompt")), max_gross=trader.max_gross_of(meta),
-                                        own_limit=trader.own_limit_of(meta))
+                                        own_limit=trader.own_limit_of(meta), cadence=cadence_of(meta),
+                                        close=close_time(today) if trader.text_of(meta) == "B" else None,
+                                        next_look=next_look_of(meta))
+            world.gw = gw                   # orders() snapshot for the state only; act() and the rest on client 10 itself
             return world, text, st, system, rows, sp
+
+        def catch_up(name):
+            """catch_up_sleeve for this look: its client 10, its marks (live) and its dry_run."""
+            return catch_up_sleeve(gw, name, live, dry_run)
 
         for name, meta in sleeves.items():
             if meta["model"].startswith("claude-"):
                 try:                        # an error costs this sleeve's look only
-                    world, text, st, system, rows, sp = build(name, meta)
+                    snap = catch_up(name)   # 24 Nov: the Claude sleeves' states are built here, before the threads
+                    world, text, st, system, rows, sp = build(name, meta, snap)
                 except Exception:
                     log(f"{name}: no look: " + traceback.format_exc()[-300:])
                     continue
@@ -823,54 +1083,75 @@ def _look(dry_run=False, only=None):
         def run_gptoss(k, name, meta):
             try:                            # an error here costs this sleeve's look only: the rest go on, and the Claude
                 with ledger:                # orders below are still placed. Each gpt-oss sleeve sees its book as of its
-                    if k:                   # own state (at 09:30 the opening fills arrived after the state was built and
-                        paper.sync_fills(gw)    # 7 orders were sent again)
-                        if live is not None:
-                            missing = sorted(set(paper.book(name)["positions"]) - set(live))
-                            for q in (gw.quotes(missing) if missing else []):
-                                m = None if q.get("error") else paper.mark(q)
-                                if m is not None:
-                                    live[q["symbol"]] = m
-                    world, text, st, system, rows, sp = build(name, meta)
+                    snap = catch_up(name)   # own state (at 09:30 the opening fills arrived after the state was built and
+                    world, text, st, system, rows, sp = build(name, meta, snap)   # 7 orders were sent again); 24 Nov:
+                                            # the first sleeve too (k 0), not only those after it
             except Exception:
                 log(f"{name}: no look: " + traceback.format_exc()[-300:])
                 return
             model, t0 = meta["model"], time.time()
             call, trace, prefill, sampled, notes = None, [], 0, 0, []
+            submit_tool = trader.TOOL_LIVE_PROBS if trader.text_of(meta) == "A" else trader.TOOL_LIVE
+            offered = None                  # the tools this look offers, for the record's words hash (20 Nov)
             try:                            # an error ends this sleeve's look only; the rest and the Claude orders go on
-                sampler = lambda svc, m=model: (svc.create_sampling_client(base_model=BASE) if m in ("base", BASE)
+                sampler = lambda svc, m=model: (svc.create_sampling_client(base_model=base_model_of(meta)) if m in ("base", BASE)
                                                 else svc.create_sampling_client(model_path=m))
                 renew = lambda: sampler(tinker.ServiceClient(project_id=PROJECT_ID, user_metadata={"purpose": "live"}))
                 ctx = check_ctxs.get(name) if link is not None else None
                 checker = (lambda args, c=ctx: checks.check(link, args, c, log=lambda m: log(f"{name}: {m}"))) if ctx else None
                 if checker is not None:     # 18 Nov: agent._estimate allows for the check's exposure-limit line
                     checker.own_limit = ctx.get("own_limit")
-                call, trace, prefill, sampled = agent.gptoss_look(sampler(service), gw, system, text, today.isoformat(), sp,
-                                                                  effort(meta), renew=renew, ml_tool=meta.get("ml_tool"),
-                                                                  lock=research, sleeve_value=st["value"], look=(name, now.isoformat()),
-                                                                  submit_tool=(trader.TOOL_LIVE_PROBS if trader.text_of(meta) == "A"
-                                                                               else trader.TOOL_LIVE), checker=checker,
-                                                                  max_calls=trader.max_calls_of(meta),
-                                                                  forced_mode=forced_mode_of(meta), final_line=final_line_of(meta))
+                offered = sp + ([checks.CHECK_SPEC] if checker else []) + [submit_tool]
+                if inkling.is_inkling(model):   # Inkling-Small through Tinker's OpenAI-compatible endpoint (20 Nov)
+                    call, trace, prefill, sampled = inkling.look(
+                        gw, system, text, sp, effort=effort(meta), ml_tool=meta.get("ml_tool"), lock=research,
+                        submit_tool=(trader.TOOL_LIVE_PROBS if trader.text_of(meta) == "A" else trader.TOOL_LIVE),
+                        sleeve_value=st["value"], look_key=(name, now.isoformat()), checker=checker,
+                        final_line=final_line_of(meta), max_calls=trader.max_calls_of(meta), model=model,
+                        context=inkling.context_of(meta))
+                else:
+                    call, trace, prefill, sampled = agent.gptoss_look(sampler(service), gw, system, text, today.isoformat(), sp,
+                                                                      effort(meta), renew=renew, ml_tool=meta.get("ml_tool"),
+                                                                      lock=research, sleeve_value=st["value"], look=(name, now.isoformat()),
+                                                                      submit_tool=(trader.TOOL_LIVE_PROBS if trader.text_of(meta) == "A"
+                                                                                   else trader.TOOL_LIVE), checker=checker,
+                                                                      max_calls=trader.max_calls_of(meta),
+                                                                      forced_mode=forced_mode_of(meta), final_line=final_line_of(meta),
+                                                                      context=context_of(meta))
                 if call and not dry_run:
                     with ledger:
                         notes = world.act(call)
-            except Exception:
+            except Exception as e:
+                if hasattr(e, "inkling_trace"):     # an Inkling look that raised keeps what it had done and paid for
+                    trace, (prefill, sampled) = list(e.inkling_trace), e.inkling_cost
                 trace = trace + [{"error": traceback.format_exc()[-1500:]}]
+            cost = {"prefill_tokens": prefill, "sampled_tokens": sampled}
+            if inkling.is_inkling(model):   # the endpoint's own count of cached prompt tokens (the Researcher, 20 Nov)
+                cost["cached_tokens"] = next((e["inkling"].get("cached_tokens") for e in reversed(trace)
+                                              if isinstance(e, dict) and isinstance(e.get("inkling"), dict)), None)
             with ledger:
-                finish(now, name, meta, text, st, call, trace, notes, rows, dry_run,
-                       cost={"prefill_tokens": prefill, "sampled_tokens": sampled}, secs=time.time() - t0)
+                finish(now, name, meta, text, st, call, trace, notes, rows, dry_run, cost=cost, secs=time.time() - t0,
+                       words=(system, offered))
 
         if gptoss_jobs:
             with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, min(GPTOSS_LANES, len(gptoss_jobs))),
                                                        thread_name_prefix="gptoss") as pool:
                 futs = [pool.submit(run_gptoss, k, name, meta) for k, (name, meta) in enumerate(gptoss_jobs)]
+                _CO_GUARD["tick"] = datetime.now(ET)    # the first check a minute in, after the sleeves built their states
+                while co.V2 and not dry_run:        # close_only v2.1: the check about once a minute while the sleeves run
+                    if not concurrent.futures.wait(futs, timeout=20).not_done:
+                        break
+                    close_only_tick(gw, ledger, datetime.now(ET), dry_run)
                 for (name, _), f in zip(gptoss_jobs, futs):
                     try:
                         f.result()
                     except Exception:       # noqa: BLE001 - run_gptoss catches its own; this is the last net
                         log(f"{name}: gpt-oss look thread failed: " + traceback.format_exc()[-300:])
     for w in workers:
+        while co.V2 and not dry_run and w.is_alive():   # v2.1: the Claude lanes still run; client 10 is free now
+            w.join(timeout=20)
+            if w.is_alive():
+                close_only_guard(datetime.now(ET))     # its own connection, once a minute in the session (never raises)
         w.join()
     for name, meta, text, st, system, rows, sp in claude_jobs:
         call, trace, secs = claude_out.get(name) or (None, [{"error": "the Claude look did not finish"}], None)
@@ -887,10 +1168,10 @@ def _look(dry_run=False, only=None):
         try:                                # record this look's fills now, not at the next look
             with gateway() as gw:
                 time.sleep(5)
+                co_rows = gw.orders() if co.V2 else None    # v2.1: the broker's orders before the sync
                 paper.sync_fills(gw)
                 reconcile(gw)
-                for name in sleeves:        # and after the look's own fills (close_only, 17 Nov)
-                    paper.close_only_excess(gw, name, log=log)
+                co_all(gw, sleeves, rows=co_rows)   # and after the look's own fills (close_only, 17 Nov)
                 account_margin(gw)
         except Exception:
             log("post-look fill sync failed: " + traceback.format_exc()[-300:])
@@ -912,14 +1193,18 @@ def record():
             rows.append({"date": today, "sleeve": name, "model": b["model"], "nav": b["nav"], "cash": b["cash"],
                          "start_cash": b["start_cash"], "realized": b["realized"], "unrealized": b["unrealized"],
                          "commissions": b["commissions"], "fills": b["fills"], "missing_commissions": b["missing_commissions"],
-                         "positions": {s: p["quantity"] for s, p in b["positions"].items()}, "spy": quotes.get("SPY"),
+                         "positions": {s: p["quantity"] for s, p in b["positions"].items()},
+                         "marks": {s: p["mark"] for s, p in b["positions"].items()},   # the price each name's value
+                         # in nav used (None: unmarked, nav None), so a day split reconciles to the cent (the Researcher, 20 Nov)
+                         "spy": quotes.get("SPY"),
                          "account_net_liquidation": acct.get("NetLiquidation"),
                          "ml_tool": ml_tools.version_of(meta)})
-    if any(m.get("ml") for m in paper.sleeves().values()):     # today's 30-minute bars for the ML arm's intraday models
-        import fetch_extra
-        with gateway() as gw:
-            bad = fetch_extra.update(gw, sorted(set(trader.universe())), "bars30", duration="1 D")
-        log(f"added today's 30-minute bars; {len(bad)} failed {bad[:3]}")
+    if any(m.get("ml") for m in paper.sleeves().values()):     # today's 30-minute bars for the ML arm's intraday models,
+        import fetch_extra                                     # with the 4 sessions before: IBKR revises its history
+        stats = {}                                             # overnight, and a session a failed fetch missed is filled
+        with gateway() as gw:                                  # (fetch_extra.merge_bars30; the Researcher's D-5, 21 Nov)
+            bad = fetch_extra.update(gw, sorted(set(trader.universe())), "bars30", duration="5 D", stats=stats)
+        log(fetch_extra.bars30_summary(stats, bad, datetime.now(ET).strftime("%Y%m%d")))
     for r in rows:
         paper.append(LIVE / "daily.jsonl", r)
         log(f"{r['sleeve']}: nav {r['nav']}, realized {r['realized']:.2f}, commissions {r['commissions']:.2f}, "
@@ -1053,12 +1338,18 @@ DONE = LIVE / "done.json"   # jobs already run, so a restart never repeats a loo
 
 
 def load_done():
-    return {tuple(x) for x in json.loads(DONE.read_text())} if DONE.exists() else set()
+    return {tuple(x) for x in paper._read_json(DONE, [])}
 
 
 def mark_done(done, key):
+    # paper._write_json retries a refused write. Mon 23 Nov 2026: a file another process memory-maps (git hashing a
+    # tracked, changed ledger) refuses an in-place write with OSError [Errno 22]; here that would stop the loop.
     done.add(key)
-    DONE.write_text(json.dumps(sorted([list(k) for k in done])[-400:]), encoding="utf-8")
+    try:
+        paper._write_json(DONE, sorted([list(k) for k in done])[-400:])
+    except OSError as e:                    # still refused after paper's retries: the key is kept in memory and goes
+        log(f"done.json not written ({type(e).__name__}: {str(e)[:120]}); {key[1]} is kept in memory and reaches "
+            f"the file with the next job")  # to disk with the next job; never stop the loop for it
 
 
 def code_line(run=subprocess.run):
@@ -1100,11 +1391,53 @@ def close_only_guard(now):
         if not names:
             return
         with gateway() as gw:
-            paper.sync_fills(gw)
-            for name in names:
-                paper.close_only_excess(gw, name, log=log, fail_log=lambda m: _co_fail(now, m))
+            if co.V2:                                 # v2.1 (DESIGN C): the broker's orders first, then the fills
+                co_all(gw, names, fail_log=lambda m: _co_fail(now, m))
+            else:
+                paper.sync_fills(gw)
+                for name in names:
+                    paper.close_only_excess(gw, name, log=log, fail_log=lambda m: _co_fail(now, m))
     except Exception:                                 # noqa: BLE001
         _co_fail(now, "close_only guard failed: " + traceback.format_exc()[-300:])
+
+
+def close_only_tick(gw, lock, now, dry_run=False):
+    """The close_only check while a look runs (v2.1, DESIGN C; critique "fills-races" #8: a take-profit that fills during a
+    look left its full-size stop working until the look ended): about once a minute in the session, on the look's own
+    client-10 connection, under the look's ledger lock (the sleeves' state builds and acts take it too, so a check never
+    runs inside one). Off with close_only.V2 off, in a dry run, and outside the session. Never raises."""
+    if dry_run or not co.V2 or not (dtime(9, 30) <= now.time() < close_time(now.date())):
+        return
+    last = _CO_GUARD.get("tick")
+    if last is not None and (now - last).total_seconds() < 60:
+        return
+    _CO_GUARD["tick"] = now
+    try:
+        names = [n for n in paper.close_only_recent() if n in paper.sleeves()]
+        if not names:
+            return
+        with lock:
+            co_all(gw, names, fail_log=lambda m: _co_fail(now, m))
+    except Exception:                                 # noqa: BLE001
+        _co_fail(now, "close_only check during the look failed: " + traceback.format_exc()[-300:])
+
+
+def co_all(gw, names, fail_log=None, rows=None):
+    """The close_only check for each sleeve in names. With close_only.V2 on: the broker's orders read once, then the
+    fills synced once (DESIGN C's order), then each sleeve; rows: the caller read the orders before its own fill sync
+    (look start and after the look), so neither is read again. Nothing is released or grown while HOLD exists (an
+    account reset may be under way). Off: each sleeve's check as on 17-19 Nov (paper.close_only_check runs
+    close_only_excess)."""
+    if not co.V2:
+        for name in names:
+            paper.close_only_check(gw, name, log=log)
+        return
+    if rows is None:
+        rows = gw.orders()
+        paper.sync_fills(gw)
+    place_ok = not HOLD.exists()
+    for name in names:
+        paper.close_only_check(gw, name, log=log, fail_log=fail_log, rows=rows, synced=True, place_ok=place_ok)
 
 
 def _co_fail(now, msg):
@@ -1142,6 +1475,7 @@ def loop():
     tried = {}                                        # refresh/record: last attempt, for retries
     held = set()
     mac = {}                                          # the intraday macro rebuild's state (ML2.2)
+    sleeves_said = {}                                 # when an unreadable sleeves.json was last logged
     while not STOP.exists():
         now = datetime.now(ET)
         if trading_day(now.date()):
@@ -1150,7 +1484,16 @@ def loop():
                 if key in done or (name.startswith("look-") and dtime(h, m) >= close_time(now.date())):
                     continue
                 due = now.replace(hour=h, minute=m, second=0, microsecond=0)
-                if due <= now < due + (timedelta(hours=2) if name in ("refresh", "record") else WINDOW):
+                quarter = name.startswith("look-") and m in (15, 45)
+                if name.startswith("look-") and datetime.combine(now.date(), close_time(now.date()), tzinfo=ET) - now < LAST_START:
+                    continue                      # too near the close for a look to place its orders in the session
+                if due <= now < due + (timedelta(hours=2) if name in ("refresh", "record") else QUARTER_WINDOW if quarter else WINDOW):
+                    qs = None
+                    if quarter:                   # read once, only when the look is due: the same list is checked and run
+                        sl = _sleeves_or_none(sleeves_said)
+                        qs = quarter_sleeves(sl) if sl is not None else None
+                        if not qs:                # no 15-minute sleeve (or no readable file): nothing runs, never
+                            continue              # look(only=[]), which is every sleeve
                     if name in ("refresh", "record"):     # no orders: retry every 5 minutes until it succeeds
                         if now - tried.get(key, now - timedelta(hours=1)) < timedelta(minutes=5):
                             continue
@@ -1168,9 +1511,10 @@ def loop():
                     begin_marker()                # LOOKING.<pid> first (16 Nov 2026, the TWS Gateway Owner's review): a
                     try:                          # script waiting for "not pending and no LOOKING" never finds the gap
                         mark_done(done, key)      # marked before running: a crash mid-look must not re-place orders
-                        run_job(name, look, False, None, True)    # the look keeps the marker and removes it at its end
+                        run_job(name, look, False, qs, True)     # the look keeps the marker and removes it at its end
                     finally:                      # and if it never ran (mark_done or run_job failing), it goes here
                         end_marker()
+                    break                         # a look took time: the next job is judged on a fresh clock (review, 20 Nov)
             macro_intraday(mac)
             compute_retry()                           # a version whose morning compute failed, again, alone (never raises)
             close_only_guard(now)                     # close_only orders between looks, about once a minute (never raises)

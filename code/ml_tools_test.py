@@ -138,9 +138,9 @@ live.compute_retry(day + _td(minutes=30))
 check("compute_retry: nothing left to retry, nothing runs", ran == [])
 state["ok"] = False
 live.COMPUTE_RETRY.update(day=day.date(), versions=["ML3"], last=day)
-live.compute_retry(day.replace(hour=15, minute=30))
+live.compute_retry(day.replace(hour=15, minute=45))     # Week 7: the day's last look is 15:45 (a 15-minute sleeve's)
 live.compute_retry(day + _td(days=1, minutes=30))
-check("compute_retry: not at or after 15:30, and not on another day", ran == [] and live.COMPUTE_RETRY["versions"] == ["ML3"])
+check("compute_retry: not at or after 15:45, and not on another day", ran == [] and live.COMPUTE_RETRY["versions"] == ["ML3"])
 
 
 def no_sleeves():
@@ -276,7 +276,7 @@ asyncio.run(go())
               got.get("version") == want and got.get("props") == three and got.get("required") == ["symbols"] and got.get("desc_same"), str(got))
     got = server4("ML4")
     check("mcp_server, ML4: ML4.0's text, track_record declared; a record call returns the record and is research call 1 of 12",
-          got.get("version") == "ML4.1" and got.get("props") == sorted(three + ["track_record"]) and got.get("required") == ["symbols"]
+          got.get("version") == "ML4.2" and got.get("props") == sorted(three + ["track_record"]) and got.get("required") == ["symbols"]
           and got.get("desc_same") and got.get("record") and got.get("calls") == 1, str(got))
     logged = [json.loads(x) for x in (Path(d) / "l4.jsonl").read_text(encoding="utf-8").splitlines()] if (Path(d) / "l4.jsonl").exists() else []
     check("mcp_server, ML4: the record call is logged with its track_record argument",
@@ -285,7 +285,7 @@ asyncio.run(go())
 # ---------------------------------------------------------------- ML4 on the gpt-oss path (forecast4.py; ML2's run is faked above)
 import forecast4  # noqa: E402
 check("ML4 is forecast4.py, with its own SPEC", ml_tools.module("ML4") is forecast4 and ml_tools.module("ML4").SPEC is forecast4.SPEC
-      and ml_tools.version_of({"ml": True, "ml_tool": "ML4"}) == "ML4.1")
+      and ml_tools.version_of({"ml": True, "ml_tool": "ML4"}) == "ML4.2")
 check("tools.run, ML4: ML2's text comes through forecast4 (no ML2 header here, so nothing is added)",
       tools.run(gw, "forecast", {"symbols": ["A"]}, ml_tool="ML4") == "ML2 ROW")
 REC = '<|channel|>analysis<|message|>Read the record.<|end|><|start|>assistant<|channel|>commentary to=functions.forecast json<|message|>{"symbols": [], "track_record": true}<|call|>'

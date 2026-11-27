@@ -90,7 +90,7 @@ PORT = ("0f645b2", "train4.py")      # the vendored order accounting's source
 FROZEN = "d59537b"                   # A0's frozen R1 scorer: replay4.py is loaded from this commit, not main's copy
 PACE = 0.0214                        # Clayton's pace, a week; the pace line's per-session step is PACE / 5
 SEED = 20261026                      # the blinded M3 cases' shuffle
-SLOTS = [f"{h:02d}{m:02d}" for h in range(9, 16) for m in (0, 30)]     # live.LOOK_TIMES
+SLOTS = [f"{h:02d}{m:02d}" for h in range(9, 16) for m in (0, 15, 30, 45)]   # live.LOOK_TIMES and QUARTER_TIMES (Week 7)
 
 # Distance-to-target arithmetic (Analyst, section 6; narrowed on week 2's hand-labelled matches by the review of 25 Oct).
 # Week 2 (dollar goal): "the +8% needed in 3 sessions is out of reach", "needs about +$700"; week 3 (pace line):
@@ -279,6 +279,8 @@ def order_stats(call, st, world, trace=(), r1=None, hhmm=None):
     gone = {o["ref"] for o in cancelled}
     cover = {}                               # (symbol, side): shares under protective stops that stay working
     for o in st["orders"]:
+        if o.get("held"):                    # a held close_only exit (v2.1) is not at the broker
+            continue
         if o["ref"] not in gone and guards(o["type"], o["action"], o["quantity"], o.get("limit"), o.get("stop"),
                                            o.get("trail_percent"), o["symbol"]):
             cover[(o["symbol"], o["action"])] = cover.get((o["symbol"], o["action"]), 0) + o["quantity"]
@@ -537,7 +539,8 @@ def look_row(lk, day, slot, started, times, r1, sleeve_meta, sessions_before):
     claude = str(lk.get("model") or "").startswith("claude-")
     row = {"date": day.isoformat(), "sleeve": lk["sleeve"], "model": lk.get("model"), "slot": f"{slot[:2]}:{slot[2:]}",
            "started": started, "file": lk["file"], "secs": round(lk.get("seconds") or 0), "value": st["value"],
-           "retried": sum("sample timed out" in str(t.get("error", "")) for t in raw),
+           "retried": sum("sample timed out" in str(t.get("error", ""))           # gpt-oss; an Inkling look's retried
+                          or str(t.get("error", "")).startswith("request failed (") for t in raw),   # request (inkling.request)
            "framework_failure": fail, "failure": why,
            "place_failed": any(str(t.get("error", "")).startswith("placing:") for t in raw),
            "no_decision": call is None,

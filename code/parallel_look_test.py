@@ -3,7 +3,7 @@ ledger or log writes (the gpt-oss tokenizer from the local cache).
 
 Checks: every sleeve is recorded with its decision; the sampling overlaps; no two gateway calls, research calls,
 placements or records run at once (they share client 10 and read-and-rewrite the ledgers); a read-modify-write ledger
-loses no sleeve's update; each sleeve after the first re-syncs fills before its state, as before; a sleeve whose
+loses no sleeve's update; each sleeve re-syncs fills before its state, the first one too (24 Nov 2026); a sleeve whose
 sampling fails costs only its own look.
 
     python parallel_look_test.py
@@ -113,7 +113,7 @@ class FakeWorld:
         return []
 
 
-def fake_finish(now, name, meta, text, st, call, trace, notes, rows, dry_run, cost=None, secs=None):
+def fake_finish(now, name, meta, text, st, call, trace, notes, rows, dry_run, cost=None, secs=None, words=None):
     with rec_busy.inside():
         d = json.loads(ledger_file.read_text(encoding="utf-8"))   # read, wait, rewrite: loses updates if two overlap
         time.sleep(0.01)
@@ -366,7 +366,7 @@ check("LOOKING (d): in loop(), the marker exists, naming this process, when the 
       (at_mark, ran))
 check("LOOKING: a look that never runs (marking it done fails) leaves no marker", never_ran)
 check("LOOKING: present through the look, from its first fill sync to its post-look sync, and gone after it",
-      marker_seen and all(marker_seen) and len(marker_seen) == N + 1 and not marker_after, (marker_seen, marker_after))
+      marker_seen and all(marker_seen) and len(marker_seen) == N + 2 and not marker_after, (marker_seen, marker_after))
 check("LOOKING: gone after a look that raises (the exception still reaches the caller)", raised and not marker_after_raise)
 check("LOOKING (c): at loop start a dead pid's marker (plain and LOOKING.<pid>), this pid's own leftover and one naming no "
       "pid are removed, each logged", stale_gone, removed)
@@ -397,7 +397,8 @@ check("no two placements at once", act_busy.max == 1, f"max {act_busy.max}")
 check("no two records at once", rec_busy.max == 1, f"max {rec_busy.max}")
 d = json.loads(ledger_file.read_text(encoding="utf-8"))
 check("a read-and-rewrite ledger kept every sleeve's update", sorted(d) == sorted(sleeves), sorted(d))
-check(f"each sleeve after the first re-synced fills ({N - 1}), plus the look's first and last", sync_busy.n == N + 1,
+check(f"each sleeve re-synced fills before its state ({N}, the first one included since 24 Nov), plus the look's first "
+      "and last", sync_busy.n == N + 2,
       f"{sync_busy.n} syncs")
 check("nothing logged as a thread failure", not any("thread failed" in m for m in lines), [m for m in lines if "failed" in m][:2])
 print("ALL OK" if all(ok) else f"FAILED ({ok.count(False)})")

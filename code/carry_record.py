@@ -269,6 +269,8 @@ def family(meta):
         return "base+tool" if meta.get("ml") else "base"
     if m.startswith("claude"):
         return "claude"
+    if m.startswith("thinkingmachines/Inkling"):   # Inkling-2-Small on base weights (inkling.py, 20 Nov 2026)
+        return "inkling+tool" if meta.get("ml") else "inkling"
     return "trained"
 
 

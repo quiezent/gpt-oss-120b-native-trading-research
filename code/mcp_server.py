@@ -229,7 +229,8 @@ def submit(place: list[dict], cancel: list[str], notes: str = "") -> str:
         co = any(isinstance(o, dict) and (o.get("close_only") is True or str(o.get("close_only")).strip().lower() == "true")
                  for o in place or [])
         return ("submitted: your orders go to the broker as written when this look ends; one that IBKR refuses is "
-                "reported at your next look" + ("; a close_only order goes only if your position covers it then"
+                "reported at your next look" + ((tools.co.V2 and "; a close_only order goes, or is held, as its description says"
+                                                 or "; a close_only order goes only if your position covers it then")
                                                 if co else ""))
     return ("submitted: your orders go to the broker as written when this look ends; one that would take gross exposure "
             f"past {g}x the sleeve is rejected (you'll see it at your next look)")

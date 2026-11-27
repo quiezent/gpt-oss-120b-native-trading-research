@@ -595,7 +595,7 @@ def seg(start, end):
 
 check("live: the term reaches the system text, the state, the check, the record and research.jsonl",
       "own_limit=trader.own_limit_of(meta)" in seg("system = trader.live_system(", "\n            return world")
-      and "world.OWN_LIMIT = trader.own_limit_of(meta)" in seg("world = trader.PaperWorld(gw, name, data)", "text, st, feats")
+      and "world.OWN_LIMIT = trader.own_limit_of(meta)" in seg("        def build(name, meta", "text, st, feats")   # 24 Nov
       and "own_limit=trader.look_limit(trader.own_limit_of(meta))" in seg("check_ctxs[name] = checks.context(", "except")
       and "marks=trader.own_limit_of(meta) is not None" in seg("check_ctxs[name] = checks.context(", "except")
       and '"own_limit": trader.own_limit_of(meta)' in seg("rec = {", "out_dir /")

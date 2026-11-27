@@ -5,8 +5,13 @@ Pre-registration: runs/ml/research/intraday_prereg.md (5 variants: mim, xs_lin, 
     .venv\\Scripts\\python.exe ml_research\\intraday.py --final    # fit the shipped model(s) on every realized target
 
 Steps: day t, slot k = 0..12. Decision price P[t,k] = open of the 09:30 bar (k = 0) or the close of bar k-1 (10:00..15:30).
-Features use only bars complete at the decision time. data/bars30 is split- but not dividend-adjusted; the only cross-day
-quantity (the overnight gap) is corrected for ex-dividend drops found from the adjusted daily cache.
+Features use only bars complete at the decision time. data/bars30 is not dividend-adjusted; it is split-adjusted for
+sessions through 16 Oct 2026 and as traded from 17 Oct 2026 (the desk appends each day as traded), so after a split a
+name's sessions sit on two scales. The readers (_cached_history, load_panel) bring a name to one share scale with
+_one_scale, from the adjusted daily cache (data/bars), only where price and share volume both show a standard split ratio
+and the stored overnight step shows it at exactly one session; live, today's opening price counts as a step too.
+Live, a name whose cache lacks the latest session SPY's cache has takes the gateway's month of bars when that has it.
+The overnight gap is corrected for ex-dividend drops found from the adjusted daily cache.
 """
 
 import json
@@ -27,6 +32,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 OUT = ROOT / "runs" / "ml" / "research"
 BARS30 = ROOT / "data" / "bars30"
 IVDIR = ROOT / "data" / "iv"
+DAILY = ROOT / "data" / "bars"            # adjusted daily cache (IBKR ADJUSTED_LAST): the current share scale
 CACHE = OUT / "intraday_panel.npz"
 MODEL = OUT / "intraday_model.pkl"
 ET = ZoneInfo("America/New_York")
@@ -71,6 +77,156 @@ def _bars_by_day(rows):
     return day
 
 
+SPLIT_RATIOS = sorted({r for x in (2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 40, 50, 100, 3 / 2, 5 / 4, 4 / 3, 5 / 2)
+                       for r in (x, 1 / x)})
+_SCALE_SEEN = {}                          # last scale detection per symbol, for tests and logs only (no model text)
+
+
+def _pos(x):
+    x = float(x)                          # None or text raises; callers skip that bar
+    return x if np.isfinite(x) and x > 0 else None
+
+
+def _split_test(n, m):
+    """(n_snap, None) if price ratio n is a standard split ratio and the share-count ratio m moved with it, else (None, why)."""
+    if abs(np.log(n)) <= 0.2:
+        return None, None
+    r = min(SPLIT_RATIOS, key=lambda x: abs(np.log(n / x)))
+    if abs(n / r - 1) > 0.05:
+        return None, "unexplained"
+    if not abs(np.log(m / r)) < 0.5 * abs(np.log(r)):
+        return None, "price changed without the share count"
+    return r, None
+
+
+TODAY = "TODAY"                          # today's opening step in _one_scale; as text it sorts after every YYYYMMDD date
+
+
+def _given_price(x):
+    """x as a float if it is a positive finite number (not text, not a bool), else None."""
+    if x is None or isinstance(x, (bool, np.bool_, str, bytes)):
+        return None
+    try:
+        return _pos(x)
+    except Exception:
+        return None
+
+
+def _step_at(days, order, cands, r, open_today=None):
+    """The one session in cands whose as-traded overnight step matches a split of ratio r, else None.
+    step(s) = ln(first open of s / last close of the stored session before s); step(TODAY) = ln(today's open / last
+    close of the newest stored session). A match is |step + ln r| < 0.5 |ln r|. No match, two matches, a step that
+    cannot be computed (a bad bar), another candidate with a step above 0.2 in size (a real move that may hide the
+    split's own step), or a matching step whose nearest standard ratio is not r, all give None: no boundary."""
+    hit, big = [], 0
+    for s in cands:
+        try:
+            st = _step(days, order, s, open_today)
+            if st is None:
+                return None
+            if abs(st + np.log(r)) < 0.5 * abs(np.log(r)):
+                hit.append((s, st))
+            elif abs(st) > 0.2:
+                big += 1
+        except Exception:
+            return None
+    if len(hit) != 1 or big:
+        return None
+    s, st = hit[0]
+    return s if min(SPLIT_RATIOS, key=lambda x: abs(st + np.log(x))) == r else None
+
+
+def _step(days, order, s, open_today=None):
+    """ln(first open of s / last close of the stored session before s); for TODAY, today's open over the newest stored
+    session's last close. None if a price is missing or not positive."""
+    if s != TODAY and order.index(s) == 0:
+        return None
+    p = order[-1] if s == TODAY else order[order.index(s) - 1]
+    o = open_today if s == TODAY else _pos(days[s][min(days[s])]["open"])
+    pc = _pos(days[p][max(days[p])]["close"])
+    return float(np.log(o / pc)) if o and pc else None
+
+
+def _one_scale(sym, days, before=None, open_today=None):
+    """{date: {HH:MM: bar}} brought to one share scale with the adjusted daily cache (DAILY).
+    f = daily close / last stored close and v = daily volume / stored volume, per stored session with a daily bar.
+    Pairs: for consecutive such sessions a < c, a step in f is a split of ratio r only if it snaps to SPLIT_RATIOS and v
+    moves with it (_split_test), and the stored as-traded overnight step matches r at exactly one stored session s with
+    a < s <= c (_step_at); the boundary is placed at s.
+    Level (live only): when `before` (the look's day) is given and the daily cache's newest bar is earlier than it, the
+    newest session R with f and v is tested against the cache's scale (ratio from 1 / f_R and v_R); the boundary is
+    placed at the one matching step among the stored sessions after R and today's open (`open_today`, when it is a
+    positive number). Without either there is no level step. In a replay (cache newer than `before`) there is none.
+    A boundary at s with ratio r puts every stored session before s on a scale r times coarser: its prices are divided
+    by the product of the ratios of the boundaries after it and its volume multiplied by it (a None volume stays None).
+    Any rejection (a ratio that is unexplained or not carried by the share count, or one that cannot be placed), or a
+    boundary while today's open jumps by more than 0.2 in log with no boundary at TODAY, returns the history as read.
+    Returns `days` itself when every factor is 1 or anything fails; never raises and never mutates its input."""
+    try:
+        doc = json.loads((DAILY / f"{sym.replace(' ', '_')}.json").read_text())
+        daily, newest = {}, max(str(b["date"]).replace("-", "")[:8] for b in doc["bars"])
+        for b in doc["bars"]:
+            try:
+                daily[str(b["date"]).replace("-", "")[:8]] = (_pos(b["close"]), _pos(b["volume"]))
+            except Exception:
+                pass
+        order, fv = sorted(days), {}
+        for d in order:
+            try:
+                dc, dv = daily.get(d, (None, None))
+                c, v = _pos(days[d][max(days[d])]["close"]), _pos(sum(float(b["volume"]) for b in days[d].values()))
+                if dc and dv and c and v:
+                    fv[d] = (dc / c, dv / v)
+            except Exception:
+                pass
+        fd = sorted(fv)
+        seen, bound = {"boundaries": [], "rejected": [], "level": None}, []     # bound: (session where it changes, r)
+        for a, c in zip(fd, fd[1:]):
+            n = fv[c][0] / fv[a][0]
+            r, why = _split_test(n, fv[a][1] / fv[c][1])
+            s = _step_at(days, order, [x for x in order if a < x <= c], r) if r else None
+            if s:
+                bound.append((s, r))
+                seen["boundaries"].append([a, c, r, s])
+            elif r or why:
+                seen["rejected"].append([a, c, round(n, 4), why or "no as-traded jump"])
+        if before is not None and fd and newest < str(before):
+            R, op = fd[-1], _given_price(open_today)
+            n = 1 / fv[R][0]
+            r, why = _split_test(n, fv[R][1])
+            cands = [x for x in order if x > R] + ([TODAY] if op else [])
+            s = _step_at(days, order, cands, r, op) if r and cands else None
+            if s:
+                bound.append((s, r))
+                seen["level"] = [R, r, s]
+            elif r or why:
+                seen["rejected"].append([R, "daily", round(n, 4), why or "no as-traded jump"])
+        if bound and _given_price(open_today) and all(s != TODAY for s, _ in bound):
+            st = _step(days, order, TODAY, _given_price(open_today))
+            if st is not None and abs(st) > 0.2:           # today's open jumps and no boundary explains it: a split ex
+                seen["rejected"].append([TODAY, "open", round(st, 4), "today's open jumps with no boundary"])
+        if seen["rejected"]:                               # any failure: the history as read (rule item 5)
+            _SCALE_SEEN[sym] = {**seen, "factors": {}}
+            return days
+        fac = {}
+        for d in order:
+            k = 1.0
+            for s, r in bound:
+                if s > d:
+                    k *= r
+            fac[d] = k
+        seen["factors"] = {d: k for d, k in fac.items() if k != 1}
+        _SCALE_SEEN[sym] = seen
+        if not seen["factors"]:
+            return days
+        sc = lambda b, k: {**b, "open": b["open"] / k, "high": b["high"] / k, "low": b["low"] / k, "close": b["close"] / k,
+                           "volume": b["volume"] * k if b["volume"] is not None else None}
+        return {d: days[d] if fac[d] == 1 else {sl: sc(b, fac[d]) for sl, b in days[d].items()} for d in order}
+    except Exception as e:
+        _SCALE_SEEN[sym] = {"error": f"{type(e).__name__}: {e}"[:200]}
+        return days
+
+
 def load_panel(refresh=False):
     """Raw 30-minute OHLCV (symbols, days, 13) on SPY's full-day calendar, the dividend jump (symbols, days) and the
     implied vol at the previous close (symbols, days). Cached in runs/ml/research/intraday_panel.npz."""
@@ -86,10 +242,10 @@ def load_panel(refresh=False):
     S, D = len(syms), len(dates)
     A = {k: np.full((S, D, NS), np.nan) for k in ("o", "h", "l", "c", "v")}
     for j, s in enumerate(syms):
-        p = BARS30 / f"{s}.json"
+        p = BARS30 / f"{s.replace(' ', '_')}.json"
         if not p.exists():
             continue
-        for dt, bb in _bars_by_day(json.loads(p.read_text())["bars"]).items():
+        for dt, bb in _one_scale(s, _bars_by_day(json.loads(p.read_text())["bars"])).items():
             i = di.get(dt)
             if i is None or len(bb) != NS:
                 continue
@@ -112,7 +268,7 @@ def load_panel(refresh=False):
     # implied vol as of the previous close (forward-filled up to 5 sessions)
     iv = np.full((S, D), np.nan)
     for j, s in enumerate(syms):
-        p = IVDIR / f"{s}.json"
+        p = IVDIR / f"{s.replace(' ', '_')}.json"
         if not p.exists():
             continue
         m = {b["date"][:8]: b["close"] for b in json.loads(p.read_text())["bars"] if b.get("close") and b["close"] > 0}
@@ -729,25 +885,109 @@ def _parse(rows, day=None):
     return out
 
 
-def _cached_history(sym, before, ndays=25):
+def _cached_history(sym, before, ndays=25, open_today=None):
+    """The last `ndays` full sessions (13 bars) before `before` from data/bars30, brought to one share scale by
+    _one_scale with `before` and today's opening price (the level step; see _one_scale). {} if the name has no file."""
     p = BARS30 / f"{sym.replace(' ', '_')}.json"          # I2: BRK B -> BRK_B
     if not p.exists():
         return {}
     days = _parse(json.loads(p.read_text())["bars"])
     full = sorted(d for d, v in days.items() if d < before and len(v) == NS)
-    return {d: days[d] for d in full[-ndays:]}
+    return _one_scale(sym, {d: days[d] for d in full[-ndays:]}, before=before, open_today=open_today)
 
 
-def _history(gw, sym, today, now):
-    """Last ~25 full sessions of 30-minute bars before today: the cache if it is recent, else the gateway ('1 M')."""
-    h = _cached_history(sym, today)
+GW_FILL = True                            # the missing-session fallback in _history; False = the cache, as before it existed
+GW_FILL_TIMEOUT_S = 10.0                  # longest wait for its bars request (the gateway's default is 60 s). Trader Training,
+#                                           21 Nov: 3 asks x 10 s keeps one call under ML4's 45 s outside-name budget
+GW_FILL_MAX = 3                           # most fallback asks in one live() call; names past it keep the cache at that call.
+#                                           Names never asked today take the asks first, retries what is left (live())
+GW_FILL_RETRY_MIN = 30                    # a request that raised is not repeated for this many minutes of look time
+_GW_HISTORY = {}                          # (sym, today) -> a gateway history that filled a missing session; asked once a day
+_GW_FAILED = {}                           # (sym, today) -> look time of a request that raised (gw.bars itself), or None for
+#                                           an answer that arrived but could not be read or used (not asked again that day)
+
+
+def _may_ask(key, t):
+    """True if the fallback may ask the gateway for key = (sym, today) at look time t: never asked, or its last ask
+    raised at least GW_FILL_RETRY_MIN minutes of look time ago (or at a later look time: a replay going back)."""
+    if key not in _GW_FAILED:
+        return True
+    f = _GW_FAILED[key]
+    return f is not None and not timedelta(0) <= t - f < timedelta(minutes=GW_FILL_RETRY_MIN)
+
+
+def _history(gw, sym, today, now, ref=None, open_today=None, asks=None, defer=None):
+    """Last ~25 full sessions of 30-minute bars before today and their source. The cache (_cached_history) if it is
+    recent, else the gateway ('1 M'). The missing-session fallback (GW_FILL; off = the cache, as before it existed):
+    ref = the newest full session before today in SPY's cache. When the name's recent cache ends before ref (the desk's
+    record missed a session), the gateway's month is used instead if it has at least 10 sessions, a newer one than the
+    cache, and sits on the cache's scale (_same_scale); otherwise, or if the gateway fails, the cache.
+    Its cost is bounded: the request waits at most GW_FILL_TIMEOUT_S; `asks` (a one-item list live() passes, starting
+    at GW_FILL_MAX) counts down the asks of one live() call, and a name past it keeps the cache at that call; a month
+    that was used is remembered per (sym, today), so it is asked for once a day; an answer that arrived but could not
+    be read or used (rows that are not bar dicts with a date and numeric, not infinite, open, high, low, close and
+    volume, or anything in reading them that raises; a session counts only with its 13 bars at the 13 SLOTS) is not
+    asked for again that day; only a request that raised (gw.bars itself) is
+    repeated, after GW_FILL_RETRY_MIN minutes of look time.
+    `defer` (a list live() passes): a name whose earlier request raised (a retry) does not ask here; it is appended to
+    defer and keeps the cache, so live() can give the asks to names never asked today first and retries what is left.
+    The memo is check-then-act, not locked: one ask a look holds because the desk serialises research calls, and each
+    process keeps its own memo. The gateway's bars are IBKR-adjusted, so they are not passed through _one_scale."""
+    h = _cached_history(sym, today, open_today=open_today)
     src = "cache"
     if not h or (now.replace(tzinfo=None) - datetime.strptime(max(h), "%Y%m%d")).days > 10:
         rows = gw.bars(sym, duration="1 M", bar_size="30 mins", what="TRADES", rth=True)
         days = _parse(rows)
         full = sorted(d for d, v in days.items() if d < today and len(v) == NS)
         h, src = {d: days[d] for d in full[-25:]}, "gateway"
+    elif GW_FILL and ref is not None and sym != "SPY" and max(h) < ref:
+        key, t = (sym, today), now.replace(tzinfo=None)
+        if key not in _GW_HISTORY and _may_ask(key, t) and (asks is None or asks[0] > 0):
+            if defer is not None and key in _GW_FAILED:
+                defer.append(sym)                   # a retry: asked after the names never asked today, if asks remain
+                return h, src
+            if asks is not None:
+                asks[0] -= 1
+            try:
+                rows = gw.bars(sym, duration="1 M", bar_size="30 mins", what="TRADES", rth=True, timeout=GW_FILL_TIMEOUT_S)
+            except Exception:
+                _GW_FAILED[key] = t                 # the request raised: asked again after GW_FILL_RETRY_MIN
+            else:
+                try:
+                    days = _parse(rows or [])
+                    full = sorted(d for d, v in days.items() if d < today and len(v) == NS and set(v) == set(SLOTS))
+                    g = {d: days[d] for d in full[-25:]}
+                    for bb in g.values():           # every bar must carry the numbers live() puts in its panel
+                        for b in bb.values():
+                            for nm in ("open", "high", "low", "close", "volume"):
+                                if np.isinf(float(b[nm])):
+                                    raise ValueError("an infinite value in the gateway month")
+                    ok = len(g) >= 10 and max(g) > max(h) and _same_scale(g, h, open_today)
+                except Exception:
+                    ok = False
+                if ok:
+                    _GW_HISTORY[key] = g
+                else:
+                    _GW_FAILED[key] = None          # answered, not readable or not usable: not asked again today
+        if key in _GW_HISTORY:
+            h, src = _GW_HISTORY[key], "gateway"
     return h, src
+
+
+def _same_scale(g, h, open_today=None):
+    """True if the gateway's month g sits on the cache's (one-scaled) scale h and on today's: the median of g's last
+    close over h's on the sessions both hold is within 2%, and today's open (when given) is not a split-sized jump
+    (above 0.4 in log and within 0.05 of ln r for a standard ratio r) from g's newest close."""
+    common = [d for d in g if d in h]
+    q = [_pos(g[d][max(g[d])]["close"]) / _pos(h[d][max(h[d])]["close"]) for d in common]
+    if not q or not 0.98 <= float(np.median(q)) <= 1.02:
+        return False
+    op = _given_price(open_today)
+    if op:
+        x = abs(np.log(op / _pos(g[max(g)][max(g[max(g)])]["close"])))
+        if x > 0.4 and any(abs(x - abs(np.log(r))) < 0.05 for r in SPLIT_RATIOS):
+            return False
+    return True
 
 
 def _iv_prev(sym, today, gw):
@@ -795,8 +1035,9 @@ def _now_et(now):
 def live(gw, symbols=None, now=None, **kw):
     """Expected high-low range over the next 60 minutes and over the rest of today, % of the current price, with 10-90%
     intervals, at the latest look (09:30 .. 15:30 ET). Uses gw.bars(symbol, '1 D', '30 mins') for today's bars (only
-    completed bars, plus the opening print at 09:30), the 30-minute cache (or gw.bars '1 M' when a symbol is not cached or
-    the cache is old) for the 20-session same-time averages, and data/iv (or gw.stats) for implied vol.
+    completed bars, plus the opening print at 09:30), the 30-minute cache (or gw.bars '1 M' when a symbol is not cached,
+    the cache is old, or it lacks the latest session SPY's cache has) for the 20-session same-time averages, and data/iv
+    (or gw.stats) for implied vol.
     Returns {"as_of", "look", "rows": {symbol: {...}}} or {"error": ...}. No return or direction forecast is served."""
     now = _now_et(now)
     today = now.strftime("%Y%m%d")
@@ -813,6 +1054,12 @@ def live(gw, symbols=None, now=None, **kw):
         symbols = [symbols]
     symbols = list(dict.fromkeys(str(s).upper().strip() for s in symbols if str(s).strip()))[:20]
     need = list(dict.fromkeys(symbols + ["SPY"]))
+    try:                                                          # the latest completed session, from SPY's cache
+        ref = max(_cached_history("SPY", today), default=None)
+    except Exception:
+        ref = None
+    asks = [GW_FILL_MAX]                                          # the missing-session fallback's asks left in this call
+    defer, later = [], {}                                         # its retries, asked after the names never asked today
     hist, todays, info = {}, {}, {}
     for s in need:
         try:
@@ -824,13 +1071,25 @@ def live(gw, symbols=None, now=None, **kw):
             done = {sl: b for sl, b in tb.items() if sl in SLOTS[:k]}            # bars that ended by this look
             if k == 0:
                 done = {"09:30": {"open": tb["09:30"]["open"], "high": np.nan, "low": np.nan, "close": np.nan, "volume": np.nan}}
-            h, src = _history(gw, s, today, now)
+            nd = len(defer)
+            h, src = _history(gw, s, today, now, ref=ref, open_today=tb["09:30"].get("open"), asks=asks, defer=defer)
+            if len(defer) > nd:
+                later[s] = (tb["09:30"].get("open"), done)
             if len(h) < 10:
                 info[s] = {"error": f"only {len(h)} past sessions of 30-minute bars; need 10"}
                 continue
             hist[s], todays[s], info[s] = h, done, {"history": src, "sessions": len(h)}
         except Exception as e:
             info[s] = {"error": f"no 30-minute bars: {e}"}
+    for s in defer:                                               # retries, in the call's order, while asks remain
+        if asks[0] <= 0:
+            break
+        try:
+            h, src = _history(gw, s, today, now, ref=ref, open_today=later[s][0], asks=asks)
+        except Exception:
+            continue                                              # keep what the first pass gave this name
+        if src == "gateway":
+            hist[s], todays[s], info[s] = h, later[s][1], {"history": src, "sessions": len(h)}
     if "SPY" not in hist:
         return {"error": "SPY's 30-minute bars are unavailable", "detail": info.get("SPY")}
     out = {}

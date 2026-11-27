@@ -287,7 +287,7 @@ def _fit_text(name, body, left, counter=None):
 
 def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort, seed=None, renew=None, ml_tool=None,
                 lock=None, submit_tool=None, sleeve_value=None, look=None, checker=None, forced_reasoning=None,
-                forced_mode=None, final_line=None, max_calls=None):
+                forced_mode=None, final_line=None, max_calls=None, context=None):
     """lock: held around each research call (live.py runs the gpt-oss sleeves side by side on one client-10
     connection, and the tool modules keep caches); None runs them as before. submit_tool: the sleeve's submit form (None:
     trader.TOOL_LIVE, text B's; live.py gives the text-A control trader.TOOL_LIVE_PROBS). sleeve_value and look go to
@@ -353,13 +353,19 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
     15 Nov: 15 on the gpt-oss sleeves from Mon 16 Nov, the text-A control kept at 12). It is the limit the count stops at,
     the counter's "(research call k of N)", the "research limit reached (N calls)" line and the step range; nothing else
     changes, and None or 12 is the look as it was. Anything but a whole number from 1 to tools.MAX_CALLS_TOP raises
-    before anything is sampled."""
+    before anything is sampled.
+    context (None: CONTEXT, 32,768): the look's context, for a sleeve sampled on a longer-context variant of the base
+    model (live.context_of: the sleeve's "base_model" and "context", 20 Nov 2026). Every room and reserve figure is
+    counted against it; RESERVE, SUBMIT_ROOM, MIN_SUBMIT and MAX_OUT are unchanged, and None is the look as it was."""
     from tinker_cookbook.renderers.gpt_oss import GptOssRenderer
     mode = forced_mode if forced_mode is not None else (
         FORCED_MODE if forced_reasoning is None else "reasoning" if forced_reasoning else "plain")
     if mode not in FORCED_MODES:
         raise ValueError(f"forced_mode {mode!r}: one of {FORCED_MODES}")
     limit = tools.MAX_CALLS if max_calls is None else max_calls
+    CTX = CONTEXT if context is None else context
+    if not (isinstance(CTX, int) and not isinstance(CTX, bool) and MIN_ROOM < CTX <= 1048576):
+        raise ValueError(f"context {context!r}: a whole number of tokens")
     if not (isinstance(limit, int) and not isinstance(limit, bool) and 1 <= limit <= tools.MAX_CALLS_TOP):
         raise ValueError(f"max_calls {max_calls!r}: a whole number from 1 to {tools.MAX_CALLS_TOP}")
     reason_first, notes_first = mode == "reasoning", mode == "notes"
@@ -388,24 +394,24 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
     # malformed, then the step that sets the force, then at most 2 forced tries = 17; with one: 4 checks run and 1
     # answered with the limit more = 22. The missing-price re-ask (17 Nov) can take one more step, once a look: 18 and 23.
     for step in range(limit + 6 + (checks.MAX_TRIES + 1 if checker else 0)):
-        room = CONTEXT - len(prompt) - len(force)
+        room = CTX - len(prompt) - len(force)
         if not force and room < RESERVE:  # too little room for a free turn and then a decision: open the submit here
             trace.append({"step": step, "room": room, "note": "context nearly full: submit opened"})
             force = SUBMIT_OPEN()
-            room = CONTEXT - len(prompt) - len(force)
+            room = CTX - len(prompt) - len(force)
         if room < MIN_SUBMIT:             # not even the opened submit fits (fd95e2a: under MIN_ROOM, opened or not)
             trace.append({"step": step, "error": f"context full ({len(prompt)} tokens)"})
             return fallback(step, "context full") if reasked is not None else (None, trace, prefill, sampled)
         free = not force                  # a turn the model writes from its own reasoning, not into the opened submit
         head, reasoned, spent = force, None, 0   # what the sample continues: the opened submit's prefix, or reasoning and
         aside = len(ANALYSIS_OPEN()) + len(REASON_GLUE()) + len(force) + SUBMIT_ROOM   # then it; the call's share of the room
-        if force and reason_first and bad < 2 and not cut_call and CONTEXT - len(prompt) - aside >= MIN_REASON:
+        if force and reason_first and bad < 2 and not cut_call and CTX - len(prompt) - aside >= MIN_REASON:
             # the reasoning phase (switch on): not on the last try, not after a call it left too little room (cut_call),
             # and only with MIN_REASON of room after the call's share; steps run under 50, so seed * 100 + 50 + step is no
             # other request's seed in the look. Stops: <|end|>, and <|return|> and <|call|> too, since a stop list given
             # replaces the sampler's own end-of-turn stops (tinker.SamplingParams), so a stray one ends the sample at once
             # (it is then discarded: a special token) rather than running on to max_tokens (review, 15 Nov).
-            p1 = tinker.SamplingParams(temperature=1.0, max_tokens=min(MAX_OUT, CONTEXT - len(prompt) - aside),
+            p1 = tinker.SamplingParams(temperature=1.0, max_tokens=min(MAX_OUT, CTX - len(prompt) - aside),
                                        stop=[END_TOKEN(), trader.RET, trader.CALL],
                                        **({"seed": seed * 100 + 50 + step} if seed is not None else {}))
             renewed = []                  # a client sample_once renewed to, kept even if its sample then raised
@@ -427,11 +433,11 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
                                   "note": f"reasoning phase discarded ({why}): submit opened plain"})
                 else:
                     head, reasoned = ANALYSIS_OPEN() + body + REASON_GLUE() + force, {"tokens": len(t1), "cut": cut}
-            room = CONTEXT - len(prompt) - len(head)
+            room = CTX - len(prompt) - len(head)
         opened = None
         if force and notes_first and bad < 2 and not cut_call:    # "notes": the call begun at its notes, one sample as plain;
             head, opened = force + NOTES_OPEN(), "notes"          # not on the last try, nor after such a call was cut
-            room = CONTEXT - len(prompt) - len(head)
+            room = CTX - len(prompt) - len(head)
         params = tinker.SamplingParams(temperature=1.0, max_tokens=min(MAX_OUT, room), stop=[trader.RET, trader.CALL],
                                        **({"seed": seed * 100 + step} if seed is not None else {}))
         try:
@@ -466,7 +472,7 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
             if lack and reasked is None:      # Clayton, 16 Nov: "Yes, build it": an order of a type that needs a price field
                 out = tools.missing_text(lack)                    # without it is asked about once, naming the field
                 res_toks = tool_result_tokens(name, out)
-                after = CONTEXT - len(prompt) - len(toks) - len(res_toks)
+                after = CTX - len(prompt) - len(toks) - len(res_toks)
                 if after - len(SUBMIT_OPEN()) >= SUBMIT_ROOM:     # only with room for the decision after it; else the
                     reasked = val                                 # submit is taken as written, as before; held as the fallback
                     trace.append({"step": step, "reask": "submit", "args": val, "result": out, "missing": [
@@ -475,7 +481,7 @@ def gptoss_look(sc, gw, system, state_text, current_date, research_specs, effort
                     continue                                      # the next turn as this one was: free, or the opened submit
             trace.append({"step": step, "tool": "submit", "tokens": n_toks, "said": said, **extra})
             return val, trace, prefill, sampled
-        left = CONTEXT - len(prompt) - len(toks)          # what the context has left after this turn
+        left = CTX - len(prompt) - len(toks)          # what the context has left after this turn
         if free and left < SUBMIT_ROOM:   # a tool-call turn that leaves too little for the decision (16 Nov): dropped, not
             trace.append({"step": step, "room": room, "left": left, "dropped": name, "args": val, "tokens": len(seq.tokens),
                           "said": said, "note": "turn left too little room for the decision: dropped, submit opened"})
@@ -593,6 +599,8 @@ def claude_look(model, system, state_text, research_specs, workdir, effort, time
                TRADER_SLEEVE_VALUE=_num_env(sleeve_value), TRADER_TEXT=str(text),
                TRADER_HAS_CHECK="1" if check_ctx is not None else "0", TRADER_CHECK_FILE=str(check_file) if check_ctx is not None else "",
                TRADER_MAX_CALLS=str(limit),
+               TRADER_CLOSE_ONLY_V2="1" if tools.co.V2 else "0",   # the loop's own rule, for the tool server's words
+
                # the CLI cuts every MCP tool description to 4,096 characters by default; the forecast tool's runs to
                # about 13,000 (ML3), so Claude ML looks saw only its first 4,096 from week 2 to week 4 (review, 9 Nov)
                CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH="20000")
@@ -601,7 +609,7 @@ def claude_look(model, system, state_text, research_specs, workdir, effort, time
                                      ("TRADER_SUBMIT_FILE", "TRADER_LOG_FILE", "TRADER_HAS_NEWS", "TRADER_HAS_SCANNER",
                                       "TRADER_HAS_STATS", "TRADER_HAS_FORECAST", "TRADER_MCP_CLIENT", "TRADER_ML_TOOL",
                                       "TRADER_MAX_GROSS", "TRADER_SLEEVE_VALUE", "TRADER_TEXT", "TRADER_HAS_CHECK",
-                                      "TRADER_CHECK_FILE", "TRADER_MAX_CALLS")}}}}
+                                      "TRADER_CHECK_FILE", "TRADER_MAX_CALLS", "TRADER_CLOSE_ONLY_V2")}}}}
     cfg_file = workdir / "mcp.json"
     cfg_file.write_text(json.dumps(cfg), encoding="utf-8")
     allowed = ",".join(f"mcp__trader__{n}" for n in sorted(have | {"submit"} | ({"check_orders"} if check_ctx is not None else set())))

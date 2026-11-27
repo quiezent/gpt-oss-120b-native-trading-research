@@ -18,6 +18,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 
 import bars as barsmod
+import close_only as co
 import sim
 import tools
 
@@ -55,6 +56,28 @@ How to decide: research first, then act.
 3. Test it with the scanner: choose the scan and, if useful, the industry that would find stocks fitting your hypothesis. Don't just take the top of the gainers list.
 4. Check every candidate with news and quote; use stats for its volatility (to size the trade) and, before a short, whether shares can be borrowed; bars if the trend matters. Do not trade a symbol you have not checked in this look.
 5. Call submit once. Each look starts fresh: only your sleeve, your open orders and the notes you write in submit carry over to the next look, so write down your thesis, plan and exit levels there."""
+
+# Week 7 text (Mon 23 Nov 2026; the Trading Model Researcher's decisions of 20 Nov). The schedule sentence is built from
+# the sleeve's cadence (15 or 30 minutes; sleeves.json "cadence") and the day's close (13:00 on a half day), so it is true
+# on 27 Nov and for a 15-minute sleeve; a 30-minute sleeve on a full day reads SCHEDULE exactly as before. NEXT_LOOK (the
+# Researcher's W1 sentence) follows it, and the range line (book_range) follows the open orders, each on a sleeve whose
+# sleeves.json has "next_look": true / "range_line": true (text B, not a Claude sleeve; live.next_look_of, range_line_of).
+SCHEDULE = "You get a look every 30 minutes, from 09:00 ET (before the 09:30 open) to 15:30 ET."
+NEXT_LOOK = ("After the last look of a day, the next look is at 09:00 ET on the next trading day. If a price opens beyond a "
+             "stop price, a STP or TRAIL order fills at the next traded price, not at its stop price; a STP LMT fills only at "
+             "its limit or better, or not at all.")
+CADENCES = (15, 30)
+
+
+def schedule_clause(cadence=30, close=None):
+    """SCHEDULE for a sleeve looking every `cadence` minutes on a day that closes at `close` (a datetime.time; None is
+    16:00): its last look is `cadence` minutes before the close (live.py skips a look at or after it)."""
+    if cadence not in CADENCES:
+        raise ValueError(f"cadence {cadence!r}: one of {CADENCES}")
+    c = close or datetime.strptime("16:00", "%H:%M").time()
+    last = datetime.combine(date(2000, 1, 3), c) - timedelta(minutes=cadence)
+    return SCHEDULE.replace("every 30 minutes", f"every {cadence} minutes").replace("to 15:30 ET", f"to {last:%H:%M} ET")
+
 
 GOAL_PCT = 2.14   # Clayton, 17 Oct 2026: +200% a year (CAGR), so 3 ** (1/52) - 1 = 2.14% a week; each week runs Monday to Friday
 
@@ -95,7 +118,8 @@ S3_ML4 = ("3. Test it with the scanner and the forecast tool (machine-learning f
 S3_BY_TOOL = {"ML4": S3_ML4}          # a sleeve's ml_tool -> its step 3; any other version reads S3_ML
 
 
-def live_system(size, today, ml=False, news=True, kelly=False, max_gross=2.0, ml_tool=None, own_limit=None):
+def live_system(size, today, ml=False, news=True, kelly=False, max_gross=2.0, ml_tool=None, own_limit=None, cadence=30,
+                close=None, next_look=False):
     """SYSTEM_LIVE for a sleeve of this size, with the target pace (Clayton, 24 Oct: a pace, not a weekly dollar goal
     with a deadline). ml: the sleeve has the forecast tool; news=False: the training simulator, which has no news;
     kelly: the Kelly sizing paragraph after the pace (Clayton, 9 Nov: "a kelly improved prompt"; sleeves.json
@@ -103,8 +127,12 @@ def live_system(size, today, ml=False, news=True, kelly=False, max_gross=2.0, ml
     term (max_gross_of): 2.0 is the text as it always was, another number changes the figure, None says there is no
     software limit. ml_tool: the sleeve's forecast tool version (sleeves.json "ml_tool"); only ML4 changes step 3
     (S3_ML4), every other value reads S3_ML as before. own_limit: the sleeve's own exposure limit (own_limit_of; only with
-    max_gross None): its term (own_limit.term) in place of NO_GROSS_RULE; None, the default, is the text as before."""
+    max_gross None): its term (own_limit.term) in place of NO_GROSS_RULE; None, the default, is the text as before.
+    cadence and close (Week 7): the schedule sentence for the sleeve's cadence and the day's close (schedule_clause); 30
+    and None are the text as before. next_look: NEXT_LOOK after it."""
     text = SYSTEM_LIVE
+    assert text.count(SCHEDULE) == 1
+    text = text.replace(SCHEDULE, schedule_clause(cadence, close) + (" " + NEXT_LOOK if next_look else ""))
     if kelly:
         assert text.count(PACE_END) == 1
         text = text.replace(PACE_END, PACE_END.replace("\n\nOrder types:", "\n\n" + KELLY + "\n\nOrder types:"))
@@ -170,7 +198,7 @@ LIVE_STEPS = ("Before you submit: (1) call tape for market news; (2) decide your
 LIVE_STEPS_PROBS = LIVE_STEPS.replace("with notes for your next look.", "with notes for your next look and your honest p_fill and "
                                       "p_win on every order.")
 
-from tools import CLOSE_DESC, NOTES_DESC, P_FILL_DESC, P_WIN_DESC, PROBS_DESC, TRAIL_DESC   # shared with mcp_server.py
+from tools import CLOSE_DESC, HELD_LINE, NOTES_DESC, P_FILL_DESC, P_WIN_DESC, PROBS_DESC, TRAIL_DESC   # shared with mcp_server.py
 
 TOOL = {
     "name": "submit",
@@ -508,7 +536,7 @@ def book_risk(st, before, sessions=250):
         return None
     stops = {}
     for o in st.get("orders") or []:
-        if o.get("type") in STOP_TYPES and not o.get("cancel_pending"):
+        if o.get("type") in STOP_TYPES and not o.get("cancel_pending") and not o.get("held"):   # held: not at the broker
             stops[(o["symbol"], o["action"])] = stops.get((o["symbol"], o["action"]), 0) + abs(o["quantity"])
     gross = bare = 0.0
     for p in pos:
@@ -527,6 +555,58 @@ def book_risk(st, before, sessions=250):
     if stale:
         line += f" (Counted as unmoved since their last bar: {', '.join(stale[:5])}{' and others' if len(stale) > 5 else ''}.)"
     return line
+
+
+def signed_money(x):
+    return ("-" if x < 0 else "+") + fmt_money(abs(x))
+
+
+def book_range(st, before, sessions=250, min_sessions=120):
+    """The Researcher's range line (W1, 20 Nov 2026): the book as it is now, held fixed over the sessions of daily bars its
+    names share (the last N sessions before `before`, YYYYMMDD, that every kept name has bars for without a gap; at most
+    `sessions`), priced on each name's own bars: the range of its day
+    (close to close) in dollars and % of the sleeve, and of its move from one close to the next open, in dollars. A name
+    with fewer than `min_sessions` (120; the Researcher, 20 Nov) sessions of bars in the window, or whose bars stop before
+    the window's last session, is left out and counted: every figure is from real bars (no beta fallback). None with
+    nothing held, no value, or no name that can be priced. A fact, not advice."""
+    pos = [p for p in st["positions"] if p["quantity"] and p.get("close")]
+    val = st["value"]
+    if not pos or val <= 0:
+        return None
+    cal = sorted(x for x in _daily("SPY") if x < before)[-(sessions + 1):]
+    if len(cal) < 2:
+        return None
+    use, out = [], 0
+    for p in pos:                          # each name's unbroken run of sessions with bars, back from the window's last
+        b = _daily(p["symbol"])            # session; a gap ends it (review, 20 Nov: one missing bar must not drop that
+        run = 0                            # session, e.g. 5 Nov's -4.4%, from the whole book's range)
+        for i in range(len(cal) - 1, 0, -1):
+            prev, cur = b.get(cal[i - 1]), b.get(cal[i])
+            if not (prev and cur and prev[1] and cur[0] and cur[1]):
+                break
+            run += 1
+        if run < min_sessions:
+            out += 1
+            continue
+        use.append((p["quantity"] * p["close"], b, run))
+    if not use:
+        return None
+    n_s = min(run for _, _, run in use)    # the sessions every kept name has: the last n_s of the window
+    shared = list(range(len(cal) - n_s, len(cal)))
+    day, gap = np.zeros(len(shared)), np.zeros(len(shared))
+    for j, i in enumerate(shared):
+        for n, b, _ in use:
+            prev, cur = b[cal[i - 1]], b[cal[i]]
+            day[j] += n * (cur[1] / prev[1] - 1)
+            gap[j] += n * (cur[0] / prev[1] - 1)
+    pct = lambda x: f"{100 * x / val:+.1f}%"
+    lo, hi = float(day.min()), float(day.max())
+    line = (f"Held as it is, over the last {len(shared)} sessions this book's day ranged from {signed_money(lo)} ({pct(lo)}) "
+            f"to {signed_money(hi)} ({pct(hi)}), and its move from one close to the next open from "
+            f"{signed_money(float(gap.min()))} to {signed_money(float(gap.max()))}")
+    if out:
+        line += f" ({out} {'name' if out == 1 else 'names'} without enough daily bars left out)"
+    return line + "."
 
 
 _rets_cache = {}
@@ -715,13 +795,19 @@ def account_text(world, data, d, feats, header=None, live=None, book=False, cash
             shock = shock_rule(cap, st, data.iso(d).replace("-", ""))
         except Exception:                   # noqa: BLE001 - the rule alone, with no claim about the book
             shock = shock_rule(cap, dict(st, value=0.0), "")
+    rng = None
+    if getattr(world, "RANGE_LINE", False):   # Week 7, behind trader.RANGE_LINE (live.py sets it per sleeve); a failure
+        try:                                  # costs the line, not the look
+            rng = book_range(st, data.iso(d).replace("-", ""))
+        except Exception as e:                # noqa: BLE001
+            (getattr(world, "log", None) or (lambda m: print(m, file=sys.stderr)))(f"range line left out: {type(e).__name__}: {e}"[:300])
     account = getattr(world, "ACCOUNT", None) if getattr(world, "TEXT", "A") == "B" else None   # text B only (Clayton, 14 Nov)
     if account is not None:
         st["account"] = account             # kept in the look record's state, for replays
     return render_account(st, feats, header, live, getattr(world, "MAX_GROSS", None), book=line, shock=shock,
                           cash_clause=cash_clause, account=account, log=getattr(world, "log", None),
                           own_limit=look_limit(getattr(world, "OWN_LIMIT", None)),
-                          fill_position=FILL_POSITION), st
+                          fill_position=FILL_POSITION, range_line=rng), st
 
 
 # Whether the sleeve's own exposure limit is worked out for it at each look: the state's limit line (own_limit.state_line,
@@ -867,7 +953,7 @@ def margin_warning(a, st, mine):
 
 
 def render_account(st, feats, header, live=None, max_gross=2.0, book=None, shock=None, cash_clause=False, account=None,
-                   log=None, own_limit=None, fill_position=False):
+                   log=None, own_limit=None, fill_position=False, range_line=None):
     """The account part of a look's state text from a state dict (world.state(): value, cash, gross, net, beta_net,
     positions, orders with cancel_pending, events). Callable on a stored look file's "state" for replays. book: the
     book_risk() line, shown after the per-position risk lines. shock: shock_rule()'s line, after the margin line.
@@ -877,7 +963,8 @@ def render_account(st, feats, header, live=None, max_gross=2.0, book=None, shock
     stderr. own_limit: the sleeve's own exposure limit (own_limit_of; 18 Nov): its line (own_limit.state_line) straight
     after the sleeve-value line, and own_limit.ACCOUNT_SENTENCE at the end of the account line when that line carries
     figures; None, the default, is the text as before. fill_position: each fill line ends with the sleeve's position
-    now (fill_position_note); False, the default, is the text as before."""
+    now (fill_position_note); False, the default, is the text as before. range_line: book_range()'s line, on its own line
+    after the open orders (Week 7); None, the default, is the text as before."""
     class _W:
         MAX_GROSS = max_gross
     world = _W
@@ -945,8 +1032,14 @@ def render_account(st, feats, header, live=None, max_gross=2.0, book=None, shock
         for o in st["orders"]:
             g = lambda k: "-" if o.get(k) in (None, 0) else f"{o[k]:g}"
             lines.append(f"  {o['ref']} {o['symbol']} {o['action']} {o['quantity']} {o['type']} {g('limit')} {g('stop')} "
-                         f"{g('trail_percent')} {o['tif']} {'CANCEL-PENDING' if o.get('cancel_pending') else 'working'}"
-                         + (" close_only" if o.get("close_only") else ""))
+                         f"{g('trail_percent')} {o['tif']} "
+                         + ("held" if o.get("held") else "CANCEL-PENDING" if o.get("cancel_pending") else "working")
+                         + (" close_only" if o.get("close_only") else "")
+                         + (f" (waits for {', '.join(o['after'])})" if o.get("held") and o.get("after") else "")
+                         + (f" (grows toward {co.fmt(float(o['grows_to']))} as {', '.join(o['after'])} fills)"
+                            if o.get("grows_to") and o.get("after") else ""))
+        if any(o.get("held") for o in st["orders"]):   # close_only v2.1 (words: the Researcher's review)
+            lines.append("  " + HELD_LINE)
         if any(o.get("cancel_pending") for o in st["orders"]):
             lines.append("  (CANCEL-PENDING: you already asked to cancel it and the broker has not confirmed yet. It can still "
                          "fill until it leaves this list. Cancelling it again does nothing.)")
@@ -954,6 +1047,8 @@ def render_account(st, feats, header, live=None, max_gross=2.0, book=None, shock
                 lines.append("  (A close_only order can also be CANCEL-PENDING because the close_only check cancelled it.)")   # them)
     else:
         lines.append("Open orders: none.")
+    if range_line:
+        lines.append(range_line)
     # gpt-oss adds listed fills to positions that already hold them: 13 of its 16 oversized exits, 26 Oct to 2 Nov ("increase from 20 to 40")
     held = " (your positions and cash above already include these fills)" if any(e.startswith("filled ") for e in st["events"]) else ""
     events = st["events"]
@@ -1024,6 +1119,19 @@ def clean_order(o):
     co = o.get("close_only")                     # text B's flag (17 Nov): only an explicit true; never an error
     out["close_only"] = co is True or (isinstance(co, str) and co.strip().lower() == "true")
     return out, None
+
+
+def broker_form(o):
+    """(type, tif, limit, aux, extra fields) as PaperWorld.act sends a cleaned order to IBKR: a limit only for LMT, STP
+    LMT and LOC, a stop only for STP and STP LMT, MOO as MKT with tif OPG, a TRAIL's percent as trailingPercent."""
+    typ, tif, fields = o["type"], o["tif"], {}
+    limit = o["limit"] if typ in ("LMT", "STP LMT", "LOC") else None
+    aux = o["stop"] if typ in ("STP", "STP LMT") else None
+    if typ == "MOO":
+        typ, tif = "MKT", "OPG"
+    if typ == "TRAIL" and o["trail_percent"] is not None:
+        fields["trailingPercent"] = float(o["trail_percent"])
+    return typ, tif, limit, aux, fields
 
 
 def order_echo(o, price, value, held=0):
@@ -1209,6 +1317,31 @@ class PaperWorld:
                            **({"trail_stop": o["trail_stop"]} if o["order_type"] == "TRAIL" and o.get("trail_stop") is not None else {}),
                            **({"remaining": o["remaining"]} if isinstance(o.get("remaining"), (int, float))
                               and not isinstance(o.get("remaining"), bool) else {})})
+        if co.V2:                                              # close_only v2.1: held exits (not at the broker) and what a
+            st_co = self.paper.co_state(self.sleeve)           # linked one grows toward, from the ledger
+            left = {o["ref"]: float(o.get("remaining", o["quantity"]) or 0) for o in orders}
+            rf_co = self.paper.ref_fills()
+            for o in orders:
+                row = st_co["held"].get(o["ref"])
+                if row is not None and o["ref"] not in st_co["unlinked"] and not o["cancel_pending"]:
+                    after = [e for e in (row["held"].get("after") or {}) if e in left]   # its entries still working
+                    snaps = row["held"].get("after") or {}   # the entries' fills since the hold, as booked: the size
+                    fe_now = sum(max(0.0, rf_co.get(e, 0.0) - float(snaps[e] or 0)) for e in snaps)   # the next check gives
+                    top = min(float(row["quantity"]), max(float(o["quantity"]), fe_now) + sum(left[e] for e in after))
+                    # no P: it comes once, when the entries have ended, not as they fill (the Researcher, 25 Nov); from the
+                    # booked fills, not the broker size alone, which can lag them (the final review of 25 Nov)
+                    if after and top > float(o["quantity"]):
+                        o["grows_to"], o["after"] = top, after
+            for ref, row in sorted(self.paper.held_waiting(self.sleeve, st_co).items(), key=lambda x: st_co["key"].get(x[0])):
+                snaps = row["held"].get("after") or {}
+                typ = "MOO" if row["order_type"] == "MKT" and row.get("tif") == "OPG" else row["order_type"]
+                orders.append({"ref": ref, "symbol": row["symbol"], "action": row["action"], "quantity": row["quantity"],
+                               "type": typ, "stop": row.get("aux"),
+                               "trail_percent": (row.get("fields") or {}).get("trailingPercent") if typ == "TRAIL" else None,
+                               "limit": row.get("limit") if typ in ("LMT", "STP LMT", "LOC") else None,
+                               "tif": row.get("tif", "DAY"), "cancel_pending": False, "close_only": True, "held": True,
+                               # its entries still working, and those that filled since the hold (their fills count)
+                               "after": [e for e in snaps if e in left or rf_co.get(e, 0.0) > float(snaps[e] or 0) + co.EPS]})
         ev = self.paper.events_since_last_look(self.gw, self.sleeve, commit=not self.dry_run) + self.paper.take_notes(self.sleeve, commit=not self.dry_run)
         return {"value": value, "cash": b["cash"], "positions": pos, "orders": orders, "events": ev,
                 "gross": gross / value if value else 0, "net": net / value if value else 0, "beta_net": bnet / value if value else 0}
@@ -1235,11 +1368,16 @@ class PaperWorld:
         # holds such an order; if the fills cannot be read, those orders are not sent (their own condition can't be held).
         closers = [o for o in orders if o.get("close_only")]
         co_err, covered = None, {}              # covered: (symbol, side) -> close_only quantity still open at IBKR there
+        v2 = co.V2                              # close_only v2.1 (runs/analysis/close_only_v2/DESIGN.md): legs by group,
+        legs, open_rows, placed = {}, [], []    # entries for held exits; off, the rule of 17-19 Nov word for word
         if closers:                             # (CANCEL-PENDING included), then plus what this submit sends. The open
             try:                                # orders are read before the fills (the review): one that fills between the
-                for w in self.paper.close_only_working(self.gw, self.sleeve):   # two reads counts twice, never not at all
-                    k = (w["symbol"], w["action"])
-                    covered[k] = covered.get(k, 0.0) + self.paper._left(w)
+                if v2:                          # two reads counts twice, never not at all
+                    open_rows, legs = self._co_legs()
+                else:
+                    for w in self.paper.close_only_working(self.gw, self.sleeve):
+                        k = (w["symbol"], w["action"])
+                        covered[k] = covered.get(k, 0.0) + self.paper._left(w)
             except Exception as e:              # noqa: BLE001
                 co_err = f"your open orders could not be read to check it ({type(e).__name__}: {str(e)[:120]})"
             if co_err is None:
@@ -1261,7 +1399,12 @@ class PaperWorld:
         now_pos, sent_syms = dict(pos), set()   # close_only: the position counting fills, re-read after an order in the
         for o in orders:                        # same symbol was sent earlier in this submit (an entry and its stop)
             s, q0 = o["symbol"], pos.get(o["symbol"], 0)
-            if o.get("close_only"):
+            if o.get("close_only") and v2:
+                stop = self._co_order(o, s, notes, legs, open_rows, placed, co_err, now_pos, sent_syms, quotes)
+                now_pos, open_rows, legs = self._co_now_pos, self._co_open, self._co_legs_now
+                if stop:
+                    continue                    # held or not sent (its note is in notes); else it goes on as below
+            elif o.get("close_only"):
                 tag = f"{o['action']} {o['quantity']} {s} {o['type']} (close_only) not sent"
                 if co_err is None and s in sent_syms:
                     try:                        # a market entry usually fills within seconds: wait 2 s, then read the open
@@ -1319,13 +1462,7 @@ class PaperWorld:
             pos[s] = q1
             if p:
                 mark.setdefault(s, p)
-            typ, tif, fields = o["type"], o["tif"], {}
-            limit = o["limit"] if typ in ("LMT", "STP LMT", "LOC") else None
-            aux = o["stop"] if typ in ("STP", "STP LMT") else None
-            if typ == "MOO":
-                typ, tif = "MKT", "OPG"
-            if typ == "TRAIL" and o["trail_percent"] is not None:
-                fields["trailingPercent"] = float(o["trail_percent"])
+            typ, tif, limit, aux, fields = broker_form(o)
             q = quotes.get(o["symbol"], {})              # arrival quote, logged for the execution model (wave C)
             arrival = {k: q.get(k) for k in ("bid", "ask", "last", "close", "last_time")} if q else None
             r = self.paper.place(self.gw, self.sleeve, o["symbol"], o["action"], o["quantity"], typ, limit, aux, tif,
@@ -1337,8 +1474,14 @@ class PaperWorld:
             refused = bool(r.get("error")) or status is None or status in ("Cancelled", "Inactive", "ApiCancelled")
             if not refused:                     # close_only (17 Nov): cover counts only what IBKR accepted; an accepted order
                 sent_syms.add(o["symbol"])      # makes a later close_only order in its symbol read fills again
-                if o.get("close_only"):
+                if o.get("close_only") and v2:
+                    legs.setdefault((o["symbol"], o["action"]), []).append(
+                        {"ref": r.get("ref"), "rem": float(o["quantity"]), "groups": co.groups(o["type"], o["tif"]),
+                         "pending": False, "key": ("~", len(placed))})
+                elif o.get("close_only"):
                     covered[(o["symbol"], o["action"])] = covered.get((o["symbol"], o["action"]), 0.0) + o["quantity"]
+                else:
+                    placed.append((r.get("ref"), o))
             if refused:                         # None: an error before any status (so far always 321)
                 notes.append(f"{o['action']} {o['quantity']} {o['symbol']} {o['type']}: {status or 'refused'} {msg}".strip())
             # The echo only for an order the broker accepted, so it stays a fact about a real order; a refused one has its
@@ -1359,10 +1502,122 @@ class PaperWorld:
         # those the position no longer covers (their note goes in with the rest). Never raises.
         if sent_syms or any(o.get("close_only") for o in orders):
             try:
-                if self.paper.close_only_working(self.gw, self.sleeve):
+                if v2:                          # v2.1: the check reads the orders, then the fills, itself (DESIGN C)
+                    st = self.paper.co_state(self.sleeve)
+                    if st["closers"] and (self.paper.held_waiting(self.sleeve, st) or self.paper.close_only_working(self.gw, self.sleeve)):
+                        _time.sleep(2)
+                        self.paper.close_only_check(self.gw, self.sleeve, log=self.log)
+                elif self.paper.close_only_working(self.gw, self.sleeve):
                     _time.sleep(2)
                     self.paper.sync_fills(self.gw)
                     self.paper.close_only_excess(self.gw, self.sleeve, log=self.log)
             except Exception as e:              # noqa: BLE001
                 (self.log or (lambda m: print(m, file=sys.stderr)))(f"{self.sleeve}: close_only check after placing failed: {e}")
         return notes
+
+    # ---------------------------------------------------------------- close_only v2.1 (DESIGN A and B)
+    def _co_legs(self):
+        """(this sleeve's open orders at IBKR, {(symbol, action): close_only legs}) with each leg's rem, groups and
+        whether its cancel is pending (it can still fill)."""
+        open_rows = self.paper.open_orders(self.gw, self.sleeve)
+        asked = self.paper.cancel_requested(self.sleeve)
+        legs = {}
+        for w in self.paper.close_only_working(self.gw, self.sleeve, open_rows=open_rows):
+            legs.setdefault((w["symbol"], w["action"]), []).append(
+                {"ref": w["ref"], "rem": self.paper._left(w), "groups": co.groups(w.get("order_type"), w.get("tif")),
+                 "pending": w.get("status") == "PendingCancel" or w["ref"] in asked, "key": ("", 0)})
+        return open_rows, legs
+
+    def _co_order(self, o, s, notes, legs, open_rows, placed, co_err, now_pos, sent_syms, quotes):
+        """One close_only order under v2.1: True when it was held or not sent (its note added), False when it goes on to
+        be placed. With an order earlier in this submit in the same symbol accepted, the 2-second re-read of 17 Nov runs
+        first (its results are left in self._co_now_pos, _co_open and _co_legs_now for act)."""
+        tag = f"{o['action']} {o['quantity']} {s} {o['type']}"
+        self._co_now_pos, self._co_open, self._co_legs_now = now_pos, open_rows, legs
+        unread = co_err is not None and co_err.startswith("your open orders")
+        if co_err is None and s in sent_syms:
+            try:                                # a market entry usually fills within seconds: wait 2 s, then read the open
+                _time.sleep(2)                  # orders and the fills again, in that order (17 Nov's recheck)
+                open_rows, legs = self._co_legs()
+                self._co_open, self._co_legs_now = open_rows, legs
+                self.paper.sync_fills(self.gw)
+                now_pos = {k: v["quantity"] for k, v in self.paper.book(self.sleeve)["positions"].items()}
+                self._co_now_pos = now_pos
+                sent_syms.discard(s)            # only after a re-read that worked (the review of 20 Nov)
+            except Exception as e:              # noqa: BLE001
+                co_err = f"your fills could not be read to check it ({type(e).__name__}: {str(e)[:120]})"
+        h = now_pos.get(s, 0)
+        ents = self._co_entries(o, s, open_rows, placed, unread)
+        holdable = ents and o["type"] not in co.AUCTION_TYPES
+        if co_err is not None:                  # the orders or fills not read: held with no E or H (P 0; the third
+            if holdable:                        # review of 25 Nov: H from an unsynced book could count another order)
+                return self._co_hold(o, s, h, ents, notes, quotes, placed, exact=False)
+            notes.append(f"{tag} (close_only) not sent: {co_err}")
+            return True
+        grp = co.groups(o["type"], o["tif"], in_session=self.paper._session(self.paper._now()))
+        ok, why, c, g = co.fits(o["quantity"], h, o["action"], legs.get((s, o["action"]), []), grp)
+        if ok:
+            return False
+        if holdable:
+            return self._co_hold(o, s, h, ents, notes, quotes, placed)
+        if why == "side":
+            notes.append(f"{tag} (close_only) not sent: your position in {s} is {h:+g} counting fills so far, so it would "
+                         + ("open a position" if not h else "add to it"))
+        else:                                   # one wording for every group (the Researcher, 20 Nov: two labels were wrong)
+            notes.append(f"{tag} (close_only) not sent: your position in {s} is {h:+g} counting fills so far, "
+                         + (f"and your close_only orders there that could fill with it already cover {co.fmt(c)}, "
+                            if c > co.EPS else "")
+                         + "so it would close more than you hold")
+        return True
+
+    def _co_entries(self, o, s, open_rows, placed, unread):
+        """[(ref, 'BUY 100 SMH LMT')]: the sleeve's orders, not close_only, in s on the opposite action that are still
+        working at IBKR (CANCEL-PENDING included), this submit's among them. unread: the open orders could not be read,
+        so this submit's accepted entries stand in for them."""
+        ea = "BUY" if o["action"] == "SELL" else "SELL"
+        closers = self.paper.close_only_refs(self.sleeve)
+        out = []
+        if unread:
+            for ref, e in placed:
+                if e["symbol"] == s and e["action"] == ea and ref:
+                    out.append((ref, f"{ref} {e['action']} {e['quantity']} {s} {e['type']}"))
+            return out
+        for w in open_rows:
+            if w.get("symbol") == s and w.get("action") == ea and w.get("ref") not in closers:
+                out.append((w["ref"], f"{w['ref']} {self.paper._desc(w)}"))
+        return out
+
+    def _co_hold(self, o, s, h, ents, notes, quotes, placed=(), exact=True):
+        """Record o as a held exit (paper.place with held=...): nothing goes to the broker; the check releases it. Each
+        entry's fills at the hold are its snapshot; an entry placed in this submit starts at 0, so the shares it filled
+        during the 2-second re-read count for the exit (the review of 20 Nov: cand2's FIS of 17 Nov, 300 of 363)."""
+        rf = self.paper.ref_fills()
+        new = {ref for ref, _ in placed}
+        typ, tif, limit, aux, fields = broker_form(o)
+        q = quotes.get(s, {})
+        arrival = {k: q.get(k) for k in ("bid", "ask", "last", "close", "last_time")} if q else None
+        snap = {ref: (0.0 if ref in new else rf.get(ref, 0.0)) for ref, _ in ents}
+        # E, what the entries had left to fill at the hold, fixed here (the Researcher's rule of 24 Nov 2026): each entry's
+        # size at IBKR (this submit's from the model's order if IBKR's row is not read) less its snapshot; and H, the
+        # shares held now on the exit's closing side less the entries' own fills since their snapshots (an entry of this
+        # submit that filled during the 2-second re-read; the review of 25 Nov). Once its entries have ended, the check
+        # adds P = min(quantity - E, H) for shares already held. An entry whose size is unknown leaves E out: P is 0.
+        size = {w["ref"]: w.get("quantity") for w in (getattr(self, "_co_open", None) or []) if w.get("ref")}
+        for ref, e in placed:
+            if ref and size.get(ref) is None:
+                size[ref] = e.get("quantity")
+        try:
+            left = sum(max(0.0, float(size[ref]) - float(snap[ref])) for ref in snap)
+        except (KeyError, TypeError, ValueError):
+            left = None
+        own = sum(max(0.0, rf.get(ref, 0.0) - snap[ref]) for ref in snap)
+        side = abs(float(h)) if (o["action"] == "BUY" and h < 0) or (o["action"] == "SELL" and h > 0) else 0.0
+        had = max(0.0, side - own)
+        held = {"after": snap, **({"left": left, "had": had} if left is not None and exact else {})}
+        r = self.paper.place(self.gw, self.sleeve, s, o["action"], o["quantity"], typ, limit, aux, tif, arrival=arrival,
+                             probs={"p_fill": o["p_fill"], "p_win": o["p_win"]}, close_only=True, held=held, **fields)
+        notes.append(f"{o['action']} {o['quantity']} {s} {o['type']} (close_only) held as {r['ref']}: your position in {s} is "
+                     f"{h:+g} counting fills so far; it waits for " + ", ".join(d for _, d in ents)
+                     + ("" if exact else " (your orders or fills could not be read, so shares you already held are not "
+                                         "counted for it)"))   # the Researcher's words, 25 Nov
+        return True

@@ -189,7 +189,8 @@ def context(st, feats, live, sleeves, looking, sleeve=None, own_limit=None, mark
 
 def _limit_line(ctx, orders, resting):
     """The sleeve's own line for a check (own_limit.check_block), from the check's cleaned orders and the account's resting
-    orders as read for this check (None if not read), of which only this sleeve's count."""
+    orders as read for this check (None if not read), of which only this sleeve's count. Off while trader.OWN_LIMIT_LOOK
+    is False; it reads close_only by the rule of 17-19 Nov (own_limit.check_block), not v2.1's (close_only.py)."""
     import own_limit
     import paper
     mine = filled = None

@@ -16,9 +16,12 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 sys.dont_write_bytecode = True
 
+import close_only  # noqa: E402
 import paper  # noqa: E402
 import tools  # noqa: E402
 import trader  # noqa: E402
+
+close_only.V2 = False   # this file pins the rule of 17-19 Nov (the switch's off side); close_only_v2_test.py tests v2.1
 
 ok = []
 

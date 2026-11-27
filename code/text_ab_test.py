@@ -152,6 +152,13 @@ class FakePaper:
     def close_only_working(self, gw, sleeve, open_rows=None):   # paper.py's (17 Nov): these sleeves have no close_only orders
         return []
 
+    def co_state(self, sleeve, rows=None):                      # paper.py's (close_only v2.1): none here either
+        return {"closers": set(), "held": {}, "released": {}, "unlinked": set(), "cancelled": set(), "tried": set(),
+                "modify": {}, "key": {}}
+
+    def held_waiting(self, sleeve, st=None):
+        return {}
+
     def place(self, gw, sleeve, symbol, action, quantity, *a, probs=None, **k):
         self.placed.append((action, quantity, symbol, probs))
         if symbol in self.refuse:

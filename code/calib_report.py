@@ -30,11 +30,21 @@ def load(runs):
     dirs = [runs] + sorted(p for p in (runs / "archive").glob("*") if p.is_dir())
     orders, fills, cancels = [], {}, set()
     for i, d in enumerate(dirs):
-        for r in paper.read(d / "orders.jsonl"):
+        rows = paper.read(d / "orders.jsonl")
+        released = {}                       # close_only v2.1: a held exit is scored by its last release row
+        for r in rows:
+            if r.get("release"):
+                released[str(r["release"])] = r
+        for r in rows:
             if "cancel" in r:
                 if not r.get("error"):
                     cancels.add(r["cancel"])
             elif "probs" in r:
+                if r.get("held") is not None:
+                    x = released.get(r.get("ref"))
+                    if x is None:
+                        continue            # a held exit that never went to the broker is no order to score
+                    r = {**r, "result": x.get("result"), "error": x.get("error")}
                 orders.append({**r, "archived": i > 0})
         for f in paper.read(d / "fills.jsonl"):
             fills[f["exec_id"]] = f
